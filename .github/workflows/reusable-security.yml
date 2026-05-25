@@ -1,0 +1,77 @@
+name: Reusable Security Scan
+
+# Combined security scan: CodeQL (SAST) + Trivy (filesystem + IaC) +
+# Gitleaks (secret scan). Per the README this workflow is the canonical
+# "security gate" called from each FlexNetOS repo's CI.
+#
+# This body is a SCAFFOLD pending follow-on implementation work — it
+# ships the `workflow_call` shape, documented inputs, and a
+# least-privilege `permissions:` block per the README. Real scanner
+# invocations will be filled in by follow-on work.
+
+on:
+  workflow_call:
+    inputs:
+      languages:
+        description: 'CodeQL languages to scan (comma-separated): javascript, python, go, java, ruby, cpp, csharp, swift, kotlin'
+        required: false
+        type: string
+        default: 'javascript,python'
+      fail-on-severity:
+        description: 'Minimum severity that fails the job: critical, high, medium, low'
+        required: false
+        type: string
+        default: 'high'
+      gitleaks-config:
+        description: 'Path to a gitleaks config (empty = default ruleset)'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+  security-events: write   # required by CodeQL SARIF upload
+  actions: read
+
+jobs:
+  codeql:
+    name: CodeQL SAST
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: CodeQL (scaffold)
+        run: |
+          echo "::warning::reusable-security.yml > CodeQL is a scaffold."
+          echo "languages: ${{ inputs.languages }}"
+          echo "fail-on-severity: ${{ inputs.fail-on-severity }}"
+          echo "Body to be filled in by follow-on work."
+
+  trivy:
+    name: Trivy filesystem + IaC
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Trivy (scaffold)
+        run: |
+          echo "::warning::reusable-security.yml > Trivy is a scaffold."
+          echo "fail-on-severity: ${{ inputs.fail-on-severity }}"
+          echo "Body to be filled in by follow-on work."
+
+  gitleaks:
+    name: Gitleaks secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # gitleaks needs full history
+      - name: Gitleaks (scaffold)
+        run: |
+          echo "::warning::reusable-security.yml > Gitleaks is a scaffold."
+          echo "gitleaks-config: ${{ inputs.gitleaks-config }}"
+          echo "Body to be filled in by follow-on work."

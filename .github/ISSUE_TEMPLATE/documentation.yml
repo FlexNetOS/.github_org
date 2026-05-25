@@ -1,0 +1,45 @@
+name: Documentation
+description: Report missing, incorrect, or confusing documentation.
+title: "[docs]: "
+labels:
+  - documentation
+  - triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Documentation bugs are first-class bugs. Be specific about which
+        document, which paragraph, and what is wrong or missing.
+
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: URL or repo-relative path of the document.
+      placeholder: README.md, or docs/fork-workflow.md, or a deep link to the offending section
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's wrong
+      description: Quote the offending text, or describe what's missing.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested fix
+      description: Optional — if you have proposed wording, paste it here. PRs welcome.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: pre-flight
+    attributes:
+      label: Pre-flight
+      options:
+        - label: I searched the existing issues for the same documentation problem.
+          required: true

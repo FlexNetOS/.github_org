@@ -1,0 +1,63 @@
+name: Reusable Lint
+
+# Language-agnostic lint dispatcher. Callers select the language flavor
+# via the `language` input; this workflow routes to the appropriate
+# linter.
+#
+# This body is a SCAFFOLD pending follow-on implementation work — it
+# ships the `workflow_call` shape, documented inputs, and a
+# least-privilege `permissions:` block per the README. See README.md
+# "How to use the reusable workflows" for the calling pattern.
+
+on:
+  workflow_call:
+    inputs:
+      language:
+        description: 'Language flavor: bun, node, python, rust, mixed, or none'
+        required: true
+        type: string
+      paths:
+        description: 'Glob of paths to lint (default: repository root)'
+        required: false
+        type: string
+        default: ''
+      working-directory:
+        description: 'Working directory for the lint command'
+        required: false
+        type: string
+        default: '.'
+      fail-on-warning:
+        description: 'Fail the job if the linter emits warnings'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (${{ inputs.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint (scaffold)
+        run: |
+          echo "::warning::reusable-lint.yml is a scaffold."
+          echo "language: ${{ inputs.language }}"
+          echo "paths: ${{ inputs.paths }}"
+          echo "fail-on-warning: ${{ inputs.fail-on-warning }}"
+          echo ""
+          echo "Body to be filled in by follow-on work; will route to:"
+          echo "  bun    -> bun run lint"
+          echo "  node   -> npm run lint"
+          echo "  python -> ruff check + black --check"
+          echo "  rust   -> cargo fmt --check && cargo clippy --all-targets -- -D warnings"
+          echo "  mixed  -> all of the above for present languages"
+          echo "  none   -> no-op success"

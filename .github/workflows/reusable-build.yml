@@ -1,0 +1,68 @@
+name: Reusable Build
+
+# Language-agnostic build dispatcher. Callers select the language flavor
+# via the `language` input; this workflow routes to the appropriate
+# build command and uploads build artifacts when requested.
+#
+# This body is a SCAFFOLD pending follow-on implementation work — it
+# ships the `workflow_call` shape, documented inputs, and a
+# least-privilege `permissions:` block per the README.
+
+on:
+  workflow_call:
+    inputs:
+      language:
+        description: 'Language flavor: bun, node, python, rust, mixed, or none'
+        required: true
+        type: string
+      working-directory:
+        description: 'Working directory for the build command'
+        required: false
+        type: string
+        default: '.'
+      artifact-name:
+        description: 'Name of the build artifact to upload (empty disables upload)'
+        required: false
+        type: string
+        default: ''
+      artifact-path:
+        description: 'Path glob of files to include in the build artifact'
+        required: false
+        type: string
+        default: 'dist/**'
+      profile:
+        description: 'Build profile: debug or release'
+        required: false
+        type: string
+        default: 'release'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (${{ inputs.language }}, ${{ inputs.profile }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build (scaffold)
+        run: |
+          echo "::warning::reusable-build.yml is a scaffold."
+          echo "language: ${{ inputs.language }}"
+          echo "profile: ${{ inputs.profile }}"
+          echo "artifact-name: ${{ inputs.artifact-name }}"
+          echo "artifact-path: ${{ inputs.artifact-path }}"
+          echo ""
+          echo "Body to be filled in by follow-on work; will route to:"
+          echo "  bun    -> bun run build"
+          echo "  node   -> npm run build"
+          echo "  python -> uv build  (or python -m build)"
+          echo "  rust   -> cargo build --profile=${{ inputs.profile }}"
+          echo "  mixed  -> all of the above for present languages"
+          echo "  none   -> no-op success"

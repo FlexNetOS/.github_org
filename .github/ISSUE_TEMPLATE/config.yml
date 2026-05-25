@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and design discussion
+    url: https://github.com/FlexNetOS/.github/discussions
+    about: For how-do-I, design, or architecture questions, prefer Discussions over Issues.
+  - name: Security report
+    url: https://github.com/FlexNetOS/.github/blob/main/SECURITY.md
+    about: For security issues, do NOT open a public issue. Follow the security policy instead.
+  - name: Code of Conduct concern
+    url: https://github.com/FlexNetOS/.github/blob/main/CODE_OF_CONDUCT.md
+    about: For Code of Conduct concerns, email the maintainer per the policy.

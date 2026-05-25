@@ -1,0 +1,86 @@
+name: Bug report
+description: Something demonstrably broken — wrong output, crash, regression.
+title: "[bug]: "
+labels:
+  - bug
+  - triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. The clearer the reproduction, the faster
+        the fix. Vague reports without a reproduction may be closed and
+        re-opened once a reproduction lands.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Describe the actual behavior, including any error messages or stack traces.
+      placeholder: |
+        Ran `npm run build` and got "Cannot find module 'foo'" on line 42.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      placeholder: Build should complete successfully and emit `dist/index.js`.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Steps, a script, or a link to a minimal repository that reproduces the issue.
+      placeholder: |
+        1. `git clone <repo>`
+        2. `cd <repo> && npm install`
+        3. `npm run build`
+        4. Observe error.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Affected version
+      description: Commit SHA, tag, or release version where the issue occurs.
+      placeholder: v1.2.3 or commit abc1234
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows (WSL)
+        - Windows (native)
+        - Other (specify in env details)
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment details
+      description: Node/Rust/Python versions, container vs host, hardware (CPU/GPU) if relevant.
+      placeholder: |
+        Node 20.11.0, Rust 1.95.0, Ubuntu 24.04 in devcontainer.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: pre-flight
+    attributes:
+      label: Pre-flight
+      options:
+        - label: I searched the existing issues (open and closed) for duplicates.
+          required: true
+        - label: This is NOT a security issue (security goes through SECURITY.md, not here).
+          required: true

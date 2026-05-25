@@ -1,0 +1,72 @@
+name: Feature request
+description: Propose a new capability or a meaningful change to existing behavior.
+title: "[feat]: "
+labels:
+  - enhancement
+  - triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the proposal. Feature requests are discussed before
+        any commitment to ship — please describe the problem first, then
+        the proposed solution. A clear problem statement makes it easier
+        to evaluate alternatives.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user-facing problem does this feature solve? Who is affected, and what does the current workaround look like?
+      placeholder: |
+        When I do X, the system does Y, but I want Z. Currently I have
+        to do W as a workaround, which has the following drawbacks: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the change you would like to see. Be concrete — API shape, CLI flags, UI affordances.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches did you consider, and why did you discard them?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: How much of the codebase does this touch?
+      options:
+        - Tiny — one file or one function
+        - Small — one module
+        - Medium — several modules / a new public API
+        - Large — cross-cutting / breaking change
+    validations:
+      required: true
+
+  - type: textarea
+    id: breaking
+    attributes:
+      label: Breaking-change impact
+      description: If this is breaking, who breaks, and what is the migration story?
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: pre-flight
+    attributes:
+      label: Pre-flight
+      options:
+        - label: I searched existing issues and discussions for a similar proposal.
+          required: true
+        - label: I am open to this being declined or substantially redesigned in review.
+          required: true

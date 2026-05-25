@@ -1,0 +1,62 @@
+name: Reusable Test
+
+# Language-agnostic test dispatcher. Callers select the language flavor
+# via the `language` input; this workflow routes to the appropriate
+# test runner.
+#
+# This body is a SCAFFOLD pending follow-on implementation work — it
+# ships the `workflow_call` shape, documented inputs, and a
+# least-privilege `permissions:` block per the README.
+
+on:
+  workflow_call:
+    inputs:
+      language:
+        description: 'Language flavor: bun, node, python, rust, mixed, or none'
+        required: true
+        type: string
+      working-directory:
+        description: 'Working directory for the test command'
+        required: false
+        type: string
+        default: '.'
+      coverage:
+        description: 'Collect coverage and upload as an artifact'
+        required: false
+        type: boolean
+        default: false
+      coverage-threshold:
+        description: 'Minimum coverage percentage to pass (0 disables)'
+        required: false
+        type: number
+        default: 0
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (${{ inputs.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test (scaffold)
+        run: |
+          echo "::warning::reusable-test.yml is a scaffold."
+          echo "language: ${{ inputs.language }}"
+          echo "coverage: ${{ inputs.coverage }}"
+          echo "coverage-threshold: ${{ inputs.coverage-threshold }}"
+          echo ""
+          echo "Body to be filled in by follow-on work; will route to:"
+          echo "  bun    -> bun test"
+          echo "  node   -> npm test"
+          echo "  python -> pytest"
+          echo "  rust   -> cargo nextest run --all-features"
+          echo "  mixed  -> all of the above for present languages"
+          echo "  none   -> no-op success"
