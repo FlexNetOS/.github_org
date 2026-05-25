@@ -1,0 +1,21 @@
+# GitHub Sponsors / funding configuration.
+#
+# Spec: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+#
+# All entries below are commented-out PLACEHOLDERS per README — uncomment
+# and fill in real handles when sponsorship accounts are live. Each repo
+# that wants different funding routing can override with a local
+# `FUNDING.yml`.
+
+# github: [FlexNetOS]                  # GitHub Sponsors username(s)
+# patreon:                             # patreon username
+# open_collective:                     # open collective name
+# ko_fi:                               # ko-fi username
+# tidelift:                            # tidelift platform-name/package-name
+# polar:                               # polar.sh username
+# buy_me_a_coffee:                     # buy-me-a-coffee username
+# liberapay:                           # liberapay username
+# issuehunt:                           # issuehunt username
+# lfx_crowdfunding:                    # lfx crowdfunding project name
+# thanks_dev:                          # thanks.dev username
+# custom:                              # ['https://example.com/donate']
