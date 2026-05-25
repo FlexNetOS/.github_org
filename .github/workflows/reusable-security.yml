@@ -40,7 +40,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: CodeQL (scaffold)
         run: |
           echo "::warning::reusable-security.yml > CodeQL is a scaffold."
@@ -54,7 +54,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Trivy (scaffold)
         run: |
           echo "::warning::reusable-security.yml > Trivy is a scaffold."
@@ -67,7 +67,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0   # gitleaks needs full history
       - name: Gitleaks (scaffold)
