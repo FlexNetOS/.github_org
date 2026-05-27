@@ -20,6 +20,7 @@ This skill teaches Claude the development patterns and conventions used in .gith
 ## When to Use This Skill
 
 Activate this skill when:
+
 - Making changes to this repository
 - Adding new features following established patterns
 - Writing tests that match project conventions
@@ -41,8 +42,7 @@ Follow these commit message conventions based on 1 analyzed commits.
 - Keep first line concise and descriptive
 - Use imperative mood ("Add feature" not "Added feature")
 
-
-*Commit message example*
+### Commit message example
 
 ```text
 docs: clarify mega-umbrella vision + add maintainer & release guides
@@ -66,7 +66,7 @@ This project uses **hybrid** module organization.
 ### Naming Conventions
 
 | Element | Convention |
-|---------|------------|
+| ------- | ---------- |
 | Files | PascalCase |
 | Functions | camelCase |
 | Classes | PascalCase |
@@ -76,8 +76,7 @@ This project uses **hybrid** module organization.
 
 ### Export Style: Named Exports
 
-
-*Preferred import style*
+### Preferred import style
 
 ```typescript
 // Use relative imports
@@ -85,7 +84,7 @@ import { Button } from '../components/Button'
 import { useAuth } from './hooks/useAuth'
 ```
 
-*Preferred export style*
+### Preferred export style
 
 ```typescript
 // Use named exports
