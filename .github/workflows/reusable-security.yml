@@ -6,7 +6,7 @@ name: Reusable Security Scan
 #
 # - CodeQL: SARIF results uploaded to the repo's Security tab.
 # - Trivy: filesystem + IaC misconfig scan, SARIF uploaded.
-# - Gitleaks: secret scan over the full history.
+# - Gitleaks: secret scan over the checked-out tree.
 #
 # Calling repos should pin to @v1 once cut. See RELEASING.md.
 
@@ -135,10 +135,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0   # gitleaks needs full history
+          fetch-depth: 1   # tree scan only; no paid Gitleaks action/license required
+
+      - name: Install Gitleaks
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="8.29.1"
+          archive="gitleaks_${version}_linux_x64.tar.gz"
+          curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${version}/${archive}" -o "$archive"
+          tar -xzf "$archive" gitleaks
+          sudo install -m 0755 gitleaks /usr/local/bin/gitleaks
 
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ github.token }}
           GITLEAKS_CONFIG: ${{ inputs.gitleaks-config }}
+        run: |
+          set -euo pipefail
+          args=(detect --source . --redact --no-git --verbose)
+          if [[ -n "$GITLEAKS_CONFIG" ]]; then
+            args+=(--config "$GITLEAKS_CONFIG")
+          fi
+          gitleaks "${args[@]}"

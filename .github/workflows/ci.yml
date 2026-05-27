@@ -92,7 +92,7 @@ jobs:
     needs: lint
     uses: ./.github/workflows/reusable-security.yml
     with:
-      languages: 'javascript,python'
+      languages: 'actions'
       fail-on-severity: high
     secrets: inherit
     permissions:
