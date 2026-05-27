@@ -1,0 +1,6 @@
+interface:
+  display_name: ".github"
+  short_description: "Repo-specific patterns and workflows for .github"
+  default_prompt: "Use the .github repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true
