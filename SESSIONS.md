@@ -8,6 +8,66 @@
 
 ---
 
+## SESSION-2026-05-28-005 — Additive reconciliation tooling (doctors, reversibility chain, report-only CI)
+
+- **ID:** `SESSION-2026-05-28-005`
+- **Date:** 2026-05-28
+- **Branch:** `feat/reconciliation-slice-tooling`
+- **HEAD at end:** `74ae805`
+- **Mode:** `/oh-my-claudecode:plan` execution via 2 `executor` subagents + manual integration; closed with `/wrap-up`
+- **Outcome:** Built and shipped the **additive-only** slice of the reconciliation plan; **PR #20 open** against `main`. Reconciliation-slice remainder still `pending approval`; adoption/forks gated.
+- **User-action gates surfaced:** none new (existing `UA-2026-05-28-001` CHANGELOG↔release-please still applies).
+- **Cost:** ~$365 (Opus + 2-agent run; critical-cost hook fired repeatedly).
+
+### What the user asked
+> "you are approved to finsh all work"
+
+Then: *"Add the next steps and pending work to TODO.md and lets close this session."* Scope was narrowed via `AskUserQuestion` to **"Additive tooling only"** (no forks, no clone moves, no destructive settings trim, no `~/.claude` edits).
+
+### What the answer is
+- The safe, net-new tooling from the plan is built, verified, and on **PR #20**. The genuinely-gated/irreversible items (forks, stray-clone moves, live settings trim) are **not** done by design and remain tracked.
+- The MANIFEST→`.gitmodules` lockfile (G4/G5) was **deferred** — it refactors working `submodules.*` machinery, so it is out of "additive" scope. Tracked in `.omc/plans/open-questions.md`.
+- Full plan: `data/brain-data/research/my-github-reconciliation.md`.
+
+### What was actually done this session
+1. Confirmed scope with the user (`AskUserQuestion` → "Additive tooling only").
+2. Branched `feat/reconciliation-slice-tooling` from `origin/main`.
+3. Dispatched 2 `executor` subagents (disjoint file ownership). Agent A (opus) delivered the doctors + reversibility chain + linters fully with self-tests; Agent B (sonnet) returned early, so the CI workflow + CONTRIBUTING/README edits were written by the coordinator.
+4. Added Makefile targets (`claude.doctor`, `config.doctor`, `check.user-todo-5`, `open-questions.lint`); `runner.doctor` already existed (excluded).
+5. Verified: actionlint clean on `manifest-drift.yml`; all make targets resolve; `open-questions-lint` OK (6); doctor reports 39 live violations (rc=1, report-only); markdown-lint clean on all changed files.
+6. Committed (`74ae805`, 16 files), pushed, opened **PR #20**.
+7. `/wrap-up`: updated `TODO.md` (removed completed sections, added Next-steps + deferral notes), `CHANGELOG.md`, this `SESSIONS.md` entry.
+
+### Reservations / negative gates
+- **No `gh repo fork`, no stray-clone moves, no `.claude/settings.json` trim, no `~/.claude/` edits, no submodule mutations.** All deferred/gated.
+- **No `git commit` in the wrap-up step** (per `/wrap-up` rules); the four trackers are left modified in the working tree.
+- G4/G5 lockfile deferred (see open-questions). 2 of 4 stray clones will halt at G3a UNSAFE-MISMATCH (`fabro`, `paperclip`).
+- The `.claude/settings.json` trim is **ready** (doctor exists) but is a deliberate gated step (moves the user's working hooks to `~/.claude`).
+
+### What's next
+- Review + merge **PR #20**; after `manifest-drift.yml` goes green once, promote its jobs REPORT_ONLY → STRICT.
+- Resolve `UA-2026-05-28-001` (CHANGELOG ↔ release-please) before `CHANGELOG.md` lands on `main`.
+- For the gated remainder (forks, clone adoption, settings trim, G4/G5 lockfile): a focused session via `/oh-my-claudecode:team` or `/ralph` after the dossier section-9 reviews.
+
+### Files created/modified this session
+
+| Path | What |
+|---|---|
+| `scripts/claude-settings-doctor.js` | new — report-only settings hygiene scanner |
+| `scripts/g3a-can-convert.sh` / `g3b-backup-branch.sh` / `g3c-stash-and-move.sh` / `reconcile-stray-clones.sh` | new — reversibility chain (dry-run) |
+| `scripts/check-user-todo-step5.sh` | new — USER.TODO#5 tag detector |
+| `scripts/open-questions-lint.js` | new — open-questions schema linter |
+| `scripts/runner-doctor.sh` | extended — ps-based orphan/ghost detection |
+| `.claude/settings.canonical.json` / `.claude/.doctor-allowlist` / `.codex/.doctor-allowlist` | new — doctor reference + allowlists |
+| `.omc/plans/open-questions.md` | new — 6 seeded entries |
+| `.github/workflows/manifest-drift.yml` | new — REPORT_ONLY CI |
+| `Makefile` | +4 reconciliation-tooling targets |
+| `CONTRIBUTING.md` | +4 convention/policy sections |
+| `README.md` | +Repo-navigation table + Vaultwarden gate |
+| `TODO.md` / `CHANGELOG.md` / `SESSIONS.md` | wrap-up updates (this entry) |
+
+---
+
 ## SESSION-2026-05-28-003 — Restore accidentally-removed session files
 
 **Branch:** `feat/restore-session-wrapup-files`
@@ -122,7 +182,7 @@ Plus trippy as a network-diagnostic sidecar and RTK already system-wide. Plan co
 | `~/.claude/settings.json.bak-pre-branch-guard-20260528-135800` | backup before settings edit |
 | `~/.claude/CLAUDE.md` | new "## Hard rule: open a feature branch BEFORE any session work" section near the top |
 | `USER.TODO.md` | appended `UA-2026-05-28-002` / `-003` / `-004` to `## Agent-flagged user actions`. Numbered sections untouched. |
-| `CHANGELOG.md` | appended `### Added (SESSION-2026-05-28-003)`, `### Decisions recorded (...)`, `### Notes (...)` blocks under `[Unreleased]`. |
+| `CHANGELOG.md` | appended `### Added (SESSION-2026-05-28-004)`, `### Decisions recorded (...)`, `### Notes (...)` blocks under `[Unreleased]`. |
 | `SESSIONS.md` | this entry. |
 | `TODO.md` | **NOT modified** by this wrap-up (concurrent agent/hook activity detected; skipped to avoid clobber). |
 

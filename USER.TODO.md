@@ -373,9 +373,9 @@ These run automatically — no human action unless they alert:
 
 ### UA-2026-05-28-002 — Rotate Anthropic + OpenRouter API keys IMMEDIATELY (chat-transcript leak)
 
-- **Surfaced by:** `SESSION-2026-05-28-003`
+- **Surfaced by:** `SESSION-2026-05-28-004`
 - **Blocks:** running `scripts/install-v5-architecture.sh` safely; any production use of `~/bifrost/.env`
-- **Why:** During SESSION-2026-05-28-003, both `ANTHROPIC_API_KEY` and `OPENROUTER_API_KEY` were pasted by the user directly into the chat transcript so the agent could write `~/bifrost/.env` for the bifrost LLM gateway. The keys are now in the conversation history and any logs Claude Code retains. Treat both as compromised. The agent cannot rotate them — only the human key owner can.
+- **Why:** During SESSION-2026-05-28-004, both `ANTHROPIC_API_KEY` and `OPENROUTER_API_KEY` were pasted by the user directly into the chat transcript so the agent could write `~/bifrost/.env` for the bifrost LLM gateway. The keys are now in the conversation history and any logs Claude Code retains. Treat both as compromised. The agent cannot rotate them — only the human key owner can.
 - **What to do:**
   1. Go to `https://console.anthropic.com/settings/keys`, revoke the existing key, create a new one.
   2. Go to `https://openrouter.ai/keys`, revoke the existing key, create a new one.
@@ -388,9 +388,9 @@ These run automatically — no human action unless they alert:
 
 ### UA-2026-05-28-003 — Move the v5 plan from `.omc/plans/` to `data/brain-data/research/` (convention violation)
 
-- **Surfaced by:** `SESSION-2026-05-28-003`
+- **Surfaced by:** `SESSION-2026-05-28-004`
 - **Blocks:** clean compliance with the project research-location convention (`feedback-research-location` memory)
-- **Why:** SESSION-2026-05-28-003 produced a six-layer workstation-architecture plan and committed it to `.omc/plans/ralplan-browser-choice.md`. Per the project convention (`feedback-research-location.md`), research and plans MUST go to `data/brain-data/research/`; the `.omc/plans/` path is explicitly disallowed ("NEVER `.omc/plans/` or scratch"). The agent violated the convention while recreating the file under cost pressure and after the file had been destroyed once by a concurrent branch rewrite. The file is currently committed at `3dd0ef4` on `feat/restore-session-convention-files`.
+- **Why:** SESSION-2026-05-28-004 produced a six-layer workstation-architecture plan and committed it to `.omc/plans/ralplan-browser-choice.md`. Per the project convention (`feedback-research-location.md`), research and plans MUST go to `data/brain-data/research/`; the `.omc/plans/` path is explicitly disallowed ("NEVER `.omc/plans/` or scratch"). The agent violated the convention while recreating the file under cost pressure and after the file had been destroyed once by a concurrent branch rewrite. The file is currently committed at `3dd0ef4` on `feat/restore-session-convention-files`.
 - **What to do:**
   ```bash
   cd /home/drdave/workspace/my-github
@@ -407,7 +407,7 @@ These run automatically — no human action unless they alert:
 
 ### UA-2026-05-28-004 — Decide whether `3dd0ef4` should remain on `main` (cherry-picked from a transient branch)
 
-- **Surfaced by:** `SESSION-2026-05-28-003`
+- **Surfaced by:** `SESSION-2026-05-28-004`
 - **Blocks:** clean branch history; relates to the new branch-guard hard rule
 - **Why:** Mid-session, the agent attempted to write the v5 plan and install script while the working tree was concurrently being rewritten by cherry-pick / branch-delete operations. The first writes were destroyed. The agent eventually recreated and committed both files as `3dd0ef4` directly on `main` (the working tree was on `main` at that moment). The new branch-guard hook (installed in the same session) would now block exactly this pattern. You then created `feat/restore-session-convention-files` and the commit landed here too. Decide: is `3dd0ef4` allowed to stay on `main`, or should `main` be reset to its prior tip and the commit only live on this feature branch (the post-rule canonical pattern)?
 - **What to do:** review `git log --oneline main..feat/restore-session-convention-files` and `git log --oneline origin/main..main`; decide whether to `git reset --hard <prior-main-tip>` on `main` and re-push, or accept `3dd0ef4` as a valid main-direct commit (one-time pre-rule exception).

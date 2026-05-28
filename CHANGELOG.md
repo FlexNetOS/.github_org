@@ -22,9 +22,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `my-github-umbrella-model.md` — Model B authoritative + umbrella vision (no host-side installs, single-clone reproducibility).
   - `fork-workflow-branch-model.md` — `main`/`master` <-> upstream, `develop` <-> FlexNetOS branch model per `docs/fork-workflow.md`.
 - Companion plan at `~/.claude/plans/sprightly-shimmying-charm.md` — the 4-clone adoption thread (Model B, Phase 0 dossier gate, research-before-fork rule).
+- **Additive reconciliation tooling** (SESSION-2026-05-28-005, PR #20):
+  - `scripts/claude-settings-doctor.js` — report-only `.claude/settings.json` hygiene scanner (hardcoded user-home paths + aspirational keys; allowlist-aware; never modifies the live file). (research: my-github-reconciliation G1/G7)
+  - `scripts/g3a-can-convert.sh`, `scripts/g3b-backup-branch.sh`, `scripts/g3c-stash-and-move.sh`, `scripts/reconcile-stray-clones.sh` — reversibility chain (predicate + backup + dry-run move + orchestrator). (research: G3a-d)
+  - `scripts/check-user-todo-step5.sh` — MANIFEST USER.TODO#5 tag detector. (research: G11)
+  - `scripts/open-questions-lint.js` — open-questions schema validator. (research: G15)
+  - `.claude/settings.canonical.json`, `.claude/.doctor-allowlist`, `.codex/.doctor-allowlist` — doctor reference shape + allowlists. (research: G6/G9)
+  - `.omc/plans/open-questions.md` — 6 seeded entries (G3 triage, G4/G5 deferred, G15, G16).
+  - `.github/workflows/manifest-drift.yml` — REPORT_ONLY CI: `claude-dir-check`, settings doctor, user-todo-5, open-questions-lint, deferred materialize-noop. (research: G14/G15-claude-dir)
+  - Makefile targets: `claude.doctor`, `config.doctor`, `check.user-todo-5`, `open-questions.lint`.
 
 ### Changed
-- _(none yet — plan is `pending approval`, no execution authorized)_
+- `scripts/runner-doctor.sh` — extended with `ps`-based orphan/ghost runner-process detection. (SESSION-2026-05-28-005; research: G12)
+- `CONTRIBUTING.md` — added AI-tooling directory convention (`.claude` not `Claude`), CI-invariant promotion pattern, doctor allowlist policy, `.gitmodules` merge-conflict note. (SESSION-2026-05-28-005; research: G10/G14/G9)
+- `README.md` — added Repo-navigation table + Phase-6 Vaultwarden operational gate. (SESSION-2026-05-28-005; research: G13)
+- `Makefile` — added the reconciliation-tooling target block. (SESSION-2026-05-28-005)
 
 ### Removed
 - _(none yet)_
@@ -34,6 +46,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Rename scope = Org-only**: CODEOWNERS, branch protection, FUNDING.yml, FLEXNETOS-ENV.md only. Internal package names (`package.json:name`, `Cargo.toml:name`, Docker image refs) deliberately untouched to keep upstream sync conflict-free.
 - **Submodule `.github` overrides + caller workflows** inherit umbrella reusables via `uses: FlexNetOS/.github/.github/workflows/reusable-*.yml@main`. Switch to `@v1` once tagged.
 - **Research-before-fork is a hard rule**: per-clone dossier must exist on disk at `data/brain-data/research/<name>.md` before any `gh repo fork` runs. Codified in cross-session memory `feedback-fork-after-original-setup.md` after the ruflu/ruvector incident.
+- **G4/G5 lockfile pattern deferred** (SESSION-2026-05-28-005): the MANIFEST→`.gitmodules` materialize/lockfile refactor was deliberately excluded from the additive-tooling pass because it refactors the working `submodules.*` machinery (not additive). Tracked in `.omc/plans/open-questions.md`; the `submodules-materialize-noop` CI job is a placeholder until it lands.
 
 ### Corrections to prior work (2026-05-28)
 - `data/brain-data/research/my-github-reconciliation.md` Reservation 2 — `ai-top-utility` was listed as "likely UNSAFE-MISMATCH". Verified origin is `https://github.com/FlexNetOS/ai-top-utility.git` (FlexNetOS-owned, no upstream remote). Correction recorded in `data/brain-data/research/ai-top-utility.md` cross-reference block, in the reconciliation doc Reservation 2 note, and in `TODO.md` Reservations section.
@@ -45,16 +58,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **No `repos/MANIFEST.yaml` entries have been added** for the 4 adoptees.
 - **2026-05-28 (restore):** All root tracking files (`TODO.md`, `CHANGELOG.md`, `SESSIONS.md`) and the 4 pre-adoption dossiers + reconciliation plan were accidentally removed and recreated on branch `feat/restore-session-wrapup-files`. They had never been committed (untracked working-tree files), confirming the `feedback-always-commit` rule. This restore commits them so they cannot be lost to a routine `git reset` again.
 
-### Added (SESSION-2026-05-28-003)
+### Added (SESSION-2026-05-28-004)
 - `.omc/plans/ralplan-browser-choice.md` — ralplan v5 six-layer Linux workstation architecture (Pi-hole + dnscrypt-proxy + Cloudflare/Quad9 → vproxy → Slim → Firefox + Bifrost + Obscura, with trippy diagnostic sidecar). 5 iterations of consensus planning; status `pending approval`. **Misfiled per convention — see `UA-2026-05-28-003`.**
 - `scripts/install-v5-architecture.sh` — 7-phase install script for the v5 architecture with `--dry-run` and `--phase N` flags, pre-flight prereq checks, abort-before-DNS-swap safety, recovery runbook embedded in epilogue. `bash -n` clean. Not yet executed.
 - `USER.TODO.md` — 3 new UA items: `UA-2026-05-28-002` (rotate leaked Anthropic + OpenRouter keys), `UA-2026-05-28-003` (move v5 plan to canonical `data/brain-data/research/` path), `UA-2026-05-28-004` (decide whether `3dd0ef4` should remain on `main`).
 
-### Decisions recorded (2026-05-28, SESSION-2026-05-28-003)
+### Decisions recorded (2026-05-28, SESSION-2026-05-28-004)
 - **Six-layer workstation architecture (ralplan v5):** per-purpose tools at each layer (DNS / outbound proxy / local DNS+HTTPS / browser / LLM gateway / automation browser) rather than overloading one browser. Rejected: Edge (Linux second-class), Brave (user rejection), Chrome (auto-update friction), Chrome for Testing (more wiring than bundled chromium), bundled chromium as default (obscura is purpose-built). Decoupling pattern is brand-agnostic and recoverable per-layer.
 - **Hard rule: feature branch before session work.** Installed globally at `~/.claude/hooks/branch-guard.sh` + matching `SessionStart` and `PreToolUse:Edit|Write|MultiEdit` entries in `~/.claude/settings.json` + new "Hard rule" section in `~/.claude/CLAUDE.md`. SessionStart warns when HEAD is `main`/`master`/`trunk`; PreToolUse blocks Edit/Write on source files (allows `.claude/`, `.omc/`, `.github/`, `CLAUDE.md`, `AGENTS.md`, `docs/**/*.md`). Per-repo allowlist + override supported; session bypass via `BRANCH_GUARD_OFF=1`. Outside-repo files unaffected.
 
-### Notes (SESSION-2026-05-28-003)
+### Notes (SESSION-2026-05-28-004)
 - **Branch-guard install is *global*, not committed to this repo** — lives under `~/.claude/`. Backup at `~/.claude/settings.json.bak-pre-branch-guard-20260528-135800`.
 - **Secrets at `$HOME` (outside repo, chmod 600, not committed):** `~/bifrost/.env`, `~/pihole/pihole_password.txt`, `~/vproxy/.env`. Anthropic + OpenRouter keys in `~/bifrost/.env` must be rotated immediately — see `UA-2026-05-28-002`.
 - **Convention violation flagged:** v5 plan committed to `.omc/plans/ralplan-browser-choice.md` rather than the canonical `data/brain-data/research/v5-workstation-architecture.md`. Tracked in `UA-2026-05-28-003`.
