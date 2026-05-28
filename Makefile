@@ -80,6 +80,14 @@ submodules.sync-upstream: ## For forked/, fetch upstream and merge (filter: NAME
 submodules.status: ## Report dirty / ahead-of-tracking / detached submodules
 	@git submodule foreach --quiet 'echo "--- $$name ---"; git -C "$$toplevel/$$path" status --short --branch | head -5'
 
+# ---------- Research (Step 0 of the clone-and-research-before-fork ritual) ----------
+
+.PHONY: research.pack
+research.pack: ## Clone an upstream and pack it with repomix: URL=<github-url-or-owner/repo> [BRANCH=<branch>]
+	@if [ -z "$$URL" ]; then echo "Usage: make research.pack URL=https://github.com/<owner>/<repo> [BRANCH=<branch>]"; exit 2; fi
+	@args="$$URL"; if [ -n "$$BRANCH" ]; then args="$$args $$BRANCH"; fi; \
+	scripts/clone-and-pack.sh $$args
+
 # ---------- Wiki ----------
 
 .PHONY: wiki.ingest

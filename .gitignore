@@ -84,5 +84,13 @@ runner/.credentials*
 # into this control-plane repo as plain files before its remote/path are chosen.
 lifeos/
 
+# --- Tool/upstream clones pending fork decision ---
+# Rule: any upstream cloned for umbrella use (whether destined for repos/ as a
+# research target, or for tools/ as vendored plumbing) stays gitignored until
+# the umbrella commits to forking it. Once forked, the directory is removed
+# from this list and registered in the corresponding MANIFEST.yaml + .gitmodules.
+# See data/brain-data/research/repomix.md and docs/fork-workflow.md Step 0.
+tools/repomix/
+
 # --- ai-top reference materials live in the sibling workspace, never here ---
 ai-top/
