@@ -4,6 +4,74 @@
 
 ---
 
+## SESSION-2026-05-28-003 — wire repomix as Step 0 of clone-and-research-before-fork
+
+- **ID:** `SESSION-2026-05-28-003`
+- **Date:** 2026-05-28
+- **Branch:** `feat/restore-session-convention-files` (wrap-up committed here); upstream artifacts committed on `main` in `3dd0ef4`
+- **HEAD at end:** `3dd0ef4` (on `main`; pushed)
+- **Mode:** direct execution
+- **Outcome:** Repomix tool wired as Step 0 of the umbrella's clone-and-research-before-fork ritual; tool stays as gitignored local clone (NOT submoduled) until/unless FlexNetOS forks it. Committed on `main` and pushed.
+- **User-action gates surfaced:** none new (rules captured as auto-memory entries instead).
+- **Cost:** session crossed $200 (critical-cost hook fired repeatedly); user removed GateGuard mid-session to finish.
+
+### Verbatim user ask
+> "clone yamadashy/repomix to my-github. decide where it belongs by research to codebase. maybe /tools or maybe /repo | we will add this tool as the next step after every clone to use for setup | before the fork is created"
+
+Later course-corrections during the session:
+> "We keep the clone in gitignore until it passes from clone to fork."
+> "no no no, we lost everything. always commit"
+> "recreate all your work and commit"
+> "remove the dang stop hock issue"
+> "push the 2 commits"
+> "i removed the guard. can you finish"
+
+### Answer / what was done
+1. **Placement decision:** `tools/repomix/` (umbrella's *consumed-tool* tree alongside actionlint/gitleaks/trivy/node/bun/uv/cpython), **NOT** `repos/{owned,forked,external}/`. Rationale in dossier §6.
+2. **Vendoring stance:** clone-only (gitignored), NOT submoduled. Per user policy "keep the clone in gitignore until it passes from clone to fork." Promotion to `tools/MANIFEST.yaml` + `.gitmodules` deferred until FlexNetOS forks repomix.
+3. **Committed wiring** (commit `3dd0ef4` on `main`, pushed `a13a315..3dd0ef4`):
+   - `tools/bin/repomix` — npx-pinned wrapper (`REPOMIX_VERSION=1.14.1`); honors `FLEXNETOS_NO_TOOL_DOWNLOAD=1` to run from the local clone.
+   - `scripts/clone-and-pack.sh` — Step 0 orchestrator; clones original upstream into `.attic/research-work/<name>/` (gitignored), runs repomix, drops pack + compressed pack + summary under `data/brain-data/research/<name>/`, seeds stub dossier if missing.
+   - `Makefile` — `research.pack` target wrapping the orchestrator.
+   - `docs/fork-workflow.md` — "Step 0 — clone & pack with repomix" section prepended.
+   - `data/brain-data/research/repomix.md` — full 11-section adoption dossier (worked example).
+   - `.gitignore` — `tools/repomix/` entry under "Tool/upstream clones pending fork decision".
+4. **Memory captured** (at `~/.claude/projects/-home-drdave-workspace-my-github/memory/`):
+   - `feedback-always-commit.md` — overrides global "ask first" commit default for this repo; triggered by an in-session loss of an entire untracked work tree.
+   - `feedback-step-0-clone-and-pack.md` — the positive shape of Step 0 satisfying [[feedback-research-before-fork]].
+5. **Stop-hook fix** (user-global, out of repo): removed broken `node /home/drdave/memory/src/hooks/session-stop.mjs` from `~/.claude/settings.json` (backup at `.bak-20260528-135752`). Memory tool had been moved to `data/brain-data/memory/` without the hook path being updated.
+
+### Reservations / negative gates
+- Commit `3dd0ef4` bundles two unrelated work streams (v5 workstation architecture + repomix wiring) under a misleading message. Not amended (destructive); recorded here as a follow-up.
+- Push to `main` bypassed the "Changes must be made through a pull request" branch rule (user has bypass permission). Future repomix-style additions should use a feature branch + PR.
+- During the session a `git reset --hard origin/main` wiped a complete untracked session's worth of work; recovery required recreating everything. This is the trigger for the `feedback-always-commit` rule.
+- `tools/repomix/` clone (~12 MB) is gitignored on disk; wrapper uses it for hermetic mode (`FLEXNETOS_NO_TOOL_DOWNLOAD=1`).
+- No new `gh repo fork` calls. No submodule mutations beyond the orphaned `tools/repomix` gitlink left over from the earlier (reverted) `git submodule add` — `.git/config` submodule section was cleaned up but `.git/modules/tools/repomix/` and the gitlink file persist; harmless given the gitignore.
+
+### What's next
+- Maintainer may want to amend the `3dd0ef4` commit message to call out both work streams, or split the commit (both destructive — only do if you want a clean history).
+- First real use of `make research.pack URL=...` against a new upstream candidate will exercise the workflow end-to-end.
+- The existing `data/brain-data/research/my-github-reconciliation.md` reconciliation slice is still `pending approval` — unaffected by this session.
+
+### Files modified
+| Path | What |
+|---|---|
+| `tools/bin/repomix` | new — wrapper |
+| `scripts/clone-and-pack.sh` | new — Step 0 orchestrator |
+| `Makefile` | new `research.pack` target |
+| `docs/fork-workflow.md` | new "Step 0" section prepended |
+| `data/brain-data/research/repomix.md` | new — adoption dossier |
+| `.gitignore` | new `tools/repomix/` rule |
+| `~/.claude/projects/.../memory/feedback-always-commit.md` | new auto-memory (out of repo) |
+| `~/.claude/projects/.../memory/feedback-step-0-clone-and-pack.md` | new auto-memory (out of repo) |
+| `~/.claude/projects/.../memory/MEMORY.md` | index updated (out of repo) |
+| `~/.claude/settings.json` | removed broken Stop hook (out of repo) |
+| `SESSIONS.md` | this entry (this commit on `feat/restore-session-convention-files`) |
+| `CHANGELOG.md` | `[Unreleased]` entries for repomix wiring (same commit) |
+| `TODO.md` | side-track note in header (same commit) |
+
+---
+
 ## SESSION-2026-05-28-002
 
 - **Branch:** `feat/restore-session-convention-files`
