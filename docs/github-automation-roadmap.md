@@ -46,7 +46,7 @@ Acceptance:
 
 ### Phase 2 — Local runner lifecycle
 
-Status: partially present.
+Status: hardened in the local runner lifecycle PR.
 
 Existing surfaces:
 
@@ -59,10 +59,10 @@ Existing surfaces:
 
 Next deliverables:
 
-- [ ] Add `runner/.env.example` with labels, runner directory, scope, service mode, and dry-run defaults.
-- [ ] Add `scripts/runner-doctor.sh` or fold deeper runner checks into `scripts/github-doctor.py`.
-- [ ] Add `runner.remove` / `runner.doctor` Make targets.
-- [ ] Confirm install/register scripts refuse destructive or host-mutating actions unless explicit flags are set.
+- [x] Add `runner/.env.example` with labels, runner directory, scope, service mode, and dry-run defaults.
+- [x] Add `scripts/runner-doctor.sh` or fold deeper runner checks into `scripts/github-doctor.py`.
+- [x] Add `runner.remove` / `runner.doctor` Make targets.
+- [x] Confirm install/register scripts refuse destructive or host-mutating actions unless explicit flags are set.
 
 Acceptance:
 
