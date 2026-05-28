@@ -150,15 +150,33 @@ github.doctor: ## Read-only audit of runner/workflows/app/submodules/secrets/pol
 
 # ---------- Runner ----------
 .PHONY: runner.install
-runner.install: ## Install (or upgrade) the self-hosted runner binary
-	@runner/install.sh
+runner.install: ## Dry-run install/upgrade self-hosted runner binary (CONFIRM=1 DRY_RUN=0 to apply)
+	@args=""; \
+	if [ "$${DRY_RUN:-1}" = "0" ]; then args="$$args --execute"; else args="$$args --dry-run"; fi; \
+	runner/install.sh $$args
 
 .PHONY: runner.register
-runner.register: ## Register the runner: MODE=org|repo NAME=<reponame>
+runner.register: ## Dry-run register runner: MODE=org|repo NAME=<reponame> (CONFIRM=1 DRY_RUN=0 to apply)
 	@if [ -z "$$MODE" ]; then echo "Usage: make runner.register MODE=org  (or MODE=repo NAME=<reponame>)"; exit 2; fi
 	@args="--$$MODE"; \
 	if [ "$$MODE" = "repo" ] && [ -n "$$NAME" ]; then args="$$args $$NAME"; fi; \
+	if [ "$${DRY_RUN:-1}" = "0" ]; then args="$$args --execute"; else args="$$args --dry-run"; fi; \
 	runner/register.sh $$args
+
+.PHONY: runner.remove
+runner.remove: ## Dry-run remove runner registration/service (CONFIRM=1 DRY_RUN=0 to apply)
+	@if [ -z "$$MODE" ]; then echo "Usage: make runner.remove MODE=org  (or MODE=repo NAME=<reponame>)"; exit 2; fi
+	@args="--$$MODE"; \
+	if [ "$$MODE" = "repo" ] && [ -n "$$NAME" ]; then args="$$args $$NAME"; fi; \
+	if [ "$${DRY_RUN:-1}" = "0" ]; then args="$$args --execute"; else args="$$args --dry-run"; fi; \
+	runner/remove.sh $$args
+
+.PHONY: runner.doctor
+runner.doctor: ## Read-only local runner readiness checks
+	@args=""; \
+	if [ "$${JSON:-0}" = "1" ]; then args="$$args --json"; fi; \
+	if [ "$${STRICT:-0}" = "1" ]; then args="$$args --strict"; fi; \
+	scripts/runner-doctor.sh $$args
 
 .PHONY: runner.status
 runner.status: ## Show systemd status of the runner service(s)
