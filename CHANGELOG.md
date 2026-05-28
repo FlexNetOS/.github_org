@@ -1,31 +1,49 @@
 # CHANGELOG
 
-> Applied changes to the FlexNetOS/.github umbrella repo. Entries are dated and reference the source TODO item, research slug, or `SESSION-` ID where applicable.
-> Forward-looking work lives in `TODO.md`. Per-session logs live in `SESSIONS.md`. Deep research artifacts live in `data/brain-data/research/`.
+> Applied changes to the FlexNetOS/.github umbrella repo. Entries are dated and reference the source TODO item or research artifact where applicable.
+> Forward-looking work lives in `TODO.md`. Session wrap-ups live in `SESSIONS.md`. Deep research artifacts live in `data/brain-data/research/`.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the repo aims to adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-> **Note on release-please overlap:** the `reusable-release.yml` / release-please flow also generates a `CHANGELOG.md` (release `1.0.0` section lives on `origin/release-please--branches--main`). This hand-maintained `[Unreleased]` section is the agent/maintainer working log; when release-please cuts a version it will prepend a dated release section above `[Unreleased]`. See `UA-2026-05-28-001` in `USER.TODO.md` for the reconciliation decision the maintainer must confirm.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this repo aims to adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) once `v1.0.0` is cut (see `USER.TODO.md` step 10).
 
 ---
 
 ## [Unreleased]
 
 ### Added
-- `TODO.md` — agent-side working TODO list (separate from `USER.TODO.md`). (SESSION-2026-05-28-002)
-- `CHANGELOG.md` — this file; tracks applied changes per project convention. (SESSION-2026-05-28-002)
-- `SESSIONS.md` — per-session log with `SESSION-YYYY-MM-DD-NNN` IDs. (SESSION-2026-05-28-002)
-- `data/brain-data/research/my-github-reconciliation.md` — full ralplan consensus deliverable (iteration 3, APPROVED) covering VISION/PLAN/USER.TODO gap analysis, the `.claude` vs `Claude` directory resolution, and the 17-gap reconciliation plan. (research: my-github-reconciliation; SESSION-2026-05-28-001)
-- `USER.TODO.md` — `## Agent-flagged user actions` append-only section with `UA-2026-05-28-001` (CHANGELOG ↔ release-please reconciliation). (SESSION-2026-05-28-002)
+- `TODO.md` — working TODO list for active changes (separate from `USER.TODO.md` for human-only setup steps).
+- `CHANGELOG.md` — this file; tracks applied changes per project convention.
+- `SESSIONS.md` — session wrap-up log (plural; logs all session summaries with session IDs, reference code, and location).
+- `data/brain-data/research/my-github-reconciliation.md` — full ralplan consensus deliverable (iteration 3, APPROVED) covering VISION/PLAN/USER.TODO gap analysis, the `.claude` vs `Claude` directory resolution, and the 17-gap reconciliation plan.
+- `data/brain-data/research/ai-top-utility.md` — pre-adoption dossier (FlexNetOS-owned, no upstream). (research: 4-clone-adoption)
+- `data/brain-data/research/n8n.md` — pre-adoption dossier (already forked to `FlexNetOS/n8n`; needs `develop` branch + path normalization). (research: 4-clone-adoption)
+- `data/brain-data/research/fabro.md` — pre-adoption dossier (third-party upstream `fabro-sh/fabro`; `gh repo fork` gated by section 9). (research: 4-clone-adoption)
+- `data/brain-data/research/paperclip.md` — pre-adoption dossier (third-party upstream `paperclipai/paperclip`; `gh repo fork` gated by section 9). (research: 4-clone-adoption)
+- Cross-session memory at `~/.claude/projects/.../memory/`:
+  - `my-github-umbrella-model.md` — Model B authoritative + umbrella vision (no host-side installs, single-clone reproducibility).
+  - `fork-workflow-branch-model.md` — `main`/`master` <-> upstream, `develop` <-> FlexNetOS branch model per `docs/fork-workflow.md`.
+- Companion plan at `~/.claude/plans/sprightly-shimmying-charm.md` — the 4-clone adoption thread (Model B, Phase 0 dossier gate, research-before-fork rule).
 
 ### Changed
-- `.gitignore` — added `tools/repomix/` under "Tool/upstream clones pending fork decision" so the local repomix clone never enters the index; companion to the `feedback-always-commit` + clone-stays-gitignored policy. (SESSION-2026-05-28-003; commit `3dd0ef4`)
+- _(none yet — plan is `pending approval`, no execution authorized)_
 
 ### Removed
 - _(none yet)_
 
+### Decisions recorded (2026-05-28)
+- **Model B authoritative**: submodules live INSIDE `my-github/repos/{owned,forked,external}/`, NOT as `$HOME/_work/repos/_forks/` siblings. The doc `docs/directory-layout.md` describes the retired model and must be rewritten (queued in `TODO.md`).
+- **Rename scope = Org-only**: CODEOWNERS, branch protection, FUNDING.yml, FLEXNETOS-ENV.md only. Internal package names (`package.json:name`, `Cargo.toml:name`, Docker image refs) deliberately untouched to keep upstream sync conflict-free.
+- **Submodule `.github` overrides + caller workflows** inherit umbrella reusables via `uses: FlexNetOS/.github/.github/workflows/reusable-*.yml@main`. Switch to `@v1` once tagged.
+- **Research-before-fork is a hard rule**: per-clone dossier must exist on disk at `data/brain-data/research/<name>.md` before any `gh repo fork` runs. Codified in cross-session memory `feedback-fork-after-original-setup.md` after the ruflu/ruvector incident.
+
+### Corrections to prior work (2026-05-28)
+- `data/brain-data/research/my-github-reconciliation.md` Reservation 2 — `ai-top-utility` was listed as "likely UNSAFE-MISMATCH". Verified origin is `https://github.com/FlexNetOS/ai-top-utility.git` (FlexNetOS-owned, no upstream remote). Correction recorded in `data/brain-data/research/ai-top-utility.md` cross-reference block, in the reconciliation doc Reservation 2 note, and in `TODO.md` Reservations section.
+
 ### Notes
-- Convention established 2026-05-28: research/plans → `data/brain-data/research/`; root carries `TODO.md` (agent), `USER.TODO.md` (human; agent appends only to `## Agent-flagged user actions`), `CHANGELOG.md` (applied), `SESSIONS.md` (per-session log). The four files were lost when left untracked and wiped by a routine branch operation; this restoration commits them so the loss cannot recur (see memory `feedback-always-commit`).
+- Convention established on 2026-05-28 per user instruction: research/plans go in `data/brain-data/research/`; root carries `TODO.md` (todo), `CHANGELOG.md` (applied), `SESSIONS.md` (session wrap-up). Prior `.omc/plans/my-github-reconciliation.md` was moved to the canonical research location.
+- **No `gh repo fork` calls have been made.** All forks remain gated behind dossier section 9 review + explicit per-clone go-ahead.
+- **No submodule conversions have been performed.** All 4 clones still sit flat at `repos/<name>/` (neither documented place).
+- **No `repos/MANIFEST.yaml` entries have been added** for the 4 adoptees.
+- **2026-05-28 (restore):** All root tracking files (`TODO.md`, `CHANGELOG.md`, `SESSIONS.md`) and the 4 pre-adoption dossiers + reconciliation plan were accidentally removed and recreated on branch `feat/restore-session-wrapup-files`. They had never been committed (untracked working-tree files), confirming the `feedback-always-commit` rule. This restore commits them so they cannot be lost to a routine `git reset` again.
 
 ---
 
@@ -33,5 +51,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **Date format:** ISO 8601 (YYYY-MM-DD).
 - **Sections per release:** Added / Changed / Deprecated / Removed / Fixed / Security (Keep a Changelog standard).
-- **Cross-references:** implement a `TODO.md` item → `(TODO: <item>)`; implement a research recommendation → `(research: <slug>)`; tie to a session → `(SESSION-YYYY-MM-DD-NNN)`; satisfy a human-action item → `(unblocks: UA-YYYY-MM-DD-NNN)`.
-- **Pre-first-cut:** entries land under `[Unreleased]`. release-please prepends dated release sections above it.
+- **Cross-references:** When an entry implements a `TODO.md` item, include a brief `(TODO: <item-name>)` tag. When it implements a research recommendation, include `(research: <slug>)`.
+- **Pre-`v1.0.0`:** all entries land under `[Unreleased]`. After `v1.0.0` is cut per USER.TODO step 10, cut a dated release header above `[Unreleased]`.

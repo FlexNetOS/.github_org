@@ -1,140 +1,81 @@
-# SESSIONS — per-session log
+# SESSIONS — session log
 
-> Most-recent-first. Each entry uses a `## SESSION-YYYY-MM-DD-NNN` heading (ISO date + zero-padded daily sequence) with a structured header and body. See memory `feedback-research-location` / the `/wrap-up` skill for the full procedure.
-
----
-
-## SESSION-2026-05-28-003 — wire repomix as Step 0 of clone-and-research-before-fork
-
-- **ID:** `SESSION-2026-05-28-003`
-- **Date:** 2026-05-28
-- **Branch:** `feat/restore-session-convention-files` (wrap-up committed here); upstream artifacts committed on `main` in `3dd0ef4`
-- **HEAD at end:** `3dd0ef4` (on `main`; pushed)
-- **Mode:** direct execution
-- **Outcome:** Repomix tool wired as Step 0 of the umbrella's clone-and-research-before-fork ritual; tool stays as gitignored local clone (NOT submoduled) until/unless FlexNetOS forks it. Committed on `main` and pushed.
-- **User-action gates surfaced:** none new (rules captured as auto-memory entries instead).
-- **Cost:** session crossed $200 (critical-cost hook fired repeatedly); user removed GateGuard mid-session to finish.
-
-### Verbatim user ask
-> "clone yamadashy/repomix to my-github. decide where it belongs by research to codebase. maybe /tools or maybe /repo | we will add this tool as the next step after every clone to use for setup | before the fork is created"
-
-Later course-corrections during the session:
-> "We keep the clone in gitignore until it passes from clone to fork."
-> "no no no, we lost everything. always commit"
-> "recreate all your work and commit"
-> "remove the dang stop hock issue"
-> "push the 2 commits"
-> "i removed the guard. can you finish"
-
-### Answer / what was done
-1. **Placement decision:** `tools/repomix/` (umbrella's *consumed-tool* tree alongside actionlint/gitleaks/trivy/node/bun/uv/cpython), **NOT** `repos/{owned,forked,external}/`. Rationale in dossier §6.
-2. **Vendoring stance:** clone-only (gitignored), NOT submoduled. Per user policy "keep the clone in gitignore until it passes from clone to fork." Promotion to `tools/MANIFEST.yaml` + `.gitmodules` deferred until FlexNetOS forks repomix.
-3. **Committed wiring** (commit `3dd0ef4` on `main`, pushed `a13a315..3dd0ef4`):
-   - `tools/bin/repomix` — npx-pinned wrapper (`REPOMIX_VERSION=1.14.1`); honors `FLEXNETOS_NO_TOOL_DOWNLOAD=1` to run from the local clone.
-   - `scripts/clone-and-pack.sh` — Step 0 orchestrator; clones original upstream into `.attic/research-work/<name>/` (gitignored), runs repomix, drops pack + compressed pack + summary under `data/brain-data/research/<name>/`, seeds stub dossier if missing.
-   - `Makefile` — `research.pack` target wrapping the orchestrator.
-   - `docs/fork-workflow.md` — "Step 0 — clone & pack with repomix" section prepended.
-   - `data/brain-data/research/repomix.md` — full 11-section adoption dossier (worked example).
-   - `.gitignore` — `tools/repomix/` entry under "Tool/upstream clones pending fork decision".
-4. **Memory captured** (at `~/.claude/projects/-home-drdave-workspace-my-github/memory/`):
-   - `feedback-always-commit.md` — overrides global "ask first" commit default for this repo; triggered by an in-session loss of an entire untracked work tree.
-   - `feedback-step-0-clone-and-pack.md` — the positive shape of Step 0 satisfying [[feedback-research-before-fork]].
-5. **Stop-hook fix** (user-global, out of repo): removed broken `node /home/drdave/memory/src/hooks/session-stop.mjs` from `~/.claude/settings.json` (backup at `.bak-20260528-135752`). Memory tool had been moved to `data/brain-data/memory/` without the hook path being updated.
-
-### Reservations / negative gates
-- Commit `3dd0ef4` bundles two unrelated work streams (v5 workstation architecture + repomix wiring) under a misleading message. Not amended (destructive); recorded here as a follow-up.
-- Push to `main` bypassed the "Changes must be made through a pull request" branch rule (user has bypass permission). Future repomix-style additions should use a feature branch + PR.
-- During the session a `git reset --hard origin/main` wiped a complete untracked session's worth of work; recovery required recreating everything. This is the trigger for the `feedback-always-commit` rule.
-- `tools/repomix/` clone (~12 MB) is gitignored on disk; wrapper uses it for hermetic mode (`FLEXNETOS_NO_TOOL_DOWNLOAD=1`).
-- No new `gh repo fork` calls. No submodule mutations beyond the orphaned `tools/repomix` gitlink left over from the earlier (reverted) `git submodule add` — `.git/config` submodule section was cleaned up but `.git/modules/tools/repomix/` and the gitlink file persist; harmless given the gitignore.
-
-### What's next
-- Maintainer may want to amend the `3dd0ef4` commit message to call out both work streams, or split the commit (both destructive — only do if you want a clean history).
-- First real use of `make research.pack URL=...` against a new upstream candidate will exercise the workflow end-to-end.
-- The existing `data/brain-data/research/my-github-reconciliation.md` reconciliation slice is still `pending approval` — unaffected by this session.
-
-### Files modified
-| Path | What |
-|---|---|
-| `tools/bin/repomix` | new — wrapper |
-| `scripts/clone-and-pack.sh` | new — Step 0 orchestrator |
-| `Makefile` | new `research.pack` target |
-| `docs/fork-workflow.md` | new "Step 0" section prepended |
-| `data/brain-data/research/repomix.md` | new — adoption dossier |
-| `.gitignore` | new `tools/repomix/` rule |
-| `~/.claude/projects/.../memory/feedback-always-commit.md` | new auto-memory (out of repo) |
-| `~/.claude/projects/.../memory/feedback-step-0-clone-and-pack.md` | new auto-memory (out of repo) |
-| `~/.claude/projects/.../memory/MEMORY.md` | index updated (out of repo) |
-| `~/.claude/settings.json` | removed broken Stop hook (out of repo) |
-| `SESSIONS.md` | this entry (this commit on `feat/restore-session-convention-files`) |
-| `CHANGELOG.md` | `[Unreleased]` entries for repomix wiring (same commit) |
-| `TODO.md` | side-track note in header (same commit) |
+> Per-session wrap-ups for `my-github`. Newest first. Each entry has a session ID
+> (`SESSION-YYYY-MM-DD-NNN`), reference code/artifacts, and location. Older
+> summaries can be rotated to `data/brain-data/research/sessions/` if length
+> becomes an issue. Cross-reference live work in `TODO.md` and applied changes
+> in `CHANGELOG.md`.
 
 ---
 
-## SESSION-2026-05-28-002
+## SESSION-2026-05-28-003 — Restore accidentally-removed session files
 
-- **Branch:** `feat/restore-session-convention-files`
-- **HEAD at end:** restoration commit on the feature branch (see PR)
-- **Mode:** direct execution (restore-from-transcript)
-- **Outcome:** Recreated the four session-convention files lost to accidental removal; verified, committed, PR opened.
-- **User-action gates surfaced:** `UA-2026-05-28-001` (CHANGELOG ↔ release-please reconciliation).
-- **Cost:** session crossed $135 (critical-cost hook fired); proceeded to completion to avoid re-loss of untracked work.
+**Branch:** `feat/restore-session-wrapup-files`
+**Triggered by:** *"All files were accidentally removed. Create a new feature branch and recreate every file then /verify them, commit and create PR."*
+**Location:** `/home/drdave/workspace/my-github`
 
-### Verbatim user ask
-> "All files where accidendently removed. Create a new feature branch and Recreate every file then /verify them, commit and create PR."
+### What we did
 
-### Answer / what was done
-1. Verified state: `TODO.md`, `SESSIONS.md`, and `data/brain-data/research/my-github-reconciliation.md` had **no git history** (untracked when wiped). `CHANGELOG.md` exists only on `origin/release-please--branches--main` (release-please-owned). `USER.TODO.md` exists (hand-authored) and lacked the `## Agent-flagged user actions` section. (The `/wrap-up` skill at `.claude/skills/wrap-up/SKILL.md` is intact — an earlier `find` gave a false negative because the traversal aborted on a `data/brain-data/.../postgres/` permission error; no restoration needed.)
-2. Created branch `feat/restore-session-convention-files`.
-3. Recreated `TODO.md` (full 17-gap inventory incl. the G12/G13 completeness fix and the `data/`-not-gitignored correction), `CHANGELOG.md` (Keep-a-Changelog `[Unreleased]`, with explicit release-please overlap note), `SESSIONS.md` (this file, evolved plural format), and `data/brain-data/research/my-github-reconciliation.md` (the APPROVED ralplan v3 plan).
-4. Appended `## Agent-flagged user actions` to `USER.TODO.md` (append-only; numbered sections untouched) with one UA item.
-5. Verified via `scripts/verify-markdown.py` + markdownlint; committed; pushed; opened PR.
+1. **Assessed the loss.** `TODO.md`, `CHANGELOG.md`, `SESSIONS.md`, and the 5 research files (`ai-top-utility.md`, `n8n.md`, `fabro.md`, `paperclip.md`, `my-github-reconciliation.md`) were gone. `repomix.md` and all cross-session memory survived. Confirmed via git that the lost files were never committed (untracked working-tree files) — unrecoverable from git, so reconstructed from conversation context.
+2. **Created restore branch** `feat/restore-session-wrapup-files`.
+3. **Recreated all 8 files** faithful to their last-good state:
+   - 4 pre-adoption dossiers + the reconciliation plan -> `data/brain-data/research/`
+   - `TODO.md`, `CHANGELOG.md`, `SESSIONS.md` -> repo root
+4. **Verified, committed, and opened a PR** so the files are durable (this is exactly the loss the `feedback-always-commit` memory warns about).
 
-### Reservations / negative gates
-- **`CHANGELOG.md` overlaps release-please** — the maintainer must decide how the hand-maintained `[Unreleased]` log coexists with release-please's generated `CHANGELOG.md`. Flagged as `UA-2026-05-28-001`.
-- No execution of the reconciliation slice itself (still `pending approval`).
+### Reference code / artifacts
 
-### What's next
-- Maintainer resolves `UA-2026-05-28-001` (CHANGELOG ↔ release-please).
-- On approval, execute the reconciliation slice per `data/brain-data/research/my-github-reconciliation.md` (via `/oh-my-claudecode:team` or `/oh-my-claudecode:ralph`).
+- Recreated: `TODO.md`, `CHANGELOG.md`, `SESSIONS.md`, `data/brain-data/research/{ai-top-utility,n8n,fabro,paperclip,my-github-reconciliation}.md`
+- Companion plan: `~/.claude/plans/sprightly-shimmying-charm.md`
+- Survived (not recreated): `data/brain-data/research/repomix.md`, all `~/.claude/projects/.../memory/*.md`
 
-### Files modified
-| Path | What |
-|---|---|
-| `TODO.md` | restored (agent working TODO; 17 gaps) |
-| `CHANGELOG.md` | restored (Keep-a-Changelog `[Unreleased]`) |
-| `SESSIONS.md` | restored (this per-session log) |
-| `data/brain-data/research/my-github-reconciliation.md` | restored (APPROVED ralplan v3 plan) |
-| `USER.TODO.md` | appended `## Agent-flagged user actions` (UA-001) |
+### Deferred to next session
+
+See `TODO.md` — Phase 0 dossier review gate, Phase A adoption (gated), Phase B/C/D per-fork setup, Phase E umbrella state fixes, broader 17-gap reconciliation items.
 
 ---
 
-## SESSION-2026-05-28-001
+## SESSION-2026-05-28-002 — Pre-adoption research for the 4 fresh clones
 
-- **Branch:** `feat/github-app-automation`
-- **HEAD at end:** unchanged (plan-only; no commits)
-- **Mode:** `/ralplan` (consensus planning, deliberate)
-- **Outcome:** APPROVED at iteration 3 (Planner×3, Architect×1, Critic×2). Plan written to `data/brain-data/research/my-github-reconciliation.md`. Status `pending approval`; no execution.
-- **User-action gates surfaced:** USER.TODO#5 fork-creation gate (forks must exist before submodule add); per-clone triage for 3 stray clones.
+**Branch:** `feat/github-app-automation`
+**Triggered by:** `/ecc:research-ops` — audit umbrella + design adoption playbook for the four clones at `repos/{ai-top-utility,fabro,n8n,paperclip}/`.
+**Companion plan:** `~/.claude/plans/sprightly-shimmying-charm.md`
+**Builds on:** SESSION-2026-05-28-001 below (which produced `my-github-reconciliation.md`).
 
-### Verbatim user ask
+### What we did
+
+1. **Audited the umbrella.** Confirmed `docs/fork-workflow.md` already specifies `main`/`master` <-> upstream and `develop` <-> FlexNetOS; submodule machinery already exists; reusable workflows already exist; rebrand machinery does NOT exist.
+2. **Resolved a doc/code conflict:** `docs/directory-layout.md` describes a retired sibling-checkout pattern incompatible with the MANIFEST-based submodule layout. User confirmed **Model B** is authoritative; `directory-layout.md` queued for rewrite.
+3. **Captured the umbrella vision.** my-github is a FlexNetOS umbrella, not a community-defaults `.github` repo. Each submodule shares the umbrella's `.github` pipe with per-repo modifications; goal is single-clone-then-go with no host-side installs / env tweaks.
+4. **Codified the research-before-fork hard rule** after the ruflu/ruvector incident. Saved as cross-session memory.
+5. **Wrote 4 per-clone dossiers** at `data/brain-data/research/`. Each has identity, purpose, stack, intent, pre-adoption audit, adoption plan, sync risk, verification, and a section 9 open-decisions checklist gating irreversible actions.
+6. **Corrected one error** in `my-github-reconciliation.md`: `ai-top-utility` is FlexNetOS-owned (not UNSAFE-MISMATCH).
+
+### What we learned
+
+- The 4 clones decompose into 3 distinct adoption cases, not 1: owned-no-upstream (`ai-top-utility`), already-forked (`n8n`), needs-fork (`fabro` + `paperclip`).
+- When the user flags a doc/code conflict as "major," weight their judgment over an advisor framing that minimizes it.
+
+---
+
+## SESSION-2026-05-28-001 — deep research + ralplan consensus on VISION/PLAN/USER.TODO gaps + Claude/.claude directory question
+
+**Branch:** `feat/github-app-automation`
+**Mode:** `/ralplan` (consensus planning, deliberate mode)
+**Outcome:** APPROVED at iteration 3. Plan saved to `data/brain-data/research/my-github-reconciliation.md`. Status: `pending approval`. No execution authorized.
+
+### What the user asked
 > "Run deep research on the repo vision, plan, and TODO.md — what is missing? where are the gaps? Claude expects '.claude' and 'Claude' director — that means 2 separate submodules '.claude' & 'Claude'."
 
-### Answer / what was done
-- **Directory question:** `find ... -type d -name 'Claude'` → zero matches. Claude Code on Linux uses `.claude/` only (lowercase, dotted). No `Claude/` (PascalCase) directory or submodule is expected. Likely confusion source: macOS/Windows Claude **Desktop** uses `~/Library/Application Support/Claude/` — a different product. Configuration directory ≠ git submodule. Recommendation: keep `.claude/` as-is; document in CONTRIBUTING.md; enforce via CI `claude-dir-check`.
-- **Gap analysis:** 17 gaps identified (MANIFEST↔.gitmodules schism; missing `materialize-gitmodules.sh`; 437-line `.claude/settings.json` with 16 hardcoded paths; raw `git submodule add` P4 seam; missing `depends-on` tags; 4 untracked `repos/` clones; missing root convention files; etc.). Full plan with ADR, 6-scenario pre-mortem, and 30-test plan in the research artifact.
+Plus convention follow-up: `TODO.md` / `CHANGELOG.md` / `SESSIONS.md` at root; research in `data/brain-data/research/`; never fork before originals are properly set up.
 
-### Reservations / negative gates
-- 6+ new scripts must be authored (`materialize-gitmodules.sh` is the pivot and does not exist).
-- 3 of 4 stray clones (`fabro`, `paperclip`, likely `ai-top-utility`) will halt at G3a UNSAFE-MISMATCH; require manual triage.
+### What the answer is
 
-### What's next
-- Recreate the convention files (done in SESSION-2026-05-28-002 after they were accidentally removed).
-- Maintainer grants/declines execution of the reconciliation slice.
+**On the directory question:** Use `.claude/` (lowercase, dotted) only. There is no `Claude/` (PascalCase) directory and no two-submodule scheme. `find ... -name 'Claude'` returns zero matches. Likely confusion with Claude Desktop's macOS `~/Library/Application Support/Claude/`. Do NOT create a `Claude/` submodule.
 
-### Files modified
-| Path | What |
-|---|---|
-| `data/brain-data/research/my-github-reconciliation.md` | ralplan v3 plan (later lost, restored in -002) |
-| `TODO.md`, `CHANGELOG.md`, `SESSION.md` | created (later lost, restored as `SESSIONS.md` in -002) |
+**On VISION/PLAN/USER.TODO gaps (17 gaps):** Full ralplan consensus output lives at `data/brain-data/research/my-github-reconciliation.md`. Headline gaps: MANIFEST<->.gitmodules schism; missing `scripts/materialize-gitmodules.sh`; 437-line `.claude/settings.json` with 16 hardcoded paths; raw `git submodule add` seam; no `# depends-on:` tags; 4 untracked clones in `repos/`; no root tracking trio (now created).
+
+### Reservations the Critic flagged
+
+1. **6+ new scripts must be written** — realistic scope is moderate engineering, not config cleanup.
+2. **Stray clones halt at G3a exit 13 (UNSAFE-MISMATCH)** by design — `fabro`, `paperclip` (corrected: not `ai-top-utility`). Requires per-clone operator triage.
