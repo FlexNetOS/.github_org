@@ -465,8 +465,6 @@ Merge PR #29. Then deferred follow-ups (documented in PRD-0001 milestones): cros
 |---|---|
 | `.github/workflows/promote-develop-to-main.yml` | New auto-promote workflow (develop→main, rebase merge) |
 | `.claude/skills/install-github-app/SKILL.md` | New Phase 4 GitHub App install skill (commit `a856aca`) |
-
----
 | `architecture/README.md` | Lifecycle map, routing table, PRD/ADR registry |
 | `architecture/prd/PRD-0001-architecture-framework.md` | PRD (via ecc:plan-prd) |
 | `architecture/adr/ADR-0001-architecture-artifact-homes.md` | ADR (via ecc:architecture-decision-records) |
