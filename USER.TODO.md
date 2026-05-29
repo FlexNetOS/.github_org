@@ -509,7 +509,7 @@ feature branch but should not be merged to `main` without picking one of the abo
 
 ### UA-2026-05-29-001 — Fork nilbuild/slim to FlexNetOS org
 
-- **Surfaced by:** `SESSION-2026-05-29` (clone-setup for nilbuild/slim)
+- **Surfaced by:** `SESSION-2026-05-29-003` (clone-setup for nilbuild/slim)
 - **Blocks:** `network/slim` submodule registration (`.gitmodules` + `make submodules.add`); MANIFEST `url` pointing to FlexNetOS fork
 - **Why:** my-github rules require a FlexNetOS fork before a repo can be tracked as a submodule. Clone health verified 2026-05-29 (`go build` + `go test ./...` all PASS at HEAD `9c07a08`).
 - **What to do:**
@@ -533,7 +533,7 @@ feature branch but should not be merged to `main` without picking one of the abo
 
 ### UA-2026-05-29-002 — Create slim.sh free-tier account and login
 
-- **Surfaced by:** `SESSION-2026-05-29` (clone-setup for nilbuild/slim)
+- **Surfaced by:** `SESSION-2026-05-29-003` (clone-setup for nilbuild/slim)
 - **Blocks:** `slim share` (public tunnels) and `slim domain` commands
 - **Why:** Cloud tunnel relay (`wss://app.slim.sh/tunnel`) requires OAuth authentication. Agent cannot perform browser OAuth.
 - **What to do:**

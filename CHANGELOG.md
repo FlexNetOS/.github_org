@@ -43,7 +43,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `README.md` — added Repo-navigation table + Phase-6 Vaultwarden operational gate. (SESSION-2026-05-28-005; research: G13)
 - `Makefile` — added the reconciliation-tooling target block. (SESSION-2026-05-28-005)
 
+### Added (2026-05-29)
+- `data/brain-data/research/slim.md` — full pre-adoption dossier for `nilbuild/slim`: identity, purpose, stack, license (PolyForm Shield 1.0.0 — non-compete noted), §10 decisions resolved, §11 decision log filled. Phase 1-3 verified: `go build` + `go test ./...` PASS at HEAD `9c07a08`. (SESSION-2026-05-29-003; research: slim)
+- `data/brain-data/research/slim/` — repomix pack (full + compressed) + summary for `nilbuild/slim`. (SESSION-2026-05-29-003)
+- `repos/MANIFEST.yaml` — new `NETWORK` section; `network/slim` entry (forked, pending UA-2026-05-29-001). (SESSION-2026-05-29-003)
+- `network/slim/.mise.toml` — pins Go 1.25.10 for the slim clone; committed to inner repo. (SESSION-2026-05-29-003)
+- HTTPS local dev domains live via slim proxy: `https://ollama.test` (11434), `https://openwebui.test` (8080), `https://gitnexus.test` (4747), `https://firecrawl.test` (3002). All return HTTP 200. (SESSION-2026-05-29-003)
+
 ### Changed (2026-05-29)
+- `network/slim/internal/proxy/handler.go` — **fix:** removed `pr.Out.Host = pr.In.Host` in the reverse-proxy `Rewrite` func; outbound requests now use `Host: localhost:PORT` so backends that enforce Host-header security (Ollama, etc.) accept proxied requests. Committed to inner repo. (SESSION-2026-05-29-003)
 - `.claude/skills/clone-setup/SKILL.md` — **fix:** added `HARD RULES` section and `Idempotency` decision table to prevent false-positive health detection on re-runs; script's `✅ Step 0 complete` is now documented as "pack available" not "healthy"; fork gate overrides script output. (SESSION-2026-05-29-001)
 - `.claude/skills/clone-setup/SKILL.md` — **feat:** added `Setup philosophy` section: (1) local-host-only free tier over paid cloud (service substitution table + docker-compose-first heuristic), (2) tooling preference order (Rust/cargo → bunx → mise → direnv), (3) always full-feature dev setup (never `--production`/`--slim`). (SESSION-2026-05-29-001)
 

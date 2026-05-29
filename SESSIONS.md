@@ -8,6 +8,72 @@
 
 ---
 
+## SESSION-2026-05-29-003 — slim clone-setup complete; local HTTPS proxy live for all services
+
+- **ID:** `SESSION-2026-05-29-003`
+- **Date:** 2026-05-29
+- **Branch:** `feat/session-2026-05-29-002`
+- **HEAD at end:** `9b08044`
+- **Mode:** `/clone-setup` → `/oh-my-claudecode:verify` → manual proxy fix
+- **Outcome:** slim dossier written + health verified; HTTPS proxy live for ollama/openwebui/gitnexus/firecrawl; slim proxy host-header bug fixed; fork gated on UA-2026-05-29-001
+- **User-action gates surfaced:** `UA-2026-05-29-001`, `UA-2026-05-29-002`
+- **Cost:** ~$18 (multi-phase: clone-setup + port wiring + proxy debugging)
+
+### What the user asked
+> `/clone-setup <nilbuild/slim> (re-clone or fresh clone to /home/drdave/workspace/my-github/network/slim | recently user renamed from kamranahmedse to nilbuild)`
+
+Followed by §10 decision resolution, then `/oh-my-claudecode:verify by wiring up all current local host ports to test`, then `fix the ollama issue while you are on top of it`.
+
+### What the answer is
+- **slim dossier:** `data/brain-data/research/slim.md` — full Phase 1-3. Critical finding: **PolyForm Shield 1.0.0** license (non-compete clause). User confirmed personal/internal use only. Build + all tests pass (Go 1.25.10). go.mod still uses old `kamranahmedse` module path post-rename.
+- **Local HTTPS proxy:** Four `.test` domains live — `ollama.test`, `openwebui.test`, `gitnexus.test`, `firecrawl.test` — all HTTPS 200 through slim.
+- **Proxy fix:** slim's `handler.go` forwarded `Host: ollama.test` to backends; removed the override so outbound uses `Host: localhost:PORT`. Committed to inner repo.
+
+### What was actually done this session
+1. Ran `make research.pack URL=nilbuild/slim` → pack at `data/brain-data/research/slim/`
+2. Read compressed pack, `go.mod`, `LICENSE`, `internal/config/paths.go`, `internal/auth/auth.go`, `internal/tunnel/client.go`, `internal/setup/setup.go`, `internal/cert/trust_linux.go` — full stack analysis
+3. Wrote complete dossier at `data/brain-data/research/slim.md` (§1–§12, 0 TODOs)
+4. Installed Go 1.25.10 via `mise install go@1.25.10`; built + tested from both `.attic/research-work/slim` and `network/slim` — all PASS
+5. User resolved all §10 decisions; recorded in §11 Decision Log
+6. Created `network/slim/.mise.toml` (Go 1.25.10 pin); updated `repos/MANIFEST.yaml` (NETWORK section); appended UA-2026-05-29-001 + UA-2026-05-29-002 to `USER.TODO.md`; committed slim research
+7. Probed all localhost ports; identified Ollama (11434), Firecrawl (3002), memory-mesh GitNexus (4747), Open WebUI (8080) via curl + ps + docker ps
+8. Built slim, installed to `/usr/local/bin/slim`; ran first-time CA setup + port forwarding (80→10080/443→10443); wired all four domains
+9. Debugged Ollama 403: confirmed root cause (`Host: ollama.test` rejected by Ollama DNS-rebinding protection); patched `network/slim/internal/proxy/handler.go`; rebuilt + reinstalled slim
+10. All four domains verified HTTPS 200; Ollama API `/api/version` returns `{"version":"0.24.0"}`
+
+### Reservations / risks
+- **No `gh repo fork nilbuild/slim --org FlexNetOS`** was run — gated on UA-2026-05-29-001
+- **No push to origin** from `network/slim` inner repo — fork doesn't exist yet
+- `OLLAMA_ORIGINS=*` left in `/etc/environment` and `/etc/systemd/system/snap.ollama.listener.service.d/origins.conf` — harmless residue; cleanup TODO added
+- PolyForm Shield 1.0.0 license: user confirmed personal use only; recorded in §11
+
+### User-action gates
+- `UA-2026-05-29-001` — fork nilbuild/slim to FlexNetOS org, update remote, create develop branch, register submodule
+- `UA-2026-05-29-002` — run `slim login` to create free slim.sh account
+
+### What's next
+Run UA-2026-05-29-001 once `gh` auth is ready, then update MANIFEST url and run `make submodules.add`. Consider submitting the host-header proxy fix upstream to nilbuild/slim.
+
+### Files created/modified this session
+
+| Path | What |
+|---|---|
+| `data/brain-data/research/slim.md` | Full pre-adoption dossier (Phases 1-3, §10 resolved, §11 filled) |
+| `data/brain-data/research/slim/repomix-pack.xml` | Full source pack |
+| `data/brain-data/research/slim/repomix-pack.compressed.xml` | Compressed pack |
+| `data/brain-data/research/slim/repomix-summary.md` | File counts, HEAD, language breakdown |
+| `repos/MANIFEST.yaml` | Added NETWORK section + `network/slim` entry |
+| `USER.TODO.md` | Appended UA-2026-05-29-001 (fork) + UA-2026-05-29-002 (slim login) |
+| `TODO.md` | Added `network/ tooling (slim)` section; bumped Last updated |
+| `CHANGELOG.md` | Added slim research + HTTPS domains + proxy fix entries |
+| `network/slim/.mise.toml` | Go 1.25.10 pin (committed to inner repo) |
+| `network/slim/internal/proxy/handler.go` | Host-header proxy fix (committed to inner repo) |
+| `/etc/systemd/system/snap.ollama.listener.service.d/origins.conf` | OLLAMA_ORIGINS drop-in (system, untracked) |
+| `/etc/environment` | OLLAMA_ORIGINS=* appended (system, untracked — cleanup TODO added) |
+| `/usr/local/bin/slim` | Installed slim binary (system, untracked) |
+
+---
+
 ## SESSION-2026-05-29-002 — wrap-up skill: add commit-all + push + PR to step 7
 
 - **ID:** `SESSION-2026-05-29-002`
