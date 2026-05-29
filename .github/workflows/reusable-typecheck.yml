@@ -80,19 +80,23 @@ jobs:
 
       - name: Typecheck
         shell: bash
+        env:
+          LANGUAGE: ${{ inputs.language }}
+          STRICT_INPUT: ${{ inputs.strict }}
+          TSCONFIG_PATH: ${{ inputs.tsconfig-path }}
         run: |
           if jq -e '.scripts.typecheck' package.json >/dev/null 2>&1; then
-            if [[ "${{ inputs.language }}" == "bun" ]]; then
+            if [[ "$LANGUAGE" == "bun" ]]; then
               bun run typecheck
             else
               npm run typecheck
             fi
           elif [[ -f node_modules/.bin/tsc ]]; then
             STRICT_FLAG=""
-            if [[ "${{ inputs.strict }}" == "true" ]]; then
+            if [[ "$STRICT_INPUT" == "true" ]]; then
               STRICT_FLAG="--strict"
             fi
-            node_modules/.bin/tsc --noEmit --project "${{ inputs.tsconfig-path }}" $STRICT_FLAG
+            node_modules/.bin/tsc --noEmit --project "$TSCONFIG_PATH" $STRICT_FLAG
           else
             echo "No 'typecheck' script in package.json and no local tsc found." >&2
             echo "Add typescript as a devDependency or define a 'typecheck' script." >&2
