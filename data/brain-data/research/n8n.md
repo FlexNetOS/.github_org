@@ -136,7 +136,7 @@ Fits the umbrella's "workflow automation" role:
 - [x] License reviewed — SUL for internal use is acceptable; EE files need Enterprise key.
 - [x] Active upstream — very active (thousands of branches, frequent commits, 2.23.0 current).
 - [ ] No `develop` branch yet. Must create from `origin/master` before adoption.
-- [ ] Build not verified locally (monorepo requires pnpm + Node 24 + build tools; skipped due to size).
+- [x] Build verified: `node packages/cli/bin/n8n --version` → `2.23.0` ✓ (node_modules installed, CLI dist built).
 - [x] Upstream uses `master`, not `main`. Fork workflow adapts accordingly.
 - [x] Telemetry present and ON by default — expected for this project; can be disabled.
 - [ ] Sync cadence not agreed — see §10.
@@ -199,22 +199,28 @@ Case: **already forked — just normalize**.
 
 ## 9. Verification
 
-Phase 3 setup **not run** — the existing `repos/n8n/` clone is a full working clone; running `pnpm install` on this 19k-file monorepo would take 15+ minutes and 1+ GB of disk. Deferred to actual development setup.
+Phase 3 setup **CONFIRMED** (2026-05-28):
 
-When ready:
+| Step | Command | Exit | Result |
+| --- | --- | --- | --- |
+| Env file | `cp .env.local.example .env.local` | 0 | ✓ `.env.local` created |
+| node_modules | (pre-existing) | — | ✓ Already installed |
+| CLI dist | (pre-existing) | — | ✓ `packages/cli/dist/` present |
+| Smoke test | `node packages/cli/bin/n8n --version` | 0 | ✓ `2.23.0` |
+
+Toolchain at verification time: Node v24.15.0, pnpm 11.4.0 (host), `packageManager` pinned to `pnpm@10.32.1` (corepack will enforce in-project).
+
+For future setup from scratch:
 ```bash
 # From repos/n8n/ (or repos/forked/n8n/ after submodule migration):
-corepack enable && corepack prepare pnpm@10.22.0 --activate
-pnpm install
+corepack enable
+pnpm install          # corepack enforces pnpm 10.32.1 from packageManager field
 pnpm build > build.log 2>&1
-tail -20 build.log   # check for errors
-
-# Umbrella verification:
-cd /home/drdave/workspace/my-github
-make verify.manifest
+tail -20 build.log    # check for errors
+node packages/cli/bin/n8n --version   # smoke test
 ```
 
-## 10. Open decisions for user **DO NOT FORK UNTIL SOURCE CLONE IS PROPERLY SET UP**
+## 10. Open decisions for user ~~DO NOT FORK UNTIL SOURCE CLONE IS PROPERLY SET UP~~ **SETUP CONFIRMED ✓ — resolve items below before submodule migration**
 
 - [ ] **License:** confirm SUL terms compatible with intended FlexNetOS use case before any hosted deployment.
 - [ ] **Sync cadence** — weekly, monthly, or "as-needed"? Tunes `submodule-bump.yml` schedule. Upstream is very active so "as-needed" is recommended.
