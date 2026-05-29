@@ -129,7 +129,7 @@ gpg --full-generate-key
 gpg --list-secret-keys --keyid-format LONG
 # Note the long key fingerprint — the 40-char string under `sec`.
 
-echo "<40-CHAR-FINGERPRINT>" > /home/drdave/_work/repos/my-github/secrets/.gpg-id
+echo "<40-CHAR-FINGERPRINT>" > /home/drdave/workspace/my-github/secrets/.gpg-id
 ```
 
 ### Runner key (separate — never reuse the personal one)
@@ -145,13 +145,13 @@ gpg --full-generate-key
 gpg --list-secret-keys --keyid-format LONG
 # Note the runner fingerprint.
 
-echo "<RUNNER-40-CHAR-FINGERPRINT>" >> /home/drdave/_work/repos/my-github/secrets/.gpg-id.runner
+echo "<RUNNER-40-CHAR-FINGERPRINT>" >> /home/drdave/workspace/my-github/secrets/.gpg-id.runner
 ```
 
 ### Initialize the pass store under both keys
 
 ```bash
-cd /home/drdave/_work/repos/my-github
+cd /home/drdave/workspace/my-github
 export PASSWORD_STORE_DIR="$PWD/secrets/store"
 pass init "$(cat secrets/.gpg-id)"
 pass init -p runner "$(cat secrets/.gpg-id) $(cat secrets/.gpg-id.runner)"
