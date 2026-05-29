@@ -27,6 +27,15 @@ Python and shell scripts implementing the real logic behind `make` targets. The 
 | `org-bootstrap.sh` | GitHub org bootstrap (sets up teams, branch protection, etc.) |
 | `github-app-token-smoke.py` | Smoke-tests GitHub App token generation |
 | `submodule-add-all.sh` | Appends MANIFEST entries missing from `.gitmodules` |
+| `submodule-bump.sh` | Bump submodules to tracked branch HEAD (fast-forward only); filter by `--group` matching MANIFEST groups |
+| `submodule-sync-upstream.sh` | For each `repos/forked/` submodule with an `upstream` URL, fetch upstream and merge into tracked branch |
+| `reconcile-stray-clones.sh` | Report-only triage of stray plain-dirs at `repos/` root that should be registered submodules |
+| `runner-doctor.sh` | Read-only local runner doctor — prints readiness signals, never mutates GitHub/systemd/host |
+| `secrets-inject.sh` | Expand `pass:<entry>` placeholders in an env-template and emit `export …` lines for direnv |
+| `secrets-rotate.sh` | List secrets older than `$ROTATE_DAYS` days (default 90); exits non-zero when stale (CI uses this to open rotation issues) |
+| `secrets-mirror-to-bws.sh` | Mirror local `pass` store into Bitwarden Secrets Manager — one-way sync, `pass` is source of truth |
+| `secrets-sync-github-from-bitwarden.sh` | Sync selected Bitwarden/Vaultwarden vault items into GitHub Actions secrets |
+| `toolchain.py` | Materialize and run pinned repo-local tool binaries (backing `tools/bin/` wrappers) |
 
 ## Subdirectories
 

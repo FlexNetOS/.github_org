@@ -16,7 +16,7 @@ Pinned tool wrappers and vendored upstream sources for hermetic CI. `tools/bin/`
 
 | Directory | Purpose |
 |-----------|---------|
-| `bin/` | Thin wrapper scripts (actionlint, repomix, gitleaks, trivy, etc.) |
+| `bin/` | Thin wrapper scripts: `actionlint`, `repomix`, `gitleaks`, `trivy` |
 | `actionlint/` | Pinned actionlint binary (platform-specific) |
 | `bun/` | Pinned Bun runtime |
 | `cpython/` | CPython source (pinned upstream submodule) |

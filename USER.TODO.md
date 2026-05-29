@@ -500,3 +500,43 @@ feature branch but should not be merged to `main` without picking one of the abo
   ```
 - **How to verify done:** `cat secrets/store/runner/.gpg-id` is a real 40-char fingerprint (not the placeholder string).
 - **Status:** `open`
+
+---
+
+### UA-2026-05-29-001 — Fork nilbuild/slim to FlexNetOS org
+
+- **Surfaced by:** `SESSION-2026-05-29` (clone-setup for nilbuild/slim)
+- **Blocks:** `network/slim` submodule registration (`.gitmodules` + `make submodules.add`); MANIFEST `url` pointing to FlexNetOS fork
+- **Why:** my-github rules require a FlexNetOS fork before a repo can be tracked as a submodule. Clone health verified 2026-05-29 (`go build` + `go test ./...` all PASS at HEAD `9c07a08`).
+- **What to do:**
+  ```bash
+  gh repo fork nilbuild/slim --org FlexNetOS --clone=false
+  # Then update the remote in network/slim:
+  git -C /home/drdave/workspace/my-github/network/slim remote set-url origin https://github.com/FlexNetOS/slim
+  git -C /home/drdave/workspace/my-github/network/slim remote add upstream https://github.com/nilbuild/slim
+  # Create develop branch tracking upstream main:
+  git -C /home/drdave/workspace/my-github/network/slim checkout -b develop
+  git -C /home/drdave/workspace/my-github/network/slim push -u origin develop
+  # Register as submodule:
+  cd /home/drdave/workspace/my-github && make submodules.add
+  ```
+- **How to verify done:** `gh repo view FlexNetOS/slim --json name` returns `slim`; `git submodule status network/slim` shows the correct HEAD.
+- **Status:** `open`
+
+---
+
+### UA-2026-05-29-002 — Create slim.sh free-tier account and login
+
+- **Surfaced by:** `SESSION-2026-05-29` (clone-setup for nilbuild/slim)
+- **Blocks:** `slim share` (public tunnels) and `slim domain` commands
+- **Why:** Cloud tunnel relay (`wss://app.slim.sh/tunnel`) requires OAuth authentication. Agent cannot perform browser OAuth.
+- **What to do:**
+  ```bash
+  # Build slim (or use upstream binary):
+  cd /home/drdave/workspace/my-github/network/slim
+  mise exec -- go build -ldflags "-s -w" -o /usr/local/bin/slim .
+  # Login (opens browser to app.slim.sh):
+  slim login
+  ```
+- **How to verify done:** `slim login` completes and prints "Logged in as \<name\> (\<email\>)".
+- **Status:** `open`

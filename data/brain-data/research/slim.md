@@ -234,7 +234,17 @@ No `.env` file needed for local proxy mode. Cloud tunnel features require `slim 
 
 ## 11. Decision log
 
-(empty — fill on adoption)
+| # | Decision | Resolved | By |
+|---|---|---|---|
+| 1 | License go/no-go | **Personal/internal use only** — homelab dev tooling, no competing product. PolyForm Shield non-compete not triggered. | user (2026-05-29) |
+| 2 | Fork vs binary install | **Fork required** — my-github rules mandate clone-first, verify, then fork. Binary-only install does not satisfy the umbrella's submodule tracking contract. | user (2026-05-29) |
+| 3 | Submodule path | **`network/slim`** — slim belongs to the broader `network/` package in the portable-OS layout. Clone already present at that path. | user (2026-05-29) |
+| 4 | Go runtime management | **mise** — `mise use go@1.25.10` activates globally; `network/slim/.mise.toml` pins version locally for project isolation. | user (2026-05-29) |
+| 5 | slim.sh account | **Free tier** — create account via `slim login` (browser OAuth). Agent cannot perform browser auth; user action required (see UA-2026-05-29-002). | user (2026-05-29) |
+| 6 | Sync cadence | **On-demand** — pull upstream patches when needed, no scheduled sync. | user (2026-05-29) |
+
+**Health gate cleared:** `network/slim` clone at HEAD `9c07a08` — `go build` exit 0, `go test ./...` all PASS (verified 2026-05-29). Fork unblocked.
+**Pending user action:** run `gh repo fork nilbuild/slim --org FlexNetOS --clone=false` (see UA-2026-05-29-001).
 
 ---
 
