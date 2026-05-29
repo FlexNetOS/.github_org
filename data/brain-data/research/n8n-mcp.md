@@ -138,7 +138,7 @@ Run mode: `stdio` for direct Claude Desktop/CLI integration, or `http` for share
 
 ## 9. Verification
 
-```
+```text
 Commands run:
   npm install                        exit 0  (1008 modules)
   npm run build                      exit 0  (tsc clean)
