@@ -8,6 +8,54 @@
 
 ---
 
+## SESSION-2026-05-29-011 — reusable-typecheck.yml CI template scaffolded
+
+- **ID:** `SESSION-2026-05-29-011`
+- **Date:** 2026-05-29
+- **Branch:** `feat/session-2026-05-29-007`
+- **HEAD at end:** `5fdf620`
+- **Mode:** `/new-reusable-workflow` skill → `/verify` → `/wrap-up`
+- **Outcome:** `reusable-typecheck.yml` created, actionlint clean, README updated, committed `23751e2`.
+- **User-action gates surfaced:** none
+
+### What the user asked
+> "you decide"
+
+Invoked via `/new-reusable-workflow` with no arguments.
+
+### What the answer is
+The gap among the seven existing reusable workflows was a TypeScript type-checker. Created `reusable-typecheck.yml`: runs `tsc --noEmit` (or the repo's `typecheck` script) for bun/node projects, starts report-only on PRs, actionlint clean.
+
+### What was actually done this session
+1. Surveyed `.github/workflows/reusable-*.yml` — found build, lint, release, secrets, security, submodule-bump, test; no typecheck.
+2. Read `reusable-lint.yml` and `reusable-test.yml` to extract the established pattern (language input, lockfile-conditional toolchain setup, `continue-on-error` PR gate, `timeout-minutes`).
+3. Created `.github/workflows/reusable-typecheck.yml` — bun/node, `tsconfig-path` input, `strict` boolean, prefers `typecheck` script, falls back to `node_modules/.bin/tsc`.
+4. Updated `README.md`: tree entry after `reusable-lint`, caller snippet updated with `typecheck` job between `lint` and `test`.
+5. `tools/bin/actionlint` — PASS, zero errors.
+6. Committed `23751e2 feat(ci): add reusable-typecheck.yml for TypeScript tsc --noEmit gate`.
+
+### Reservations / risks
+- Third-party actions (`oven-sh/setup-bun@v2`, `actions/setup-node@v6`) use moving version tags, not SHA pins — matches existing repo convention but diverges from the skill's supply-chain guidance. Not blocking.
+- Workflow is a scaffold that passes `actionlint`; the body has real logic but no downstream repo has adopted it yet.
+- No `gh repo fork`, no submodule mutations, no push to origin.
+
+### What's next
+- Per-fork CI callers (TODO: Per-fork org-only setup) can now include `reusable-typecheck.yml` in their thin `ci.yml`.
+- Promote to STRICT after one green cycle on `main`.
+- Push branch + open PR when ready.
+
+### Files created/modified this session
+
+| Path | What |
+|---|---|
+| `.github/workflows/reusable-typecheck.yml` | New reusable TypeScript type-check CI template |
+| `README.md` | Tree entry + caller snippet updated |
+| `TODO.md` | Last-updated timestamp bumped |
+| `CHANGELOG.md` | Added SESSION-2026-05-29-011 entry |
+| `SESSIONS.md` | This entry |
+
+---
+
 ## SESSION-2026-05-29-010 — settings.json G8 trim confirm + CI promotion + MANIFEST branch targets
 
 - **ID:** `SESSION-2026-05-29-010`

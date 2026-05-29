@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added (SESSION-2026-05-29-011)
+- `.github/workflows/reusable-typecheck.yml` — new reusable TypeScript type-check workflow (`tsc --noEmit`) for bun and node projects. Prefers the repo's `typecheck` script; falls back to `node_modules/.bin/tsc`. Starts report-only on PRs per CI invariant promotion pattern. Inputs: `language`, `working-directory`, `tsconfig-path`, `strict`. Caller snippet documented in the header. actionlint clean. (SESSION-2026-05-29-011)
+- `README.md` — added `reusable-typecheck.yml` to the `.github/workflows/` tree; updated caller snippet example to chain `typecheck` between `lint` and `test` with `needs:`.
+
 ### Changed (SESSION-2026-05-29-010)
 - `.github/workflows/manifest-drift.yml` — promoted three jobs to STRICT (removed `continue-on-error: true`): `claude-settings-doctor` (unblocked by G8 trim), `claude-dir-check` and `open-questions-lint` (were already recorded as promoted in `promote-strict.md` since 2026-05-28 but the flag was never removed — gap fixed). `check-user-todo-step5` (informational) and `submodules-materialize-noop` (deferred G4/G5) remain REPORT_ONLY. Renamed `claude-settings-doctor` job from "(report-only)" name variant. (TODO: CI invariant promotion — CLOSED)
 - `repos/MANIFEST.yaml` — set `branch: develop` for `everything-claude-code`, `oh-my-claudecode`, `oh-my-pi` (was `branch: main`). Vision: `develop` carries FlexNetOS changes; `main`/`master` mirrors upstream. (TODO: USER.TODO#5 MANIFEST branch targets — CLOSED)
