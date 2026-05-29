@@ -342,12 +342,14 @@ and merge.
 
 These run automatically — no human action unless they alert:
 
+
 | Cadence           | Workflow                | What you do                                                       |
 | ----------------- | ----------------------- | ----------------------------------------------------------------- |
 | Monday 14:00 UTC  | `submodule-bump.yml`    | Review the auto-PR, merge if CI green                             |
 | Monday 14:30 UTC  | `secrets-rotate.yml`    | If issue opened, `pass edit <entry>`, commit, push                |
 | Nightly 11:00 UTC | `wiki-lint.yml`         | If issue opened, ingest the missing source or fix the broken link |
 | Every PR          | `dependency-review.yml` | Block on `high` severity CVEs; bump or vendor differently         |
+
 
 ---
 
@@ -501,6 +503,8 @@ feature branch but should not be merged to `main` without picking one of the abo
   PASSWORD_STORE_DIR="$PWD/secrets/store" \
     pass init -p runner "$(cat secrets/store/.gpg-id)" "$RUNNER_FP"
   ```
+- **How to verify done:** `cat secrets/store/runner/.gpg-id` is a real 40-char fingerprint (not the placeholder string).
+- **Status:** `open`
 
 - **How to verify done:** `cat secrets/store/runner/.gpg-id` is a real 40-char fingerprint (not the placeholder string).
 - **Status:** `open`
