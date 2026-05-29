@@ -85,7 +85,7 @@ submodules.status: ## Report dirty / ahead-of-tracking / detached submodules
 .PHONY: research.pack
 research.pack: ## Clone an upstream and pack it with repomix: URL=<github-url-or-owner/repo> [BRANCH=<branch>]
 	@if [ -z "$$URL" ]; then echo "Usage: make research.pack URL=https://github.com/<owner>/<repo> [BRANCH=<branch>]"; exit 2; fi
-	@args="$$URL"; if [ -n "$$BRANCH" ]; then args="$$args $$BRANCH"; fi; \
+	@args="$$URL"; if [ -n "$${BRANCH:-}" ]; then args="$$args $${BRANCH}"; fi; \
 	scripts/clone-and-pack.sh $$args
 
 # ---------- Wiki ----------
