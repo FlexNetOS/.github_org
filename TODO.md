@@ -4,6 +4,8 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
+**Last updated:** 2026-05-29 (SESSION-2026-05-29-004 — n8n self-hosting env vars: Ralph loop + /verify)
+**Branch:** `feat/session-2026-05-29-002`
 **Last updated:** 2026-05-29 (SESSION-2026-05-29-001 — clone-setup skill fix + setup philosophy; PR #21)
 **Branch:** `feat/session-2026-05-29-002`
 **Last updated:** 2026-05-29 (SESSION-2026-05-29-012)
