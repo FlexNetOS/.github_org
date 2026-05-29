@@ -62,16 +62,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **No `repos/MANIFEST.yaml` entries have been added** for the 4 adoptees.
 - **2026-05-28 (restore):** All root tracking files (`TODO.md`, `CHANGELOG.md`, `SESSIONS.md`) and the 4 pre-adoption dossiers + reconciliation plan were accidentally removed and recreated on branch `feat/restore-session-wrapup-files`. They had never been committed (untracked working-tree files), confirming the `feedback-always-commit` rule. This restore commits them so they cannot be lost to a routine `git reset` again.
 
-### Added (SESSION-2026-05-28-004)
+### Added (SESSION-2026-05-28-003)
 - `.omc/plans/ralplan-browser-choice.md` — ralplan v5 six-layer Linux workstation architecture (Pi-hole + dnscrypt-proxy + Cloudflare/Quad9 → vproxy → Slim → Firefox + Bifrost + Obscura, with trippy diagnostic sidecar). 5 iterations of consensus planning; status `pending approval`. **Misfiled per convention — see `UA-2026-05-28-003`.**
 - `scripts/install-v5-architecture.sh` — 7-phase install script for the v5 architecture with `--dry-run` and `--phase N` flags, pre-flight prereq checks, abort-before-DNS-swap safety, recovery runbook embedded in epilogue. `bash -n` clean. Not yet executed.
 - `USER.TODO.md` — 3 new UA items: `UA-2026-05-28-002` (rotate leaked Anthropic + OpenRouter keys), `UA-2026-05-28-003` (move v5 plan to canonical `data/brain-data/research/` path), `UA-2026-05-28-004` (decide whether `3dd0ef4` should remain on `main`).
 
-### Decisions recorded (2026-05-28, SESSION-2026-05-28-004)
+### Decisions recorded (2026-05-28, SESSION-2026-05-28-003)
 - **Six-layer workstation architecture (ralplan v5):** per-purpose tools at each layer (DNS / outbound proxy / local DNS+HTTPS / browser / LLM gateway / automation browser) rather than overloading one browser. Rejected: Edge (Linux second-class), Brave (user rejection), Chrome (auto-update friction), Chrome for Testing (more wiring than bundled chromium), bundled chromium as default (obscura is purpose-built). Decoupling pattern is brand-agnostic and recoverable per-layer.
 - **Hard rule: feature branch before session work.** Installed globally at `~/.claude/hooks/branch-guard.sh` + matching `SessionStart` and `PreToolUse:Edit|Write|MultiEdit` entries in `~/.claude/settings.json` + new "Hard rule" section in `~/.claude/CLAUDE.md`. SessionStart warns when HEAD is `main`/`master`/`trunk`; PreToolUse blocks Edit/Write on source files (allows `.claude/`, `.omc/`, `.github/`, `CLAUDE.md`, `AGENTS.md`, `docs/**/*.md`). Per-repo allowlist + override supported; session bypass via `BRANCH_GUARD_OFF=1`. Outside-repo files unaffected.
 
-### Notes (SESSION-2026-05-28-004)
+### Notes (SESSION-2026-05-28-003)
 - **Branch-guard install is *global*, not committed to this repo** — lives under `~/.claude/`. Backup at `~/.claude/settings.json.bak-pre-branch-guard-20260528-135800`.
 - **Secrets at `$HOME` (outside repo, chmod 600, not committed):** `~/bifrost/.env`, `~/pihole/pihole_password.txt`, `~/vproxy/.env`. Anthropic + OpenRouter keys in `~/bifrost/.env` must be rotated immediately — see `UA-2026-05-28-002`.
 - **Convention violation flagged:** v5 plan committed to `.omc/plans/ralplan-browser-choice.md` rather than the canonical `data/brain-data/research/v5-workstation-architecture.md`. Tracked in `UA-2026-05-28-003`.

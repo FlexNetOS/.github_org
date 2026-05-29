@@ -317,7 +317,7 @@ Plus trippy as a network-diagnostic sidecar and RTK already system-wide. Plan co
 | `~/.claude/settings.json.bak-pre-branch-guard-20260528-135800` | backup before settings edit |
 | `~/.claude/CLAUDE.md` | new "## Hard rule: open a feature branch BEFORE any session work" section near the top |
 | `USER.TODO.md` | appended `UA-2026-05-28-002` / `-003` / `-004` to `## Agent-flagged user actions`. Numbered sections untouched. |
-| `CHANGELOG.md` | appended `### Added (SESSION-2026-05-28-004)`, `### Decisions recorded (...)`, `### Notes (...)` blocks under `[Unreleased]`. |
+| `CHANGELOG.md` | appended `### Added (SESSION-2026-05-28-003)`, `### Decisions recorded (...)`, `### Notes (...)` blocks under `[Unreleased]`. |
 | `SESSIONS.md` | this entry. |
 | `TODO.md` | **NOT modified** by this wrap-up (concurrent agent/hook activity detected; skipped to avoid clobber). |
 
