@@ -13,7 +13,7 @@
 - **ID:** `SESSION-2026-05-28-007`
 - **Date:** 2026-05-28
 - **Branch:** `feat/todo-session-2026-05-28-006`
-- **HEAD at end:** `1570d73`
+- **HEAD at end:** `2597872`
 - **Mode:** manual audit; closed with `/wrap-up`
 - **Outcome:** CLAUDE.md + AGENTS.md aligned with Vision 5-step sequence; dirty state of 3 fork-violated repos captured as patches; `make verify` passes clean on all 4 checks.
 - **User-action gates surfaced:** `UA-2026-05-28-005`, `UA-2026-05-28-006`, `UA-2026-05-28-007`
