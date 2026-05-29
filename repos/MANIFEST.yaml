@@ -127,7 +127,7 @@
   # depends-on: USER.TODO#5
   url: https://github.com/FlexNetOS/everything-claude-code   # NEW — fork required
   upstream: https://github.com/affaan-m/everything-claude-code
-  branch: main
+  branch: develop
   toolchain: [node, python]
   groups: [forked, agents]
   notes: |
@@ -138,7 +138,7 @@
   # depends-on: USER.TODO#5
   url: https://github.com/FlexNetOS/oh-my-claudecode  # NEW — fork required
   upstream: https://github.com/yeachan-heo/oh-my-claudecode
-  branch: main
+  branch: develop
   toolchain: [node]
   groups: [forked, agents]
   notes: PENDING FORK. 3 dirty files locally.
@@ -147,7 +147,7 @@
   # depends-on: USER.TODO#5
   url: https://github.com/FlexNetOS/oh-my-pi         # NEW — fork required
   upstream: https://github.com/can1357/oh-my-pi
-  branch: main
+  branch: develop
   toolchain: [node, cargo, bun]
   groups: [forked, agents]
   notes: PENDING FORK. 2 dirty files locally.
@@ -249,6 +249,28 @@
   branch: main
   toolchain: [markdown]
   groups: [external, reference]
+
+# -----------------------------------------------------------------------------
+# NETWORK — portable-OS networking and local-dev tooling layer
+# Mounted under network/ (not repos/) — part of the broader OS package layout.
+# -----------------------------------------------------------------------------
+- path: network/slim
+  url: https://github.com/FlexNetOS/slim
+  upstream: https://github.com/nilbuild/slim
+  branch: develop
+  toolchain: [go, mise]
+  groups: [network, dev-tools, forked]
+  notes: |
+    Local dev reverse proxy: maps .test/.loc custom domains to localhost ports
+    with HTTPS + WebSocket/HMR passthrough. No DB, no Docker — pure Go binary.
+    Optional cloud tunnel via app.slim.sh (slim share); overridable via env vars
+    SLIM_TUNNEL_SERVER_API and SLIM_TUNNEL_SERVER.
+    License: PolyForm Shield 1.0.0 — personal/internal use only, non-compete
+    clause confirmed non-triggered. go.mod module path still uses upstream
+    kamranahmedse/slim (not yet updated after GitHub rename to nilbuild).
+    Fork pending: see UA-2026-05-29-001.
+    Go pinned via network/slim/.mise.toml (1.25.10).
+    Sync cadence: on-demand.
 
 # -----------------------------------------------------------------------------
 # NOT SUBMODULED (intentionally) — documentation for future-me

@@ -10,6 +10,8 @@ import fnmatch
 import sys
 from pathlib import Path
 
+EXCLUDE_PARTS = {".git", ".omc", "node_modules", "repos"}
+EXCLUDE_PREFIXES = ("wiki/raw/",)
 EXCLUDE_PARTS = {".git", ".omc", ".attic", "lifeos", "node_modules", "repos"}
 EXCLUDE_PREFIXES = (
     "wiki/raw/",
@@ -20,6 +22,7 @@ EXCLUDE_PREFIXES = (
     "data/brain-data/deepwiki-rs/",             # third-party content
     "data/brain-data/my-wiki-knowledge/",       # third-party content
     ".claude/plugins/",                          # gitignored cache — on disk but not tracked
+    "architecture/.claude/",                     # gitignored OpenSpec init tooling — on disk but not tracked
 )
 ALLOWED_FENCE_PREFIXES = ("```", "~~~")
 
