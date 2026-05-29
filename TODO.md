@@ -4,7 +4,7 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-05-29 (SESSION-2026-05-29-011)
+**Last updated:** 2026-05-29 (SESSION-2026-05-29-012)
 **Branch:** `feat/session-2026-05-29-007`
 **Status:** Vision sequence enforced in CLAUDE.md+AGENTS.md; fork-remediation dirty diffs captured; `make verify` clean; adoption/forks gated pending `gh auth login` (UA-005).
 
@@ -69,6 +69,11 @@ Companion plan: `~/.claude/plans/sprightly-shimmying-charm.md`. Cross-references
 
 - [ ] **CRITICAL:** No `gh repo fork ... --org FlexNetOS` until the original-side cleanup is verified per-fork. See memory `feedback-fork-after-original-setup`.
   - Dirty diffs captured at `data/brain-data/research/fork-remediation/` (SESSION-2026-05-28-006). Next step per `/clone-setup`: `make research.pack URL=<upstream>` for each repo — gated on UA-2026-05-28-005 (`gh auth login`). (SESSION-2026-05-28-007)
+
+## n8n + n8n-mcp service persistence
+
+- [ ] **n8n and n8n-mcp are running as unmanaged background processes** — both die on reboot. Create systemd user units (or pm2 config) so they auto-start. n8n: `node packages/cli/bin/n8n start` via dotenvx from `repos/n8n/`. n8n-mcp: `node dist/mcp/index.js` from `repos/n8n/mcp/n8n-mcp/` with env from `.env`.
+- [ ] **n8n-mcp `.env` is not pass-managed** — `AUTH_TOKEN` and `N8N_API_KEY` are plaintext in `repos/n8n/mcp/n8n-mcp/.env` (gitignored). Consider wiring via `direnv` + `pass` after UA-2026-05-29-003 (n8n submodule conversion) lands.
 
 ## Reservations (carry-forward)
 

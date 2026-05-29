@@ -8,6 +8,71 @@
 
 ---
 
+## SESSION-2026-05-29-012 — n8n + n8n-mcp full stack launched with slim HTTPS
+
+- **ID:** `SESSION-2026-05-29-012`
+- **Date:** 2026-05-29
+- **Branch:** `feat/session-2026-05-29-007`
+- **HEAD at end:** `5fdf620`
+- **Mode:** manual + `/clone-setup` + `/oh-my-claudecode:verify` + `/wrap-up`
+- **Outcome:** n8n healthy at `https://n8n.test`; n8n-mcp v2.56.0 healthy at `https://n8n-mcp.test` with 17 management tools verified via MCP JSON-RPC. Slim CA trust bug fixed in source and deployed.
+- **User-action gates surfaced:** `UA-2026-05-29-006`, `UA-2026-05-29-007`
+- **Cost:** ~$15 (clone-setup + MCP verification loop)
+
+### What the user asked
+> "n8n was reported as all green. launch it and lets see"
+
+Expanded mid-session to: slim HTTPS for n8n, slim CA trust fix, research + full setup of n8n-mcp companion, secrets in pass.
+
+### What the answer is
+- **n8n**: `https://n8n.test → localhost:5678` — `{"status":"ok"}`.
+- **n8n-mcp**: `https://n8n-mcp.test → localhost:3001` — `{"status":"ok","version":"2.56.0"}`, 17 n8n management tools live.
+- **Slim CA bug fixed**: `verifyCAIsTrusted()` checked `rootCA.pem` but `TrustCA()` writes `slim.crt` — one-line fix, rebuilt atomically; `slim doctor` CA trust ✓.
+- Full dossier: `data/brain-data/research/n8n-mcp.md`
+
+### What was actually done this session
+1. Verified n8n already running on port 5678 — healthz `{"status":"ok"}`.
+2. Registered `n8n.test → 5678` with slim.
+3. Diagnosed and fixed slim CA trust doctor bug in `network/slim/internal/doctor/trust_linux.go`; rebuilt and installed with atomic temp-file swap.
+4. Installed slim CA cert in system trust store; confirmed all 6 slim domains show ✓.
+5. Ran `/clone-setup czlonkowski/n8n-mcp`: Phase 1 (pack, 764 files, HEAD `0f3d3f5`), Phase 2 (12-section dossier, 0 TODOs), Phase 3 (npm install + build + DB rebuild: 823 nodes, 4861/4901 tests pass).
+6. Resolved §10 open decisions with user: submodule inside `repos/n8n`, telemetry on, HTTP mode on port 3001.
+7. Added n8n-mcp as git submodule inside `repos/n8n` at `mcp/n8n-mcp`.
+8. Created `mcp/n8n-mcp/.env`; registered `n8n-mcp.test → 3001` with slim.
+9. User stored n8n API key in `pass n8n/api-key` (closes UA-2026-05-29-005).
+10. Started n8n-mcp HTTP server; verified health + MCP session + 17 management tools via `tools/list` JSON-RPC.
+
+### Reservations / risks
+- n8n and n8n-mcp are unmanaged background processes — die on reboot (see TODO: n8n + n8n-mcp service persistence).
+- n8n v2.23.0 vs n8n-mcp pinned `n8n-core@2.21.4` — 2 minor versions apart; watch for drift.
+- `.env` has `AUTH_TOKEN` and `N8N_API_KEY` in plaintext (gitignored, not pass-managed yet).
+- No `gh repo fork` for n8n-mcp. No umbrella submodule mutations (repos/n8n not yet a registered umbrella submodule — blocked by UA-2026-05-29-003). No push to origin.
+
+### User-action gates (if any)
+- `UA-2026-05-29-006` — push `feat/session-2026-05-29-007` + open PR
+- `UA-2026-05-29-007` — set up n8n and n8n-mcp as persistent systemd user services
+
+### What's next
+Resolve UA-2026-05-29-006 (push + PR). Set up persistence (UA-007). UA-2026-05-29-003 (n8n submodule conversion) remains the blocker for clean umbrella structure.
+
+### Files created/modified this session
+
+| Path | What |
+|---|---|
+| `data/brain-data/research/n8n-mcp.md` | Full 12-section dossier for czlonkowski/n8n-mcp (Phases 1-3) |
+| `data/brain-data/research/n8n-mcp/` | repomix full+compressed packs + summary |
+| `network/slim/internal/doctor/trust_linux.go` | Fix CA trust check: `rootCA.pem` → `slim.crt` |
+| `repos/n8n/mcp/n8n-mcp/` | n8n-mcp submodule (inside repos/n8n, git-tracked there) |
+| `repos/n8n/mcp/n8n-mcp/.env` | n8n-mcp local config (gitignored) |
+| `secrets/store/n8n/api-key` | n8n API key (pass-encrypted, user-stored) |
+| `secrets/store/n8n/mcp/token` | n8n-mcp AUTH_TOKEN (pass-encrypted, user-stored) |
+| `TODO.md` | Added n8n-mcp persistence tracking items; bumped Last updated |
+| `CHANGELOG.md` | SESSION-2026-05-29-012 entries |
+| `SESSIONS.md` | SESSION-2026-05-29-012 entry (this file) |
+| `USER.TODO.md` | UA-005 status → done; UA-006, UA-007 added |
+
+---
+
 ## SESSION-2026-05-29-011 — reusable-typecheck.yml CI template scaffolded
 
 - **ID:** `SESSION-2026-05-29-011`

@@ -11,6 +11,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added (SESSION-2026-05-29-012)
+- `data/brain-data/research/n8n-mcp.md` — complete 12-section dossier for `czlonkowski/n8n-mcp` v2.56.0 (Phases 1-3 verified). MIT license, npm+tsc stack, SQLite self-contained DB, 1851 n8n node docs, 17 management tools when `N8N_API_KEY` configured. (research: n8n-mcp)
+- `data/brain-data/research/n8n-mcp/` — repomix full + compressed packs + summary (764 files, HEAD `0f3d3f5`).
+- `repos/n8n/mcp/n8n-mcp` — n8n-mcp added as git submodule inside `repos/n8n` at path `mcp/n8n-mcp`. Built (npm install + tsc), SQLite node DB populated (823 nodes, 2352 templates). Running on port 3001.
+- `repos/n8n/mcp/n8n-mcp/.env` — local HTTP config: PORT=3001, N8N_API_URL=http://localhost:5678, WEBHOOK_SECURITY_MODE=moderate, TRUST_PROXY=1. API key from `pass n8n/api-key`. (gitignored)
+- `secrets/store/n8n/api-key` — n8n instance API key (pass-encrypted, user-stored 2026-05-29).
+- `secrets/store/n8n/mcp/token` — n8n-mcp AUTH_TOKEN (pass-encrypted; resolves UA-2026-05-29-005).
+- `n8n.test` slim domain — `https://n8n.test → localhost:5678` registered.
+- `n8n-mcp.test` slim domain — `https://n8n-mcp.test → localhost:3001` registered; MCP endpoint verified with 17 management tools via JSON-RPC `tools/list`.
+- slim CA cert installed in system trust store (`/usr/local/share/ca-certificates/slim.crt`); `slim doctor` CA trust ✓ for all domains.
+
+### Fixed (SESSION-2026-05-29-012)
+- `network/slim/internal/doctor/trust_linux.go` — CA trust doctor check looked for `rootCA.pem` (the CA cert basename) but `TrustCA()` actually installs `slim.crt`. Fixed: replaced `filepath.Base(cert.CACertPath())` with `const anchorName = "slim.crt"`. Rebuilt and installed atomically via temp-file swap while daemon was live. (SESSION-2026-05-29-012)
+
+### Notes (SESSION-2026-05-29-012)
+- n8n and n8n-mcp are running as unmanaged background processes — see TODO for persistence tracking item.
+- UA-2026-05-29-005 closed: `pass n8n/mcp/token` confirmed populated by user.
+- No `gh repo fork` for n8n-mcp. No umbrella-level submodule mutations (n8n not yet a registered umbrella submodule — blocked by UA-2026-05-29-003). No push to origin.
+
 ### Added (SESSION-2026-05-29-011)
 - `.github/workflows/reusable-typecheck.yml` — new reusable TypeScript type-check workflow (`tsc --noEmit`) for bun and node projects. Prefers the repo's `typecheck` script; falls back to `node_modules/.bin/tsc`. Starts report-only on PRs per CI invariant promotion pattern. Inputs: `language`, `working-directory`, `tsconfig-path`, `strict`. Caller snippet documented in the header. actionlint clean. (SESSION-2026-05-29-011)
 - `README.md` — added `reusable-typecheck.yml` to the `.github/workflows/` tree; updated caller snippet example to chain `typecheck` between `lint` and `test` with `needs:`.
