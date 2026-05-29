@@ -541,6 +541,7 @@ Scope then expanded: user demanded the n8n setup be proven 100% healthy (not jus
 | `~/.claude/projects/.../memory/feedback-n8n-pnpm-version.md` | n8n pnpm 10.x requirement (created by me) |
 | `~/.claude/projects/.../memory/feedback-n8n-build-fix-2026-05-29.md` | full n8n build-fix recipe (created during session) |
 
+
 ---
 
 ## SESSION-2026-05-29-004 — n8n .env.local + build fix + healthz 200
