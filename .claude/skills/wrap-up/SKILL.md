@@ -34,7 +34,7 @@ Research artifacts (deep-research outputs, ralplan deliverables, gap analyses) d
 
 Every `SESSIONS.md` entry MUST start with a session ID. The format is:
 
-```
+```text
 SESSION-YYYY-MM-DD-NNN
 ```
 
@@ -98,7 +98,7 @@ A complete entry looks like this. Drop subsections that are genuinely empty; do 
 
 ### Reservations / risks
 - <anything the critic/reviewer/verifier flagged that the next session should read first>
-- <explicit negative gates: "no `gh repo fork` calls were made", "no submodule mutations", "no git commits", "no host-side installs", etc.>
+- <explicit negative gates: "no `gh repo fork` calls were made", "no submodule mutations", "no push to origin", "no host-side installs", etc.>
 
 ### User-action gates (if any)
 - <reference each item the agent appended to `USER.TODO.md` § Agent-flagged user actions, by ID>
@@ -233,7 +233,7 @@ edits that would otherwise leak through.
 
 How to invoke (from the main agent context, after step 5):
 
-```
+```text
 Agent(
   description: "Verify wrap-up SESSION-<id>",
   subagent_type: "wrap-up-verifier",
@@ -277,19 +277,70 @@ If any precheck obviously fails, fix it before invoking the verifier; the
 verifier will just FAIL on the same issue and you'll have spent an extra
 agent call.
 
-### 7. Report to the user
+### 7. Commit the wrap-up to the current feature branch
 
-Only after the verifier returns **PASS** or **PASS WITH WARNINGS**, output
-a short report to the user:
+In the my-github umbrella the default is **commit as you go** — untracked
+drafts get wiped by routine `git reset` / cherry-pick / branch switches, and
+git provides zero recovery for working-tree-only files (see
+`~/.claude/projects/-home-drdave-workspace-my-github/memory/feedback-always-commit.md`,
+the rule born from a 2026-05-28 session that lost an entire session's
+untracked work). The four bookkeeping files this skill just wrote are exactly
+that kind of draft. Commit them — to the **current session's feature branch**,
+which exists because every session opens one at start (see
+`feedback-new-branch-per-session.md`).
+
+**Preconditions — verify before committing:**
+
+- **HEAD is on a feature branch, not a protected one.** Confirm with
+  `Bash: git rev-parse --abbrev-ref HEAD` — it must NOT be `main` / `master`
+  / `trunk`. If it is, **STOP**: do not commit to a protected branch; surface
+  it to the user and let them create/switch to a feature branch first. (The
+  branch guard normally blocks writes to non-exempt root files on a protected
+  branch, so you should never reach here on `main` — but check anyway.)
+- **The verifier returned `PASS` / `PASS WITH WARNINGS`** (step 6). Never
+  commit a wrap-up the verifier `FAIL`ed.
+- **Substantive artifacts produced earlier this session are already
+  committed.** Wrap-up bookkeeping should describe *committed* state. If
+  `git status --short` still shows unrelated agent-produced work, commit that
+  first as its own concern-scoped commit (per the cadence guidance in
+  `feedback-always-commit.md`) — or, if it isn't yours, surface it rather
+  than sweeping it into the wrap-up commit.
+
+**Commit (stage only the bookkeeping files this skill touched):**
+
+```bash
+git add TODO.md CHANGELOG.md SESSIONS.md   # add USER.TODO.md only if step 3 modified it
+git commit -m "docs: wrap up SESSION-YYYY-MM-DD-NNN"
+```
+
+- **Never `git add -A` / `git add .`** — that sweeps in unrelated dirty files.
+  Stage paths explicitly.
+- The commit message references the `SESSION-` ID so the commit and the
+  SESSIONS.md entry cross-link. (The SESSIONS.md entry, written in step 5,
+  cannot carry this commit's SHA — the commit doesn't exist yet — so do not
+  fabricate one there; the message↔ID link is the durable reference.)
+- One commit for the bookkeeping is fine. If you also committed substantive
+  work above, keep them as separate commits by concern.
+
+**Do NOT push.** Pushing publishes the branch and needs credentials the agent
+may not hold — it stays a human decision. If the branch should go to origin,
+surface it as a `UA-` item in `USER.TODO.md` (step 3), don't push here.
+
+### 8. Report to the user
+
+Only after the verifier returns **PASS** or **PASS WITH WARNINGS** and the
+wrap-up commit (step 7) has landed, output a short report to the user:
 
 1. **Session ID** just created.
 2. **Verifier verdict** (`PASS` / `PASS WITH WARNINGS`) — name it explicitly.
    If `PASS WITH WARNINGS`, list each warning in one line.
 3. The files touched and one-line of what changed in each.
-4. Any `UA-` item IDs surfaced — explicitly call these out so the user sees
+4. **The wrap-up commit** — short SHA + message — and an explicit note that
+   it was **not pushed** (push stays a human action).
+5. Any `UA-` item IDs surfaced — explicitly call these out so the user sees
    them.
-5. The "What's next" line, repeated from `SESSIONS.md`.
-6. Any flag worth raising — e.g. "branch has unrelated dirty files: X, Y,"
+6. The "What's next" line, repeated from `SESSIONS.md`.
+7. Any flag worth raising — e.g. "branch has unrelated dirty files: X, Y,"
    or "auto-memory wrote feedback-foo.md, review if you don't want it kept."
 
 Never report "done" while the verifier returned FAIL. If the verifier keeps
@@ -305,15 +356,16 @@ You are done when **all** of these are true:
 2. `USER.TODO.md` is either **untouched** (no user action needed) or **appended-only** under `## Agent-flagged user actions` with one or more `UA-` items. The numbered `## N.` sections are byte-identical to before.
 3. `CHANGELOG.md` has new entries under `[Unreleased]` *or* an explicit "no changes applied" note for the session.
 4. `SESSIONS.md` has a new entry at the top with a valid `SESSION-YYYY-MM-DD-NNN` ID, today's date, current branch + HEAD, the user's literal ask quoted, files-modified table, and explicit negative-gate notes.
-5. `git status --short` shows only the intended changes.
-6. **No commit, no push** — wrap-up writes durable docs; git state changes are a separate decision.
+5. The bookkeeping files are **committed to the current feature branch** (`git log -1 --stat` lists them) and `git status --short` is clean of the wrap-up output. HEAD is a feature branch, never `main` / `master` / `trunk`.
+6. **Committed, not pushed** — wrap-up commits its bookkeeping to the session's feature branch so a routine `git reset` / cherry-pick can't wipe it; pushing to origin stays a human decision (surface it as a `UA-` item if the branch should go up).
 7. **The `wrap-up-verifier` subagent returned `PASS` or `PASS WITH WARNINGS`** (not `FAIL`) for this session ID. Any FAIL outcome — even a single critical issue — means you are not done; fix and re-verify.
 
 ## Do-not list
 
 - **Don't edit the user's numbered `## N.` sections in `USER.TODO.md`.** Read-only above the `## Agent-flagged user actions` heading; append-only below it.
 - **Don't write research artifacts inline in SESSIONS.md** — they go to `data/brain-data/research/<slug>.md`. SESSIONS.md links to them, doesn't contain them.
-- **Don't auto-commit or push.**
+- **Don't push, and don't commit to a protected branch.** Wrap-up commits its bookkeeping to the current *feature* branch (step 7) — it never pushes to origin, and never commits onto `main` / `master` / `trunk`. If HEAD is a protected branch, stop and surface it instead of committing.
+- **Don't `git add -A` / `git add .`** when committing the wrap-up. Stage only the bookkeeping files this skill wrote, so unrelated dirty files don't get swept in.
 - **Don't `git clean` or `git reset`.** If `git status` looks wrong, surface it; don't fix it.
 - **Don't paraphrase the user's ask** when the original prompt is available verbatim. Drift compounds across sessions.
 - **Don't pad.** Empty subsections delete; "no X" notes are fine. A 40-line entry beats a 400-line entry of restated context.
@@ -334,6 +386,8 @@ The frontmatter `description` already covers the auto-load triggers. For human r
 ## Related
 
 - `~/.claude/projects/-home-drdave-workspace-my-github/memory/feedback-research-location.md` — the convention this skill enforces.
+- `~/.claude/projects/-home-drdave-workspace-my-github/memory/feedback-always-commit.md` — why step 7 commits the bookkeeping instead of leaving it untracked.
+- `~/.claude/projects/-home-drdave-workspace-my-github/memory/feedback-new-branch-per-session.md` — why a feature branch always exists to commit onto at wrap-up time.
 - `~/.claude/projects/-home-drdave-workspace-my-github/memory/my-github-umbrella-model.md` — Model B umbrella structure context.
 - `data/brain-data/research/` — where deep-research artifacts go (referenced from SESSIONS.md, not embedded).
 - `USER.TODO.md § Agent-flagged user actions` — the only place this skill writes inside that file.

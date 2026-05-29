@@ -13,7 +13,9 @@
 #
 # Generation: `scripts/submodule-add-all.sh` reads this file and runs
 # `git submodule add` for any entry not yet present in `.gitmodules`.
-# Do NOT hand-edit `.gitmodules` — regenerate from here.
+# Prefer not to hand-edit `.gitmodules` directly — use the script to append
+# missing entries. Full MANIFEST→.gitmodules regeneration is deferred (see
+# G4/G5 in .omc/plans/open-questions.md). Never blindly regenerate.
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -72,9 +74,15 @@
 - path: repos/forked/n8n
   url: https://github.com/FlexNetOS/n8n
   upstream: https://github.com/n8n-io/n8n
-  branch: master
-  toolchain: [node]
-  groups: [forked, automation]
+  branch: develop
+  toolchain: [node, pnpm, docker]
+  groups: [forked, automation, workflow]
+  notes: |
+    Workflow automation platform (fair-code SUL license — internal use approved).
+    Upstream uses `master`; fork's `master` mirrors upstream, `develop` carries
+    FlexNetOS changes. Sync cadence: as-needed via `make submodules.bump`.
+    Community free tier only — no EE license. Telemetry: PostHog free tier.
+    Research dossier: data/brain-data/research/n8n.md
 
 - path: repos/forked/nanochat
   url: https://github.com/FlexNetOS/nanochat
@@ -96,25 +104,27 @@
   toolchain: [shell, node]
   groups: [forked, distro]
   notes: |
-    Currently the only repo with a self-hosted runner registered
-    (`_work/repos/actions-runner/`). See `runner/README.md`.
+    Currently the only repo with a self-hosted runner registered.
+    Runner config lives in `runner/` at the umbrella root. See `runner/README.md`.
 
 # --- The four below need a `gh repo fork` before they can be submoduled.
 #     They live as plain clones in _work/repos/ today with local diffs that
 #     would be lost on `git pull`. See Phase 0 D6 in the plan.
 
 - path: repos/forked/archon
+  # depends-on: USER.TODO#5
   url: https://github.com/FlexNetOS/Archon          # NEW — fork required
   upstream: https://github.com/coleam00/Archon
   branch: dev
   toolchain: [node, bun, docker]
   groups: [forked, agents]
   notes: |
-    PENDING FORK. Local checkout at /home/drdave/_work/repos/Archon is
-    1 file dirty. Run `gh repo fork coleam00/Archon --org FlexNetOS`,
-    then push local changes before adding as submodule.
+    PENDING FORK. Original local clone not found on disk (see UA-2026-05-28-006).
+    Run `gh repo fork coleam00/Archon --org FlexNetOS --clone=false`,
+    then add as submodule (no local diffs to push — clone was lost).
 
 - path: repos/forked/everything-claude-code
+  # depends-on: USER.TODO#5
   url: https://github.com/FlexNetOS/everything-claude-code   # NEW — fork required
   upstream: https://github.com/affaan-m/everything-claude-code
   branch: main
@@ -125,6 +135,7 @@
     Must capture local diffs as commits before submoduling.
 
 - path: repos/forked/oh-my-claudecode
+  # depends-on: USER.TODO#5
   url: https://github.com/FlexNetOS/oh-my-claudecode  # NEW — fork required
   upstream: https://github.com/yeachan-heo/oh-my-claudecode
   branch: main
@@ -133,6 +144,7 @@
   notes: PENDING FORK. 3 dirty files locally.
 
 - path: repos/forked/oh-my-pi
+  # depends-on: USER.TODO#5
   url: https://github.com/FlexNetOS/oh-my-pi         # NEW — fork required
   upstream: https://github.com/can1357/oh-my-pi
   branch: main

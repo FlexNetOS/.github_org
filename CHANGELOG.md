@@ -5,6 +5,8 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this repo aims to adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) once `v1.0.0` is cut (see `USER.TODO.md` step 10).
 
+**Ownership handoff (UA-2026-05-28-001):** This file is hand-maintained until `v1.0.0` is tagged. At that point, the operator renames `## [Unreleased]` below to `## [0.x.0-bootstrap] - <date>`, then activates `release.yml` (release-please). Release-please will manage `## [Unreleased]` and all version sections from that point forward, auto-generating entries from Conventional Commits. The bootstrap history below is preserved as a versioned section. The `release.yml` workflow is currently `workflow_dispatch`-only pending USER.TODO org/App setup — do not activate it before those gates pass.
+
 ---
 
 ## [Unreleased]
@@ -22,9 +24,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `my-github-umbrella-model.md` — Model B authoritative + umbrella vision (no host-side installs, single-clone reproducibility).
   - `fork-workflow-branch-model.md` — `main`/`master` <-> upstream, `develop` <-> FlexNetOS branch model per `docs/fork-workflow.md`.
 - Companion plan at `~/.claude/plans/sprightly-shimmying-charm.md` — the 4-clone adoption thread (Model B, Phase 0 dossier gate, research-before-fork rule).
+- **Additive reconciliation tooling** (SESSION-2026-05-28-005, PR #20):
+  - `scripts/claude-settings-doctor.js` — report-only `.claude/settings.json` hygiene scanner (hardcoded user-home paths + aspirational keys; allowlist-aware; never modifies the live file). (research: my-github-reconciliation G1/G7)
+  - `scripts/g3a-can-convert.sh`, `scripts/g3b-backup-branch.sh`, `scripts/g3c-stash-and-move.sh`, `scripts/reconcile-stray-clones.sh` — reversibility chain (predicate + backup + dry-run move + orchestrator). (research: G3a-d)
+  - `scripts/check-user-todo-step5.sh` — MANIFEST USER.TODO#5 tag detector. (research: G11)
+  - `scripts/open-questions-lint.js` — open-questions schema validator. (research: G15)
+  - `.claude/settings.canonical.json`, `.claude/.doctor-allowlist`, `.codex/.doctor-allowlist` — doctor reference shape + allowlists. (research: G6/G9)
+  - `.omc/plans/open-questions.md` — 6 seeded entries (G3 triage, G4/G5 deferred, G15, G16).
+  - `.github/workflows/manifest-drift.yml` — REPORT_ONLY CI: `claude-dir-check`, settings doctor, user-todo-5, open-questions-lint, deferred materialize-noop. (research: G14/G15-claude-dir)
+  - Makefile targets: `claude.doctor`, `config.doctor`, `check.user-todo-5`, `open-questions.lint`.
+
+- `.claude/skills/clone-setup/SKILL.md` — three-phase research-before-fork automation: `make research.pack` → code-first analysis (manifest → compressed pack → source → README last, enforced) → verified setup in `.attic/research-work/<name>/`; mandatory §12 Discrepancies table; `gh repo fork` never called by the skill. (SESSION-2026-05-28-006)
 
 ### Changed
-- _(none yet — plan is `pending approval`, no execution authorized)_
+- `scripts/runner-doctor.sh` — extended with `ps`-based orphan/ghost runner-process detection. (SESSION-2026-05-28-005; research: G12)
+- `CONTRIBUTING.md` — added AI-tooling directory convention (`.claude` not `Claude`), CI-invariant promotion pattern, doctor allowlist policy, `.gitmodules` merge-conflict note. (SESSION-2026-05-28-005; research: G10/G14/G9)
+- `README.md` — added Repo-navigation table + Phase-6 Vaultwarden operational gate. (SESSION-2026-05-28-005; research: G13)
+- `Makefile` — added the reconciliation-tooling target block. (SESSION-2026-05-28-005)
 
 ### Removed
 - _(none yet)_
@@ -34,6 +50,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Rename scope = Org-only**: CODEOWNERS, branch protection, FUNDING.yml, FLEXNETOS-ENV.md only. Internal package names (`package.json:name`, `Cargo.toml:name`, Docker image refs) deliberately untouched to keep upstream sync conflict-free.
 - **Submodule `.github` overrides + caller workflows** inherit umbrella reusables via `uses: FlexNetOS/.github/.github/workflows/reusable-*.yml@main`. Switch to `@v1` once tagged.
 - **Research-before-fork is a hard rule**: per-clone dossier must exist on disk at `data/brain-data/research/<name>.md` before any `gh repo fork` runs. Codified in cross-session memory `feedback-fork-after-original-setup.md` after the ruflu/ruvector incident.
+- **G4/G5 lockfile pattern deferred** (SESSION-2026-05-28-005): the MANIFEST→`.gitmodules` materialize/lockfile refactor was deliberately excluded from the additive-tooling pass because it refactors the working `submodules.*` machinery (not additive). Tracked in `.omc/plans/open-questions.md`; the `submodules-materialize-noop` CI job is a placeholder until it lands.
 
 ### Corrections to prior work (2026-05-28)
 - `data/brain-data/research/my-github-reconciliation.md` Reservation 2 — `ai-top-utility` was listed as "likely UNSAFE-MISMATCH". Verified origin is `https://github.com/FlexNetOS/ai-top-utility.git` (FlexNetOS-owned, no upstream remote). Correction recorded in `data/brain-data/research/ai-top-utility.md` cross-reference block, in the reconciliation doc Reservation 2 note, and in `TODO.md` Reservations section.
@@ -59,6 +76,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Secrets at `$HOME` (outside repo, chmod 600, not committed):** `~/bifrost/.env`, `~/pihole/pihole_password.txt`, `~/vproxy/.env`. Anthropic + OpenRouter keys in `~/bifrost/.env` must be rotated immediately — see `UA-2026-05-28-002`.
 - **Convention violation flagged:** v5 plan committed to `.omc/plans/ralplan-browser-choice.md` rather than the canonical `data/brain-data/research/v5-workstation-architecture.md`. Tracked in `UA-2026-05-28-003`.
 - **`3dd0ef4` first landed on `main`, not on a feature branch.** Wrap-up notes that the new branch-guard rule (installed *during the same session*) would have prevented this. The commit is now also reachable from `feat/restore-session-convention-files` (this branch); see `UA-2026-05-28-004` for the decision about whether to keep it on `main`.
+
+### Added (SESSION-2026-05-28-007)
+- `AGENTS.md` — new cross-CLI instruction file: repo identity, branch discipline, 5-step Vision sequence (clone→research→setup→fork→submodule), full-clone-only rule, secrets policy, what agents get wrong, session tracking. (research: GitHub Workspace Vision)
+- `data/brain-data/research/fork-remediation/` — dirty state snapshots for 3 fork-violated repos (everything-claude-code, oh-my-claudecode, oh-my-pi): `.patch` files + `ecc-untracked/` agentic-os subsystem (30 files) + 10-step remediation `README.md`. (TODO: USER.TODO#5)
+
+### Changed (SESSION-2026-05-28-007)
+- `CLAUDE.md` — added full 5-step Vision sequence + "What Claude gets wrong" hard guards + "Branch discipline at session start" subsection.
+- `USER.TODO.md` — replaced 7× `_work/repos/my-github` → `workspace/my-github` (old-path migration); appended UA-2026-05-28-005/006/007.
+- `repos/MANIFEST.yaml` — fixed header contradiction about `.gitmodules` regeneration; updated weftos + archon notes; removed stale `_work/repos/actions-runner/` ref.
+- `secrets/store/.gpg-id` — replaced placeholder with real GPG fingerprint `6EC33743AA0CB75126F63F8765A937C4164F966F`.
+- `tools/bin/repomix` — use `bunx` over `npx` (workspace uses bun 1.3.13 via mise); npx fallback retained.
+- `.gitignore` — added `.claude/plugins/cache/`, `.claude/plugins/marketplaces/`, `.claude/plugins/data/` (555 MB plugin cache; regenerated by `omc install`).
+- `scripts/verify-markdown.py` — added `.attic` to EXCLUDE_PARTS; 4 new EXCLUDE_PREFIXES for third-party dirs; result: `OK: 58 markdown files checked`.
+- `.claude/agents/wrap-up-verifier.md` — fixed 1 bare fence (` ``` ` → ` ```text `).
+- `.claude/skills/clone-setup/SKILL.md` — fixed 3 bare fences.
+- `.claude/skills/wrap-up/SKILL.md` — fixed 2 bare fences.
+
+### Decisions recorded (2026-05-28, SESSION-2026-05-28-007)
+- **Fork-first violation confirmed** for everything-claude-code, oh-my-claudecode, oh-my-pi: all three set up from forks before clone/research/setup (Vision sequence violated). Dirty diffs captured before remediation. Correct sequence: clone upstream fresh → `make research.pack` → verify setup → `gh repo fork` → develop branch → apply patches → submodule. See `data/brain-data/research/fork-remediation/README.md`.
+- **`tools/repomix/` stays gitignored** (not a submodule); promotion to MANIFEST/.gitmodules deferred until/unless FlexNetOS forks repomix.
+- **`make verify` clean baseline**: 3 tool assets, 58 markdown files, 28 manifest entries, 13 tool entries — all pass on `feat/todo-session-2026-05-28-006`.
+
+### Notes (SESSION-2026-05-28-007)
+- **No `gh repo fork` calls made.** All fork remediation gated on UA-2026-05-28-005 (`gh auth login`).
+- **No push to origin. No submodule mutations.**
+- **MANIFEST `branch:` entries** for everything-claude-code, oh-my-claudecode, oh-my-pi still say `branch: main` — should be `branch: develop` per Vision; tracked in `TODO.md`.
+- Session work fully committed (4 commits) on `feat/todo-session-2026-05-28-006`.
 
 ---
 
