@@ -5,6 +5,7 @@
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
 **Last updated:** 2026-05-29 (SESSION-2026-05-29-001 — clone-setup skill fix + setup philosophy; PR #21)
+**Branch:** `feat/session-2026-05-29-002`
 **Last updated:** 2026-05-29 (SESSION-2026-05-29-002 — wrap-up skill updated: commit all + push + PR)
 **Branch:** `feat/todo-session-2026-05-28-006`
 **Status:** Vision sequence enforced in CLAUDE.md+AGENTS.md; fork-remediation dirty diffs captured; `make verify` clean; adoption/forks gated pending `gh auth login` (UA-005).
@@ -30,6 +31,9 @@ Companion plan: `~/.claude/plans/sprightly-shimmying-charm.md`. Cross-references
 
 - [ ] Per `ai-top-utility.md` §6 — convert `repos/ai-top-utility/` → `repos/owned/ai-top-utility/` submodule + MANIFEST entry (OWNED). Use `scripts/g3a-can-convert.sh` → `g3b` → `g3c` then submodule add.
 - [ ] Per `n8n.md` §6 — set up `develop` on `FlexNetOS/n8n`, convert to `repos/forked/n8n/` submodule + MANIFEST entry (FORKED).
+  - ✓ MANIFEST entry → `branch: develop` + pnpm/docker toolchain + notes (SESSION-2026-05-29-005).
+  - ✓ Build verified healthy; all §10 dossier decisions resolved.
+  - blocked by: UA-2026-05-29-003 (develop-branch push + submodule conversion; needs human `git push`).
 - [ ] Per `fabro.md` §6 (gated by §9 + explicit user OK) — fork, set up develop, convert to `repos/forked/fabro/` + MANIFEST entry.
 - [ ] Per `paperclip.md` §6 (gated by §9 + explicit user OK) — fork, set up develop, convert to `repos/forked/paperclip/` + MANIFEST entry.
 
