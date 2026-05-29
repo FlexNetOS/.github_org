@@ -5,6 +5,7 @@
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
 **Last updated:** 2026-05-29 (SESSION-2026-05-29-001 — clone-setup skill fix + setup philosophy; PR #21)
+**Last updated:** 2026-05-29 (SESSION-2026-05-29-002 — wrap-up skill updated: commit all + push + PR)
 **Branch:** `feat/todo-session-2026-05-28-006`
 **Status:** Vision sequence enforced in CLAUDE.md+AGENTS.md; fork-remediation dirty diffs captured; `make verify` clean; adoption/forks gated pending `gh auth login` (UA-005).
 
