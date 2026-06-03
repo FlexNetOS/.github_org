@@ -64,7 +64,7 @@ jobs:
 
       - name: Set up uv (Python)
         if: (inputs.language == 'python' || inputs.language == 'mixed') && (hashFiles(format('{0}/pyproject.toml', inputs.working-directory)) != '' || hashFiles(format('{0}/setup.py', inputs.working-directory)) != '' || hashFiles(format('{0}/requirements.txt', inputs.working-directory)) != '')
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
         with:
           # setup-uv fails when cache is enabled but a repo has no uv.lock.
           # The reusable lint workflow must support mixed repos without Python deps.
