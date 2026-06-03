@@ -126,7 +126,7 @@ jobs:
       # --- coverage artifact (best-effort, only if a coverage file shows up) ---
       - name: Upload coverage artifact
         if: inputs.coverage && always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-${{ github.run_id }}-${{ github.job }}
           path: |
