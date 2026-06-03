@@ -111,7 +111,7 @@ jobs:
       - name: semantic-release
         id: sr
         if: inputs.release-type == 'semantic-release'
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@v6
         with:
           extra_plugins: ${{ inputs.semantic-release-extra-plugins }}
         env:
