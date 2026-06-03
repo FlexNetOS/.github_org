@@ -74,7 +74,7 @@ jobs:
       - name: release-please
         id: rp
         if: inputs.release-type == 'release-please'
-        uses: googleapis/release-please-action@v4
+        uses: googleapis/release-please-action@v5
         with:
           token: ${{ secrets.release-token || github.token }}
           target-branch: ${{ inputs.release-branch }}
