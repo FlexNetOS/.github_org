@@ -11,17 +11,41 @@ The refactor is **registry-complete but content-extraction-incomplete**, and the
 production-shaped*. `.github_org` is already a fully registered, independent meta peer — its own remote
 (`FlexNetOS/.github.git`), distinct history, gitignored by the parent, a leaf with no nested `.meta.yaml`
 (`../.meta.yaml:111-114`, `../.gitignore:77`) — so the structural "become a peer" half of the mission is
-**done**. The two enduring roles that justify the magic `.github` name are **real and operational, not
-scaffolds**: Role-1 community-health is complete, and the Role-6 reusable workflows ship real ruff/black/
-cargo/clippy/uv bodies with typed `workflow_call` inputs and least-privilege permissions, dogfooded by
-`ci.yml` today (`reusable-build.yml`, `reusable-lint.yml`, `ci.yml:23`). The **only** keep-set gap is the
-missing `@v1` tag (`git tag -l` → 0). What remains is the *unfinished other half*: extracting roles 3/4/5
+**done**. The two enduring roles that justify the magic `.github` name are **real as source, but unproven /
+currently failing in operation** (see §2a liveness correction): Role-1 community-health is complete, and
+the Role-6 reusable workflows ship real ruff/black/cargo/clippy/uv bodies with typed `workflow_call`
+inputs and least-privilege permissions (`reusable-build.yml`, `reusable-lint.yml`, `ci.yml:23`) — but the
+`ci.yml` that "dogfoods" them is **RED** (last 5 runs `[FAIL]`), no `@v1` tag exists (`git tag -l` → 0),
+and there are **zero downstream consumers and zero releases**. The keep-set gap is therefore larger than a
+missing tag: **get CI green → prove one real consumer → then cut `@v1`.** What remains is the *unfinished other half*: extracting roles 3/4/5
 + the submodule machinery out to their declared peers, then retiring the in-tree role-2 apparatus and
 rewriting the docs from 6 roles to 2. That remaining work is gated by **live data** (4 real GPG ciphertext
 files), **parity** (runner/app already rebuilt fresh in Rust — a remove, not a move), and a **consumers-first
 CI coupling** (`ci.yml` hard-calls a retire-slated script). **The recommended single next action is the
 `@v1` tag** — the one phase with zero extraction/ADR/content dependency — taken via the release-please flow
 on a green `main`, not a manual tag cut.
+
+---
+
+## 2a. Liveness correction (added 2026-06-13, post-review)
+
+Static verification confirmed the workflow **source** is real; it did NOT establish operational liveness.
+Empirical check (`gh run list`, `git tag -l`, `gh pr list`) shows the repo is **published and ticking but
+not in service and not green**:
+
+| Liveness signal | Evidence | Reading |
+|---|---|---|
+| Real CI (`ci.yml`) | last 5 runs all `[FAIL]` (`gh run list --workflow=ci.yml`) | **RED** — the "dogfood" is failing |
+| Releases / tags | `git tag -l` → 0; `gh release list` → empty | reusable templates **never consumable** |
+| Downstream consumers | 0 (no `@v1` to pin) | Role-6's purpose **unrealized** |
+| Maintenance | 6 dependabot PRs open, oldest 2026-06-03 (10 days) unmerged | **not actively operated**; auto-merge rule not running here |
+| Last code activity on `main` | 2026-05-29 | ~2 weeks idle before this research |
+| What *is* green | only `wiki-lint` + `ci-failure-tracker` (scheduled) | peripheral jobs, not the CI surface |
+
+**Consequence for the verdict:** "production-shaped" overstated it. The keep-set is production-shaped *in
+source* but **dormant and red in operation**. The next action is not merely "cut `@v1`" — a dormant red
+repo cannot merge a release-please PR — it is **(1) make `ci.yml` green, (2) prove one real downstream
+consumer, (3) then tag `@v1`.**
 
 ---
 
