@@ -102,3 +102,7 @@ ai-top/
 
 # OpenSpec init AI-tooling under architecture/ (local only; fails markdown lint, not committed)
 architecture/.claude/
+
+# .handoff ledger residency (P7: ledger is local; fleet/witnessed state is the kernel's)
+.handoff/ledger.db
+.handoff/*.db
