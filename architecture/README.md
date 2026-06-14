@@ -62,6 +62,7 @@ These skills default elsewhere; in this repo they route into `architecture/`:
 | ADR | Title | Status | Date |
 |---|---|---|---|
 | [ADR-0001](adr/ADR-0001-architecture-artifact-homes.md) | Single `architecture/` root for design artifacts | accepted | 2026-05-29 |
+| [ADR-0002](adr/ADR-0002-lean-github-org-relocate-to-hubs.md) | Lean `.github_org` — relocate submodules, repos & marketplaces to hubs-by-type | accepted | 2026-06-13 |
 
 ## Submodule adoption (documented; rollout deferred)
 
