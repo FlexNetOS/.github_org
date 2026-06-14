@@ -69,7 +69,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"/home/drdave/.claude/hooks/gitnexus/gitnexus-hook.cjs\"",
+            "command": "node \"~/.claude/hooks/gitnexus/gitnexus-hook.cjs\"",
             "timeout": 10,
             "statusMessage": "Checking GitNexus index freshness..."
           }
@@ -80,7 +80,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /home/drdave/.claude/hooks/global/auto-format.sh",
+            "command": "bash ~/.claude/hooks/global/auto-format.sh",
             "timeout": 30
           }
         ]
@@ -114,6 +114,16 @@
             "type": "command",
             "command": "ruvector hooks pre-compact",
             "timeout": 3000
+          }
+        ]
+      },
+      {
+        "matcher": "auto|manual",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/icm-architecture-inject.sh",
+            "timeout": 10000
           }
         ]
       }
@@ -159,7 +169,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"/home/drdave/.claude/hooks/gitnexus/gitnexus-hook.cjs\"",
+            "command": "node \"~/.claude/hooks/gitnexus/gitnexus-hook.cjs\"",
             "timeout": 10,
             "statusMessage": "Enriching with GitNexus graph context..."
           }
@@ -179,7 +189,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /home/drdave/.claude/hooks/ccg/subagent-context.js",
+            "command": "node ~/.claude/hooks/ccg/subagent-context.js",
             "timeout": 15000
           }
         ]
@@ -189,7 +199,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /home/drdave/.claude/hooks/global/bash-log.sh",
+            "command": "bash ~/.claude/hooks/global/bash-log.sh",
             "timeout": 2000
           }
         ]
@@ -236,8 +246,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /home/drdave/.claude/hooks/ccg/session-start.js",
+            "command": "node ~/.claude/hooks/ccg/session-start.js",
             "timeout": 15000
+          }
+        ]
+      },
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/icm-architecture-inject.sh",
+            "timeout": 12000
           }
         ]
       }
@@ -256,7 +276,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /home/drdave/.claude/hooks/global/stop-notify.sh",
+            "command": "bash ~/.claude/hooks/global/stop-notify.sh",
             "timeout": 5000
           }
         ]
@@ -276,12 +296,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /home/drdave/.claude/hooks/ccg/workflow-state.js",
+            "command": "node ~/.claude/hooks/ccg/workflow-state.js",
             "timeout": 10000
           },
           {
             "type": "command",
-            "command": "node /home/drdave/.claude/hooks/ccg/skill-router.js",
+            "command": "node ~/.claude/hooks/ccg/skill-router.js",
             "timeout": 5000
           }
         ]

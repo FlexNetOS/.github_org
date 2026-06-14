@@ -22,6 +22,9 @@ own `tasks.md` is the plan; `plan/` is for cross-cutting or non-OpenSpec plans.
 | `adr/` | `ADR-NNNN-<slug>.md` (Nygard/MADR) | `ecc:architecture-decision-records` |
 | `plan/` | `YYYY-MM-DD-<slug>-plan.md` | `writing-plans`, `oh-my-claudecode:plan` |
 | `openspec/` | the "spec" stage — OpenSpec OPSX engine (`specs/`, `changes/`) | `ccg:spec-research` → `spec-plan` → `spec-impl` |
+| `icm/` | **Verbatim ICM ingestion** — `system-architecture` memoir exports + 69 memory topics | `icm memoir export` / `icm list` (see [`icm/README.md`](icm/README.md)) |
+| `map/` | **The system map** synthesized from `icm/` (00–10, one subsystem each) | ingestion synthesis (see [`map/README.md`](map/README.md)) |
+| `QUESTIONS_LESSONS.md` | **Reconciliation ledger** — contradictions found during ingestion + their answers | this ingestion + the `meta*` repo walk |
 
 > `architecture/spec` -> `openspec/`. The spec stage is the OpenSpec engine; the
 > folder is named `openspec/` because the OpenSpec CLI resolves that literal name.
@@ -68,6 +71,24 @@ These skills default elsewhere; in this repo they route into `architecture/`:
 | `repos/owned/<x>` | Same `architecture/` shape at the submodule root. `lifeos/openspec/` is the local precedent. |
 | `repos/forked/<x>` | FlexNetOS artifacts on the `develop` branch under `architecture/`; never on upstream-tracking `main`/`master`. |
 | `repos/external/<x>` | None — read-only references carry no artifacts. |
+
+## ICM-ingested system map (`icm/` → `map/` → `QUESTIONS_LESSONS.md`)
+
+Alongside the PRD/ADR/spec/plan lifecycle, this root carries a **descriptive map of the system as
+it actually is**, ingested from ICM (Infinite Context Memory) on 2026-06-13:
+
+- [`icm/`](icm/) is the **verbatim** ICM dump (the `system-architecture` memoir in ai/json/dot +
+  69 memory-topic files). Machine-faithful; regenerated, never hand-edited.
+- [`map/`](map/README.md) is the **human-navigable synthesis** — start at
+  [`map/00-overview.md`](map/00-overview.md), then eight subsystem maps (01–08) + the meta-root /
+  `meta*` walk (09–10).
+- [`QUESTIONS_LESSONS.md`](QUESTIONS_LESSONS.md) is the **reconciliation ledger**: §1 every
+  contradiction/ambiguity found, §2 the confirmed truths + the answers (resolved by searching the
+  code, never by asking the owner).
+
+A bounded compact pack of the memoir is injected into every session via
+`scripts/hooks/icm-architecture-inject.sh` (wired into `.claude/settings.json` `SessionStart` +
+`PreCompact`; live `icm` with a committed `icm/INDEX.md` fallback).
 
 ## Related existing docs
 

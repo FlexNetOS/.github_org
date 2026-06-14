@@ -1,0 +1,10 @@
+--- 01KTQRX55SYV3VDKFQZNJQ33D9 ---
+  topic:      context-envctl-secrets
+  importance: high
+  weight:     0.959
+  created:    2026-06-09 22:23
+  accessed:   2026-06-13 08:52 (x9)
+  summary:    envctl secrets-engine deep-dive for hf loop-v2 integration. Crate 'envctl_secrets' = pure-Rust vault + credential broker (virtual-credit-card model) + injector, used as a LIBRARY by secretd (tonic gRPC daemon) and secretctl (client over UDS). Vault: XChaCha20-Poly1305 AEAD per record (vault/crypto.rs seal/open), Argon2id/HKDF LUKS-style dual-KEK keyslots wrapping a random DEK (keyslot.rs), fixed 39-byte canonical AAD binding table/row_id/version/dek_generation (vault/aad.rs), hash-chained DEK-anchored audit. Broker: decide.rs is PURE default-deny RelayDecision::{Allow,Deny{DenyReason}} over policy+VerifiedBearer+CanonRequest checking enabled/revoked/expiry(wall+CLOCK_BOOTTIME)/host/path/method/canonical-upstream/peer-uid-pid/SNI/budgets/rate/presence-gate. gate.rs = PresenceGate trait + GateState{Present,AbsentSince,Unproven} fail-closed. token.rs = blake3 keyed-MAC bearer + row-MAC, constant-time verify. policy.rs = RelayPolicy, clamp_ttl (<=24h MAX_BEARER_TTL_SECS choke), canonical_upstreams(Github=>api.github.com,uploads.github.com). lib.rs Engine: relay_mint (USB-gated, peer-bound, <=24h) returns Bearer{raw zeroized, token_id}; relay_swap (async) swaps bearer->real key ONLY to Upstream::send. MATURITY: vault+broker+relay_swap fully implemented + heavily tested (tests/relay.rs 20+ tamper/rollback/leak tests all green). GAPS/todo!(): inject.rs injection_template + discover_profile, ca.rs LocalCa, Engine::run_child, seam ProviderMint::mint_scoped (NativeSubToken/GitHub fine-grained PAT minting) all stubs. secretd Run/inject UNIMPLEMENTED Phase 6; data-plane swap is Phase 8. For hf: broker decide=merge-gate; ProviderMint/NativeSubToken seam (seam.rs MintRequest{repos,perms,ttl}/ScopedToken) is the intended PARENT_REPO_PAT replacement but is a STUB; inject.rs/run_child env-overlay to gh/git is a STUB.
+  keywords:   envctl, secrets-engine, broker, relay, bearer, inject, scoped-token, github-pat, handoff-loop, merge-gate
+  embedding:  yes
+
