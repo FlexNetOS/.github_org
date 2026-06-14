@@ -3,6 +3,11 @@
 Operational documentation that applies across FlexNetOS repositories.
 Per-project docs live in each project's own `docs/`, not here.
 
+> **Note (ADR-0002, 2026-06-14):** `directory-layout.md`, `submodule-vision.md`, and
+> `linked-submodule-workflows.md` describe the **retired** submodule-mount model (and
+> `fork-workflow.md`'s destination changed) — repo organization moved to typed hubs. They are kept
+> for historical reference. See [`../VISION.md`](../VISION.md).
+
 | Doc | What it answers |
 | --- | --- |
 | [`fork-workflow.md`](fork-workflow.md) | How to carry local patches on a third-party repo while staying current with upstream releases. The fork-and-track pattern, upstream syncing, release-tag sync, and conflict-resolution conventions. |

@@ -1,5 +1,11 @@
 # FlexNetOS submodule vision
 
+> **SUPERSEDED (ADR-0002, 2026-06-14).** Describes the **retired** model where FlexNetOS repos mounted
+> as git submodules under `.github_org/repos/`. That role moved to typed **hubs**; `repos/MANIFEST.yaml`
+> is now an offload stub and unclassified repos park in `~/Desktop/pending_relocate`. Kept for historical
+> reference (never-downgrade). Current model: [`../VISION.md`](../VISION.md) ·
+> [`../architecture/adr/ADR-0002-lean-github-org-relocate-to-hubs.md`](../architecture/adr/ADR-0002-lean-github-org-relocate-to-hubs.md).
+
 FlexNetOS uses this repository as an umbrella control plane: every component
 stays in its own GitHub repository, while `repos/MANIFEST.yaml` and git
 submodule pointers connect those repositories into one reproducible ecosystem.

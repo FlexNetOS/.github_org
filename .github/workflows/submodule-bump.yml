@@ -1,11 +1,14 @@
 name: submodule-bump
 
-# Weekly: opens a PR with submodule pointers fast-forwarded to tracked HEAD.
-# Calls reusable-submodule-bump.yml.
+# DORMANT (ADR-0002, 2026-06-14): repos/MANIFEST.yaml is now an offload stub — there
+# are no repo/tool submodules to bump here (they moved to typed hubs). The weekly
+# schedule is disabled; the job stays manual-only (workflow_dispatch). The reusable
+# mechanism (reusable-submodule-bump.yml) is preserved for hub-side bumping.
+# Re-enable the schedule only if .github_org regains bumpable submodules.
 
 on:
-  schedule:
-    - cron: '0 14 * * 1'      # Monday 14:00 UTC
+  # schedule:                # disabled — dormant per note above (ADR-0002)
+  #   - cron: '0 14 * * 1'   # Monday 14:00 UTC
   workflow_dispatch:
     inputs:
       group:

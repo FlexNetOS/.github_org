@@ -1,5 +1,10 @@
 # Linked submodule workflows
 
+> **SUPERSEDED (ADR-0002, 2026-06-14).** Describes the **retired** submodule-mount model. Repo
+> organization moved to typed **hubs**; `repos/MANIFEST.yaml` is now an offload stub. Kept for
+> historical reference (never-downgrade). Current model: [`../VISION.md`](../VISION.md) ·
+> [`../architecture/adr/ADR-0002-lean-github-org-relocate-to-hubs.md`](../architecture/adr/ADR-0002-lean-github-org-relocate-to-hubs.md).
+
 The next layer of the FlexNetOS umbrella is workflow linkage: the parent repo
 should be able to trigger automation inside submodule repos, and submodule repos
 should be able to report status back to the parent.
