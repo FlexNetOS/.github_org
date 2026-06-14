@@ -14,6 +14,11 @@ useDefault = true
     # because gitleaks uses --no-git tree scan; contains public OAuth
     # client IDs flagged as generic-api-key false positives
     '''\.claude/plugins/cache/''',
+    # verbatim ICM memory/memoir ingestion (ADR-0002): machine-generated
+    # memory prose that mentions token/key NAMES, hostnames (e.g. the
+    # cognitum-578b SSH host), and hashes — descriptive text, not real
+    # credentials. Same rationale as the research archives above.
+    '''architecture/icm/''',
   ]
 
   regexes = [
