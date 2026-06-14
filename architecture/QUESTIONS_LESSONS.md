@@ -176,15 +176,19 @@ many answers verified against live code.
 
 ### 1.9 Settings / harness reconciliation (this session)
 
-- **Q9.1** The `settings.canonical.json` reference says user-global hooks (ruvector/ccg/gitnexus/
+- **Q9.1** The `settings.canonical.json` reference said user-global hooks (ruvector/ccg/gitnexus/
   global) are "drift to be dropped" and `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` "must not appear",
-  but the owner directive is "never downgrade." Global `~/.claude/settings.json` does NOT wire those
-  hooks, so dropping them from the tracked repo file WOULD remove function. Resolution applied this
-  session, recorded as **L9.1/L9.2**. Residual `make claude.doctor` violations (5 marketplace paths +
-  1 env key) are intentional and belong to the gated trim USER.TODO — **ANSWERED → L9.1, L9.2**
-- **Q9.2** Do Claude Code marketplace `source.path` values tilde/env-expand? If yes, the 5 hardcoded
-  `/home/drdave/_work|repos/...` marketplace paths could be portabilized too; if no, rewriting them
-  breaks plugin loading. Left hardcoded pending verification. — **OPEN**
+  contradicting "never downgrade." **CORRECTED (owner directive 2026-06-13 + ADR-0006):** the premise
+  was wrong — **meta/envctl IS the env manager**; the env block + plugin marketplaces are intentional
+  meta-controlled config, never drift. The doctor's forbidden agent-teams key was removed and the
+  canonical reference rewritten. — **ANSWERED → L9.1, L9.4**
+- **Q9.2** Do Claude Code marketplace `source.path` values tilde/env-expand? **ANSWERED:** No — Claude
+  Code reads `source.path` directly (no shell expansion), so the portability fix is the **envctl
+  template-substitution pass at link time** (ADR-0006, like `envctl/home/.claude/settings.json.tmpl`
+  with `${META_ROOT}`), which renders the correct per-host path — **not** a trim. Note: the 5 paths
+  currently point at `/home/drdave/_work|repos/...` which **do not exist on this box** → those
+  marketplaces are stale/incomplete work to carry forward (per "never downgrade"), not to drop.
+  — **ANSWERED → L9.5**
 
 ---
 
@@ -436,21 +440,41 @@ Confirmed ground truths carried forward (and answers to Section-1 questions).
 
 ### 2.9 Settings / harness reconciliation (this session)
 
-- **L9.1** *(answers Q9.1)* **The user-global hooks are NOT a downgrade to keep.** Global
-  `~/.claude/settings.json` wires `icm hook *`, `rtk hook claude`, weave hooks, and vox — but **not**
-  the ruvector/ccg/gitnexus/global hooks, which exist **only** in the tracked repo file. Therefore
-  they were **kept** (removing = real function loss), honoring "never downgrade." The canonical
-  reference's "drop them" guidance is deferred to the gated trim USER.TODO.
-- **L9.2** *(answers Q9.1)* Hardcoded `/home/drdave/.claude/...` hook paths were **portabilized to
-  `~/.claude/...`** (shell-executed → tilde expands; `~/.claude` is already allowlisted) — an
-  upgrade that removed ~9 never-allowlistable violations with zero behavior change. The 5
-  marketplace `source.path` values + the `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key were
-  **intentionally retained** (rewriting marketplace paths risks breaking plugin loading; dropping
-  the env key would disable agent-teams) → 6 residual, intentional `make claude.doctor` reports.
+- **L9.1** *(answers Q9.1)* **meta/envctl IS the user-global env manager (ADR-0006).** `envctl/home/`
+  is the canonical home tree (the single source of truth for user-global, non-secret config); `$HOME`
+  paths are **symlinks into it** ("real file in meta, symlink outside, never the reverse"), wired by
+  the `claude-global-links`/`portability-links` components. So what is conventionally "user-global
+  settings" is meta-controlled here, and **portability/replication = the envctl template render**
+  (`envctl/home/.claude/settings.json.tmpl` with `${META_ROOT}`), not trimming. The functional hooks
+  (repo-relative scripts/hooks/* AND the user-global ruvector/ccg/gitnexus/global hooks) are **kept** —
+  removing them is a real downgrade.
+- **L9.2** *(answers Q9.1)* Hardcoded `/home/drdave/.claude/...` hook command paths were portabilized
+  to **`~/.claude/...`** (shell-executed → tilde expands to the envctl-symlinked home; already
+  allowlisted) — an upgrade, zero behavior change. The 5 plugin-marketplace `source.path` values are
+  **meta's plugin system**, left as-is: their hardcoded `/home/...` form is recorded **portability
+  residue** whose sanctioned fix is the envctl template pass (ADR-0006), **never a drop**.
 - **L9.3** **ICM architecture injection wired** (this session): `scripts/hooks/icm-architecture-inject.sh`
   on `SessionStart` + `PreCompact` injects a **bounded** (~2KB) compact pack of the
   `system-architecture` memoir — live via `icm --no-embeddings recall-context` when present, else the
   committed `architecture/icm/INDEX.md` (graceful no-op when `icm` is absent → portable to any machine).
+- **L9.4** *(answers Q9.1; owner correction 2026-06-13)* The `.github_org` settings-doctor tooling was
+  **wrong**, not the settings: it forbade `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` (which must NEVER
+  be dropped) and framed meta's plugin marketplaces as "drift." **Fixed:** `claude-settings-doctor.js`
+  `FORBIDDEN_KEYS` is now `[]` (the `env` block + `enabledPlugins`/`extraKnownMarketplaces` are
+  meta/envctl-owned and not policed), and `settings.canonical.json` was rewritten to the ADR-0006
+  model. The doctor now reports only the genuine portability residue (5 marketplace `/home/...` paths),
+  framed as "apply the template pass," not "trim."
+- **L9.5** *(answers Q9.2)* Claude Code reads marketplace `source.path` **directly** (no `~`/`$VAR`
+  expansion) — so portability there is achieved by a **render step** (the envctl template pass), which
+  must emit a real per-host path. The 5 `.github_org` marketplaces currently point at
+  `/home/drdave/_work|repos/...` directories that **don't exist on this box** → stale/incomplete work
+  to carry forward (per "never downgrade"), distinct from meta's live plugin system (global
+  `~/.claude/settings.json` enables `gitkb`/`harness-marketplace`/`meta` from inside `meta/`).
+- **L9.6** ADR-0006 layering (from `envctl/home/README.md`): **envctl** = OS/toolchain/box layer, owns
+  the home tree + symlink wiring; **kasetto** = agent layer (skills/MCP into `.claude`/`.codex`),
+  global manifest at `.config/kasetto/kasetto.yaml`; **meta** = repo/workspace layer, `bootstrap.sh`
+  sequences `rustup → clone → build → envctl install → kasetto sync --locked → envctl doctor`. Rules:
+  no secrets, no state, archive-first, every file reviewed individually — because `envctl/home/` is PUBLIC.
 
 ---
 
