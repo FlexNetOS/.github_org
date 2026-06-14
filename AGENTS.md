@@ -8,12 +8,18 @@ the constraints that apply to **all** agents.
 
 ## What this repo is
 
-`my-github` on disk = the `FlexNetOS/.github` org-wide repository. It is an
-operational umbrella — community-health files, ~24 git submodules, a `pass`+GPG
-secrets vault, a self-hosted GitHub Actions runner host config, and shared
-reusable CI templates. **Nothing to build or run at the top level.** Real
-codebases live in submodules under `repos/`; read their own `CLAUDE.md` /
-`AGENTS.md` / `README.md` before touching them.
+`my-github` on disk = the `FlexNetOS/.github` org-wide repository (at
+`~/Desktop/meta/.github_org`). It is the org's **`.github` repo + a small
+operational hub** — community-health files, the Karpathy LLM-wiki (`wiki/` +
+`data/brain-data/`), a `pass`+GPG secrets vault, a self-hosted runner host
+config, and shared reusable CI templates. **Nothing to build or run at the top
+level.** Real codebases live in their own repos / typed **hubs**, not here.
+
+> **ADR-0002 (2026-06-14):** this repo is **no longer the submodule mount point**.
+> Repo organization moved to typed FlexNetOS hubs (`tool_hub`, `plugin_hub`,
+> `vault_hub`, …); unclassified repos park in `~/Desktop/pending_relocate`.
+> `repos/MANIFEST.yaml` is an offload stub. `ruvector` lives at `meta/ruvector`
+> (**crates only**). `data/brain-data/*` stays.
 
 ---
 
@@ -40,7 +46,7 @@ Exempt from this rule: `.claude/**`, `.omc/**`, `.github/**`, `CLAUDE.md`,
 2. **Research** — `make research.pack URL=<owner/repo>`, write dossier at `data/brain-data/research/<name>.md`
 3. **Set it up working** — run as intended; host deps are temporary, not the destination
 4. **Fork** — `gh repo fork <upstream> --org FlexNetOS --clone=false`; `main`/`master` tracks upstream clean, `develop` carries FlexNetOS changes
-5. **Submodule** — `make submodules.add` registers the fork; `repos/MANIFEST.yaml` is the source of truth
+5. **Register in the hub** — land the proven `develop` fork in its typed hub (`<hub>/repos/` + the hub's `registry.json`/`entries/`), **not** as a submodule under `.github_org/repos/` (ADR-0002). Do **not** clone repos that aren't already on disk — route adoption through the handoff loop.
 
 Forking before step 3 is complete has previously broken repos. This gate is mandatory.
 
@@ -48,9 +54,9 @@ Forking before step 3 is complete has previously broken repos. This gate is mand
 
 No `--depth 1`, no `--filter=blob:none`. The Vision requires full clones — workspace reproducibility depends on complete history.
 
-### 4. Submodules are required, not optional
+### 4. External deps belong in the git graph — in a HUB, not here
 
-Every external dependency belongs in the git graph. Logs, cache, build artifacts — if it would normally be gitignored, it gets its own submodule. Nothing on disk is untracked in the broader git graph.
+Every external dependency belongs in the git graph, organized into its typed **hub** (ADR-0002) — **not** as a submodule under `.github_org/repos/` (that role is retired). Unclassified work parks in `~/Desktop/pending_relocate` with its url+SHA preserved (never-downgrade). Never delete a stale/orphaned repo reference — carry it forward.
 
 ### 5. Secrets never in git
 
@@ -62,8 +68,8 @@ Secrets are injected at runtime via `pass` + `direnv`. `.env.example` files (key
 
 | Location | Purpose |
 |---|---|
-| `/home/drdave/workspace/my-github` | Canonical repo root (migrated from `_work/repos/my-github`) |
-| `repos/MANIFEST.yaml` | Single source of truth for all submodules |
+| `~/Desktop/meta/.github_org` | Canonical repo root (the `FlexNetOS/.github` repo) |
+| `repos/MANIFEST.yaml` | Offload stub (ADR-0002) — repos moved to hubs / `~/Desktop/pending_relocate` |
 | `data/brain-data/research/` | Research dossiers and plans — **never** `.omc/plans/` |
 | `secrets/store/` | `pass`-managed GPG vault |
 | `runner/` | Self-hosted GitHub Actions runner config |
@@ -92,8 +98,8 @@ here, overriding their built-in defaults:
 
 ```bash
 make verify              # Run ALL local verification (gate before any PR)
-make verify.manifest     # Validate repos/MANIFEST.yaml
-make submodules.add      # Add MANIFEST entries missing from .gitmodules
+make verify.manifest     # Validate repos/MANIFEST.yaml (now an offload stub)
+make submodules.status   # data/brain-data submodule status (repo/tool submodules retired — ADR-0002)
 make research.pack URL=<owner/repo>   # Clone + repomix-pack upstream for research
 make claude.doctor       # Audit .claude/settings.json for bad paths
 ```
@@ -107,7 +113,8 @@ make claude.doctor       # Audit .claude/settings.json for bad paths
 - Treating `_work/repos/` as the canonical path (canonical is `workspace/my-github`)
 - Putting research or plans in `.omc/plans/` (must be `data/brain-data/research/`)
 - Editing on `main` instead of a feature branch
-- Treating host-level installs as permanent (they are temporary; refactor into submodules)
+- Treating host-level installs as permanent (they are temporary; land the result in its hub)
+- Re-adding repos as submodules under `.github_org/repos/`, or cloning a repo not already on disk (ADR-0002)
 - Skipping the `make research.pack` step before writing a dossier
 
 ---

@@ -1,20 +1,24 @@
 # `.github` — FlexNetOS umbrella
 
-This repository is a **mega-umbrella** that plays six roles at once.
-[`VISION.md`](VISION.md) is the canonical overview; the table below is the
-two-line tour:
+This repository is the org's **`.github` repo + a small operational hub**, playing
+five roles. [`VISION.md`](VISION.md) is the canonical overview; the table below is
+the two-line tour:
 
 | # | Role | Lives in |
 | --- | --- | --- |
 | 1 | GitHub org community-health fallback | repo root + [`.github/`](.github/) |
-| 2 | Mount point for ~24 git submodules | [`repos/MANIFEST.yaml`](repos/MANIFEST.yaml) + [`scripts/`](scripts/) |
-| 3 | Karpathy LLM-wiki cross-project memory layer | [`wiki/`](wiki/) |
-| 4 | `pass`+GPG secrets vault with paper recovery | [`secrets/`](secrets/) |
-| 5 | Self-hosted GitHub Actions runner host config | [`runner/`](runner/) |
-| 6 | Shared reusable-CI templates | [`.github/workflows/reusable-*.yml`](.github/workflows/) |
+| 2 | Karpathy LLM-wiki cross-project memory layer | [`wiki/`](wiki/) + [`data/brain-data/`](data/brain-data/) |
+| 3 | `pass`+GPG secrets vault with paper recovery | [`secrets/`](secrets/) |
+| 4 | Self-hosted GitHub Actions runner host config | [`runner/`](runner/) |
+| 5 | Shared reusable-CI templates | [`.github/workflows/reusable-*.yml`](.github/workflows/) |
+
+> **Retired (ADR-0002, 2026-06-14):** the former role "mount point for ~24 git
+> submodules" is gone. Repo organization moved to typed FlexNetOS **hubs**
+> (`tool_hub`, `plugin_hub`, …); [`repos/MANIFEST.yaml`](repos/MANIFEST.yaml) is now
+> an offload stub and unclassified repos park in `~/Desktop/pending_relocate`.
 
 Each role is documented in [`VISION.md`](VISION.md). The rest of this README
-focuses on role #1 (community-health inheritance) and role #6 (reusable
+focuses on role #1 (community-health inheritance) and role #5 (reusable
 workflows) — the two roles other FlexNetOS repos interact with directly.
 
 For maintainer responsibilities see [`MAINTAINERS.md`](MAINTAINERS.md); for
