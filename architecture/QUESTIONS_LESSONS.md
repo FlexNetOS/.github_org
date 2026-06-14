@@ -568,3 +568,24 @@ strongest. This addendum is the authoritative status update for the Section-1 qu
   Jobs as authoritative store" against the locked source-of-truth hierarchy (weave Jobs = view only)?
 - **Q-N10** *(in-kernel witness tier)* With three witness tiers (L5.8 amended), which tier governs
   in-kernel Cognitum-Seed events, and does `hf anchor` bridge it to the canonical RVF chain? (relates Q-N7).
+
+### D. Final verification pass — answers from live repos (2026-06-13)
+
+- **L-N1** *(answers Q-N1)* The canonical rusty-idd repo is **`FlexNetOS/rusty-idd` at
+  `~/Desktop/meta/rusty-idd`** (remote confirmed). The STACK-INTEGRATION reference to
+  `~/Desktop/idd-merge-idd` is a **stale path — that directory does not exist**. Use `meta/rusty-idd`.
+- **L-N2** *(answers Q-N8)* **No cargo cycle.** `meta_cli` depends only on `meta_core` +
+  `meta_plugin_protocol`; it does **not** depend on `meta_git_lib`. `meta_git_lib` depends on
+  `meta_cli` (`package = "meta"`) — a deliberate **lib←consumer** layering (the `meta` *library* is
+  linked by `meta_git_lib`/`meta_mcp`, separate from the `meta` *binary*). It resolves cleanly.
+- **L-N3** *(answers Q-N2)* At prompt_hub HEAD (`main@e986a5a`): **zero `mcp` in Rust source, zero
+  outbound dispatch** (no `export_to_weave`/`weave_send`/`work_orders_from_bundle`/`handoff.task`).
+  GAP-REGISTER item 10 ("zero MCP server + zero outbound dispatch") is **still literally true at HEAD**.
+  The recent loop (#88–#92) was budget-ungating / NO-DOWNGRADE recasts / CI, and #89 exposed **4 hub
+  methods as HTTP routes** (tokens/cost/render/input) — i.e. the live front-door surface is **HTTP, not
+  MCP** (a data point for Q7.1's still-owed transport ADR, HFTASK-0019).
+- **L-N4** *(partial Q-N3)* meta's own `.github/workflows/` (`ci.yml`, `on-push-main.yml`,
+  `on-child-update.yml`) **do reference `PARENT_REPO_PAT`** — confirming the dependency. Whether the
+  org secret is granted to `FlexNetOS/meta` itself is a secret-state fact not visible from the
+  filesystem; it remains **NEEDS-HUMAN wall #2** (Release-Please "token not supplied" on meta). Carry
+  forward as incomplete, not drift.
