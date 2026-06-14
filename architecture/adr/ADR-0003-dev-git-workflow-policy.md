@@ -49,8 +49,19 @@ The owner posed ten questions that this ADR defines and answers (see **Decision*
 - **Docs said the older model:** `CONTRIBUTING.md` / `CLAUDE.md` said "Branch off `main`",
   contradicting the live `develop`-trunk + promote machinery. `CONTRIBUTING.md` is the
   **org-wide inherited** fallback; `CLAUDE.md`/`AGENTS.md` are the **agent operating** docs.
-- **Branch protection on `main`:** PR + 1 approval, linear history, no force-push, no deletion,
-  squash/rebase only (`CONTRIBUTING.md`, `README.md`, `CLAUDE.md`).
+- **Branch protection (live `gh api`, 2026-06-14) — BOTH branches require review:**
+  | | required approvals | linear history | required status checks | `enforce_admins` |
+  |---|---|---|---|---|
+  | `main` | **1** | yes | the 6 below | false |
+  | `develop` | **1** | no (merge commits OK) | the 6 below | false |
+
+  Required checks (identical on both): `lint / Lint (mixed)`, `actionlint .github/workflows`,
+  `markdownlint`, `Validate manifests`, `Hermetic dependency audit`, `security / Gitleaks secret
+  scan`. **`Trivy`, the `.claude/settings.json` doctor, and Claude review are NOT required** —
+  they are advisory and do not block merge. **Correction to the ICM `map/01` fleet profile** which
+  claimed develop had "NO required reviews (autonomous-loop compatible)": that is **false** for
+  this repo — `develop` requires 1 approval just like `main`. `enforce_admins:false` means an admin
+  principal can land a PR; that is the seam a *separate* trusted principal uses.
 - **Owner principle (2026-06-13, recorded `decisions-meta`):** *every repo gets `develop` (trunk)
   + `main`/`master` (protected mirror), create-if-missing — roll out AFTER the envctl protection
   mechanism is proven.* envctl is the proven precedent.
@@ -62,10 +73,18 @@ The owner posed ten questions that this ADR defines and answers (see **Decision*
 promote develop→main → release-please`. `main` is **never** committed or PR'd to directly by a
 human or agent; it advances **only** via `promote-develop-to-main.yml`.
 
-This dissolves the agent-can't-self-approve deadlock: **agent PRs target `develop`** (the
-autonomous trunk, CI-gated, no human-review wall), and the protected-`main` crossing is performed
-by the **promotion identity** (`PROMOTE_TOKEN` / GitHub App via envctl) — a *separate* principal,
-so separation-of-privilege holds without the author ever self-approving.
+This dissolves the agent-can't-self-approve deadlock **without** relying on a review-free trunk
+(both branches require 1 approval). The deadlock is broken because **the approval/merge is always
+supplied by a *separate* trusted principal, never by the PR author**:
+- `develop → main`: `promote-develop-to-main.yml` auto-approves with `PROMOTE_TOKEN` (a distinct
+  actor → GitHub accepts the approval) and rebase auto-merges.
+- `feature → develop`: the approval comes from the GitHub App (via envctl) or the owner — the
+  designated separate principals — and `enforce_admins:false` lets that admin principal land it.
+
+The agent author may arm auto-merge (`gh pr merge --auto`) but must **never** approve or
+admin-merge its **own** PR on either protected branch — that would collapse the separation of
+privilege. Agent PRs still target `develop` (so `main` is only ever reached via promotion), but
+the separation property comes from *who approves*, not from the trunk being unguarded.
 
 ### Answers to the ten questions
 
@@ -91,9 +110,10 @@ ritual in `CLAUDE.md`.)
 **Q3 — How do PRs move through GitHub Actions?**
 1. Push a feature branch / open a PR into `develop` → `ci.yml` (+ `manifest-drift.yml`,
    `dependency-review.yml` on main-targeted PRs, `claude-code-review.yml`) run on it.
-2. `develop` has **no required-human-review gate** (autonomous trunk). When CI is green the PR
-   squash-merges (auto-merge armed via `gh pr merge --auto --squash`, or `auto-review-merge.yml`
-   for upgrade PRs) → **one Conventional Commit per task on `develop`**.
+2. `develop` requires the 6 checks green **+ 1 approval from a separate principal** (App via
+   envctl / owner — never the author). With those met the PR squash-merges (auto-merge armed via
+   `gh pr merge --auto --squash`, or `auto-review-merge.yml` for upgrade PRs) → **one Conventional
+   Commit per task on `develop`**.
 3. `promote-develop-to-main.yml` fires on `ci` success on `develop`, maintains the perpetual
    `develop → main` promote PR, auto-approves via `PROMOTE_TOKEN` (separate identity), and
    **rebase** auto-merges when green → `main` advances, commits preserved.
@@ -160,15 +180,20 @@ task (KBTASK/HFTASK)
 ## Consequences
 
 **Positive**
-- The agent-self-approval deadlock is structurally dissolved: agent PRs go to `develop` (no
-  human-review wall); `main` is crossed by a separate principal.
+- The agent-self-approval deadlock is dissolved by *who approves* (a separate principal), not by a
+  review-free trunk: agent PRs go to `develop`, and both protected crossings are approved by a
+  separate principal (App via envctl / owner / `PROMOTE_TOKEN`).
 - One unambiguous flow for task→commit→PR→CI→promote→release, with explicit failure flowback.
 - Granularity rules (1 task : 1 commit-on-trunk : 1 PR : 1 worktree) stop mega-PRs like #102.
 
 **Required follow-ups (tracked in QUESTIONS_LESSONS §F)**
-1. **#102 specifically:** stop targeting `main`. Either (a) re-target its base to `develop`, or
-   (b) land it on `develop` as a single squashed "architecture-ingestion" commit; fix its real
-   RED checks first (`.claude/settings.json hygiene`, `Trivy`). It must never merge to `main`
+1. **#102 specifically (owner-chosen: re-target → develop, squash):** its **6 required checks are
+   GREEN**; the only merge blocker is the **1 approval** (must come from a separate principal). The
+   advisory failures (`Trivy`, `.claude/settings.json` doctor, Claude review) are **not required**
+   and do not block merge — clean them up separately (the settings-doctor finding is env-manager
+   config, ADR-0006/envctl territory). Because the branch was cut from `main` it is **15 commits
+   behind `develop`** with overlapping `architecture/`, so re-targeting needs a `develop`→branch
+   merge-resolve first, then squash-merge to `develop` (1 commit). It must never merge to `main`
    directly.
 2. **Reconcile the `develop`/`main` `4/15` divergence** so the one-way promote flow holds going
    forward (promote develop→main; fast-forward/replay main's 4 orphan commits onto develop).

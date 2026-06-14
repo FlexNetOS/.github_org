@@ -649,24 +649,36 @@ dev/PR workflow was never written down.** Defining it (ADR-0003 + `WORKFLOW.md`)
   protected mirror had drifted (main carries 4 commits develop lacks; develop carries 15 unpromoted).
   **Action:** reconcile to a one-way flow (promote develop→main; replay main's 4 orphan commits onto
   develop) so the model holds going forward. *(Follow-up, not yet executed.)*
-- **C-F3** *(review gate contradiction)* Docs say `main` requires **1 approval**; the fleet
-  branch-protection profile in `map/01` says **"NO required reviews (autonomous-loop compatible)."**
-  **Resolved:** the two apply to *different branches* — `develop` has **no** required human review
-  (autonomous trunk); `main` **keeps** its 1-approval gate, and that approval is supplied by the
-  **promotion identity** (`PROMOTE_TOKEN` / GitHub App via envctl), a *separate* principal from the
-  PR author. This is what dissolves the agent-can't-self-approve deadlock.
+- **C-F3** *(review-gate — CORRECTED against live `gh api`)* The fleet profile in `map/01` claimed
+  `develop` had **"NO required reviews (autonomous-loop compatible)."** **Live protection
+  (2026-06-14) proves that FALSE for this repo:** *both* `develop` **and** `main` require **1
+  approval**, with the *same* 6 required checks (`lint`, `actionlint`, `markdownlint`, `Validate
+  manifests`, `Hermetic dependency audit`, `security / Gitleaks secret scan`) and
+  `enforce_admins:false`; `main` adds linear-history. **Resolved:** the deadlock is dissolved **not**
+  by a review-free trunk but by **who approves** — the approval/merge is always supplied by a
+  *separate* trusted principal (`PROMOTE_TOKEN` for `develop→main`; GitHub App via envctl / owner
+  for `feature→develop`), never by the PR author; `enforce_admins:false` is the admin seam that
+  principal uses. An agent must never approve or admin-merge its **own** PR on either branch.
+  *(Fixes the earlier draft of this entry, which wrongly called `develop` review-free.)*
 - **C-F4** *(delete-on-merge gap)* The canon is delete-branch-on-merge for feature branches, but
   `auto-review-merge.yml` explicitly **does not** delete (`no --delete-branch; branches stay`).
   **Action:** enable delete-branch-on-merge and reconcile that workflow. *(Follow-up.)*
-- **C-F5** *(stale "#102 is green" belief — CORRECTED)* The pre-compact resume capsule asserted
-  *"#102 — all required checks green, blocked only on the protected-`main` review."* **Live state
-  proves otherwise:** `mergeStateStatus=BLOCKED`, `reviewDecision=REVIEW_REQUIRED`, and **RED**
-  required checks — `.claude/settings.json hygiene` → FAILURE, `security / Trivy filesystem + IaC`
-  → FAILURE (×2), plus `review`/`claude-review` → FAILURE. And it **targets `main` directly** from
-  a long-lived `research/*` mega-branch (the exact anti-pattern). **Resolution:** do **not** force
-  it onto `main`. Fix the real RED checks first, then either re-target its base to `develop` or land
-  it on `develop` as a single squashed architecture-ingestion commit; let promotion carry it to
-  `main`. (Supersedes the L-E4 framing that #102 was cleanly landable as-is.)
+- **C-F5** *(#102 real state — measured)* The pre-compact capsule said *"#102 — all required checks
+  green, blocked only on the protected-`main` review."* **That is correct:** the **6 required
+  checks ARE green** on #102; the lone merge blocker is the **missing 1 approval** (`BLOCKED` /
+  `REVIEW_REQUIRED`). The failures visible in the rollup — `.claude/settings.json hygiene`,
+  `security / Trivy filesystem + IaC` (×2), `review`/`claude-review` — are **NOT required checks**
+  (they are advisory) and do **not** block merge. *(An earlier draft of this entry wrongly called
+  #102 "RED/blocking" — corrected.)* What the capsule **missed**: (a) `develop` is *also*
+  review-protected (see C-F3), so re-targeting doesn't escape the approval gate — it just routes it
+  to the separate principal correctly; (b) the branch was cut from `main` and is **15 commits behind
+  `develop`** with overlapping `architecture/`, so re-targeting needs a `develop`→branch
+  merge-resolve before a clean squash. **Resolution (owner-chosen):** fix the advisory failures
+  separately (the settings-doctor finding = 5 hardcoded `/home/drdave/_work/...` marketplace paths
+  in `.claude/settings.json` → env-manager/envctl territory, ADR-0006, **do not** casually rewrite);
+  merge `develop` into the branch to resolve the lag; re-target base `main → develop`; squash-merge
+  to `develop` with a separate-principal approval; promotion carries it to `main`. Never merge to
+  `main` directly.
 
 - **L-F1** *(the canon — answers the owner's 10 questions)* See **ADR-0003** + **`WORKFLOW.md`**.
   Summary: trunk=`develop`, mirror=`main` (promotion-only); feature branch off `develop` → PR into
