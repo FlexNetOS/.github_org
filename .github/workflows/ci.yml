@@ -29,7 +29,7 @@ jobs:
     name: Validate manifests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - name: Validate repo manifest
         run: python3 scripts/verify-manifest.py repos/MANIFEST.yaml
       - name: Validate tool manifest
@@ -39,7 +39,7 @@ jobs:
     name: actionlint .github/workflows
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - name: Run repo-local actionlint wrapper
         run: tools/bin/actionlint .github/workflows/*.yml
 
@@ -47,14 +47,14 @@ jobs:
     name: markdownlint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - run: python3 scripts/verify-markdown.py .
 
   hermetic-audit:
     name: Hermetic dependency audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - run: python3 scripts/hermetic-audit.py .
 
   security:
