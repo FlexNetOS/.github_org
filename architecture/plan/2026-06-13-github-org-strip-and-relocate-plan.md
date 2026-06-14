@@ -32,6 +32,48 @@ Everything else lands in typed hubs: **`tool_hub`** (toolchain pins), **`plugin_
 > `workspaceMember`/`forked`, e.g. `entries/envctl.md`) pointing at a peer/pinned source — **not** as a
 > submodule-of-hub; the 7 `tools/*` pins relocate as `hosting: "pinned"` (or "vendored") entries.
 
+## FULL submodule inventory — discovered 2026-06-13 (supersedes the partial view above)
+
+`.github_org` has **two disjoint submodule worlds that have drifted apart**:
+
+**(1) The authoritative intent — `repos/MANIFEST.yaml` (29 entries + `network/slim`),** at
+`repos/{owned,forked,external}/<name>` paths, each with `url` + `branch` + `groups:` + `toolchain:`
+metadata (good for hub classification). These are **intended** submodules, **not materialized** (no
+gitlinks in the index). Examples: `repos/owned/ruvector`, `repos/owned/ruOS`,
+`repos/owned/understand-anything`, `repos/forked/n8n`, `repos/forked/everything-claude-code`
+(NEW—fork required), `repos/external/vaultwarden`, `repos/external/andrej-karpathy-skills`, …
+
+**(2) The actual index — 10 gitlinks, 9 of them ORPHANED** (in the git index but **not** in
+`MANIFEST.yaml`, often at stale flat paths). Strip would lose these pinned SHAs, so they are recorded
+here (never-downgrade):
+
+| Orphan gitlink (index path) | Pinned SHA | In MANIFEST? | Likely hub |
+|---|---|---|---|
+| `data/brain-data/DeepTutor` | `6153d8c0` | no | (research/wiki) |
+| `data/brain-data/deepwiki-rs` | `6bd83afa` | no | (research/wiki) |
+| `data/brain-data/my-wiki-knowledge/.claude/obsidian-second-brain` | `23a0ed29` | no | (research/wiki) |
+| `data/brain-data/my-wiki-knowledge/.claude/obsidian-skills` | `553ef99a` | no | (research/wiki) |
+| `data/brain-data/obsidian-mind` | `92ce75d0` | no | (research/wiki) |
+| `network/slim` | `c4ffbea1` | **yes** (`FlexNetOS/slim`) | `network_hub` |
+| `repos/ai-top-utility` | `1d19b98e` | no | ? (classify) |
+| `repos/fabro` | `3634048a` | no | ? (classify) |
+| `repos/n8n` | `25a836df` | no (MANIFEST has `repos/forked/n8n`) | `flow_hub` |
+| `repos/paperclip` | `be034716` | no | ? (classify) |
+
+**Implication:** the move is not a clean lift — it is a **reconciliation** of (intended MANIFEST) vs
+(stale orphan gitlinks) vs (the new hubs-by-type model). The `tools/*` slice (7 pins → `tool_hub`,
+DONE + verified) was the clean part. The remaining ~10 gitlinks + 29 MANIFEST repos need
+classification, the orphans need their SHAs preserved on relocation, and the `NEW — fork required`
+entries need the research-before-fork ritual (outward).
+
+### Decisions needed before the bulk strip
+- **Classification** of `repos/{fabro,paperclip,ai-top-utility}` (unknown) and the `data/brain-data/*`
+  wiki/research submodules → which hubs?
+- **Drift reconciliation**: are the stale flat orphans (`repos/n8n`, …) superseded by the MANIFEST
+  `repos/forked/*` intent, or independent? (likely superseded — relocate the MANIFEST version, drop the stale path).
+- **Scope of "all submodules"**: just the 10 materialized orphan gitlinks now, or also materialize +
+  relocate the 29 MANIFEST-intended repos?
+
 ## Phases (each phase ends green; strip only after verify)
 
 ### Phase 0 — Safety net
