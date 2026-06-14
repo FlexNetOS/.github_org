@@ -613,3 +613,25 @@ strongest. This addendum is the authoritative status update for the Section-1 qu
   org secret is granted to `FlexNetOS/meta` itself is a secret-state fact not visible from the
   filesystem; it remains **NEEDS-HUMAN wall #2** (Release-Please "token not supplied" on meta). Carry
   forward as incomplete, not drift.
+
+### E. Operating model + upgrade-PR landing (2026-06-14)
+
+- **L-E1** *(answers "how to get elevated GitHub creds without blocking", incl. Q-N3)* The owner
+  designates **envctl as the secrets source, reachable via the weave mesh**: when a default `gh`
+  token lacks scope (org-level, app-only APIs, higher rate limits, fine-grained PAT), request the
+  credential from envctl rather than blocking or escalating to the owner. envctl holds the
+  `PARENT_REPO_PAT` and the GitHub App. (Mechanism = the envctl secrets-engine inject seam +
+  broker over weave; the data-plane inject is still being completed — see map/03.)
+- **L-E2** *(cross-repo question protocol)* Self-serve first; if something is needed that can't be
+  found locally, **ask the owning repo's session over the weave mesh** before escalating to the owner.
+- **L-E3** *(gitleaks false-positive — resolved)* The verbatim ICM dump under `architecture/icm/`
+  contains memory **prose** that names tokens/keys/hosts (e.g. `cognitum-578b`, the Seed SSH host) —
+  flagged by gitleaks `generic-api-key`. These are descriptions, **not credentials**;
+  `architecture/icm/` is allowlisted in `.gitleaks.toml` (same rationale as `data/brain-data/research/`).
+  Lesson: ingested-memory dirs are non-credential by construction; allowlist the path, never redact
+  the faithful dump.
+- **L-E4** *(separation-of-privilege held)* The upgrade PRs (`meta_git_lib#3`, `meta_git_cli#3`,
+  `tool_hub#2`, `.github#102`) were landed via the standing push→PR→auto-merge pipeline. The org's
+  protected `.github` `main` (1 required review) is **not** self-admin-bypassed by the PR author —
+  the review/merge authority stays with a separate trusted principal (owner or the GitHub App via
+  envctl), per ADR-0001 §5 (gh-aw separation-of-privilege) and the L8.x doctrine.
