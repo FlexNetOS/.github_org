@@ -79,9 +79,13 @@ The proven `develop` fork is registered in its typed hub (`<hub>/repos/` staging
 - **Re-adding repos as submodules under `.github_org/repos/`** — they go to a hub now (ADR-0002)
 - **Cloning a repo that isn't already on disk** — route it to the handoff loop instead
 
+### Git workflow — trunk = `develop`, protected mirror = `main` (ADR-0003)
+
+**The canon is [`WORKFLOW.md`](WORKFLOW.md) / [`architecture/adr/ADR-0003`](architecture/adr/ADR-0003-dev-git-workflow-policy.md).** In one line: `develop` is the integration **trunk**, `main` is the **protected release mirror** advanced *only* by `promote-develop-to-main.yml`. You never commit or PR to `main` directly.
+
 ### Branch discipline at session start
 
-Every session, every clone, every setup goes onto a new feature branch — never directly on `main`. The `branch-guard.sh` hook enforces this for file edits. For new clones of upstream repos: `git checkout -b feat/<short-slug>` before any work.
+Every session, every clone, every setup goes onto a new feature branch cut **off `develop`** (`git switch -c <type>/<short-slug> origin/develop`) — never directly on `main`/`develop`. **Open PRs with base `develop`, not `main`** (`gh pr create --base develop`); the protected-`main` crossing is automated via the promotion identity (`PROMOTE_TOKEN` / GitHub App), so an agent never self-approves protected `main`. The `branch-guard.sh` hook enforces no-edit-on-protected for file edits. For new clones of upstream repos: `git checkout -b feat/<short-slug>` before any work. **One task : one branch : one worktree : one PR** (no mega-PRs).
 
 ### Manifest ↔ .gitmodules consistency
 `repos/MANIFEST.yaml` is now an **offload stub** (ADR-0002) — the repo entries moved to `~/Desktop/pending_relocate` + the typed hubs, and `.github_org` has **no `.gitmodules`** (only `data/brain-data/*` gitlinks remain, and they carry no `.gitmodules` URLs). Don't re-add repo/tool submodule entries here. `scripts/submodule-*.sh` + the `manifest-drift.yml` job are retained for the `data/brain-data` layer and historical reference.
@@ -96,7 +100,7 @@ This repo tracks work in four root files — keep them current:
 Research/plans go in `data/brain-data/research/` — never in `.omc/plans/` or scratch dirs.
 
 ### Commit discipline
-**Commit agent-produced work as you go** (stage + commit incrementally). Untracked drafts in this repo have been wiped by routine `git reset`/cherry-pick before — this overrides any "only commit when asked" default. Branch off `main` with `<type>/<short-slug>`; `main` is protected (PR + 1 approval, linear history, no force-push). Conventional Commits are required (the release workflow computes bumps from them). Squash- or rebase-merge only, no merge commits.
+**Commit agent-produced work as you go** (stage + commit incrementally). Untracked drafts in this repo have been wiped by routine `git reset`/cherry-pick before — this overrides any "only commit when asked" default. Branch off **`develop`** with `<type>/<short-slug>` and PR into `develop` (ADR-0003 / `WORKFLOW.md`); `main` is protected (PR + 1 approval, linear history, no force-push) and advances only via the automated `develop→main` promotion. Conventional Commits are required (the release workflow computes bumps from them). Feature→`develop` is squash-merge (one commit per task); `develop→main` is rebase (preserves commits for release-please). No merge commits.
 
 ## Architecture artifacts
 

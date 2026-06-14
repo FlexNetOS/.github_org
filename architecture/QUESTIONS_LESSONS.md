@@ -635,3 +635,45 @@ strongest. This addendum is the authoritative status update for the Section-1 qu
   protected `.github` `main` (1 required review) is **not** self-admin-bypassed by the PR author —
   the review/merge authority stays with a separate trusted principal (owner or the GitHub App via
   envctl), per ADR-0001 §5 (gh-aw separation-of-privilege) and the L8.x doctrine.
+
+### F. Git-workflow definition pass — contradictions + the canon (2026-06-14, ADR-0003)
+
+The owner halted a brute-force attempt to land `.github#102` and named the real issue: **the
+dev/PR workflow was never written down.** Defining it (ADR-0003 + `WORKFLOW.md`) surfaced these:
+
+- **C-F1** *(docs vs code)* `CONTRIBUTING.md`/`CLAUDE.md`/`AGENTS.md` said *"branch off `main`"*,
+  but the live workflows (`promote-develop-to-main.yml`, `auto-review-merge.yml`) already implement
+  a **`develop`-trunk** model. **Resolved (ADR-0003):** `develop` is the trunk; `main` is the
+  protected mirror advanced *only* by promotion; feature branches/PRs target `develop`. Docs fixed.
+- **C-F2** *(divergence)* `origin/main...origin/develop` measured **`4/15`** — the trunk and the
+  protected mirror had drifted (main carries 4 commits develop lacks; develop carries 15 unpromoted).
+  **Action:** reconcile to a one-way flow (promote develop→main; replay main's 4 orphan commits onto
+  develop) so the model holds going forward. *(Follow-up, not yet executed.)*
+- **C-F3** *(review gate contradiction)* Docs say `main` requires **1 approval**; the fleet
+  branch-protection profile in `map/01` says **"NO required reviews (autonomous-loop compatible)."**
+  **Resolved:** the two apply to *different branches* — `develop` has **no** required human review
+  (autonomous trunk); `main` **keeps** its 1-approval gate, and that approval is supplied by the
+  **promotion identity** (`PROMOTE_TOKEN` / GitHub App via envctl), a *separate* principal from the
+  PR author. This is what dissolves the agent-can't-self-approve deadlock.
+- **C-F4** *(delete-on-merge gap)* The canon is delete-branch-on-merge for feature branches, but
+  `auto-review-merge.yml` explicitly **does not** delete (`no --delete-branch; branches stay`).
+  **Action:** enable delete-branch-on-merge and reconcile that workflow. *(Follow-up.)*
+- **C-F5** *(stale "#102 is green" belief — CORRECTED)* The pre-compact resume capsule asserted
+  *"#102 — all required checks green, blocked only on the protected-`main` review."* **Live state
+  proves otherwise:** `mergeStateStatus=BLOCKED`, `reviewDecision=REVIEW_REQUIRED`, and **RED**
+  required checks — `.claude/settings.json hygiene` → FAILURE, `security / Trivy filesystem + IaC`
+  → FAILURE (×2), plus `review`/`claude-review` → FAILURE. And it **targets `main` directly** from
+  a long-lived `research/*` mega-branch (the exact anti-pattern). **Resolution:** do **not** force
+  it onto `main`. Fix the real RED checks first, then either re-target its base to `develop` or land
+  it on `develop` as a single squashed architecture-ingestion commit; let promotion carry it to
+  `main`. (Supersedes the L-E4 framing that #102 was cleanly landable as-is.)
+
+- **L-F1** *(the canon — answers the owner's 10 questions)* See **ADR-0003** + **`WORKFLOW.md`**.
+  Summary: trunk=`develop`, mirror=`main` (promotion-only); feature branch off `develop` → PR into
+  `develop` → CI green → squash (1 commit/task) → auto-promote `develop→main` (rebase, separate
+  identity) → release-please. **≤1 task/commit; 1 task/PR; 1 task : 1 worktree; feature branches +
+  worktrees ephemeral (deleted on merge); no `staging` branch; never clone repos not on disk.**
+- **L-F2** *(failure flowback)* The signal exists today: `ci-failure-tracker.yml` files a
+  `needs-autofix` issue on failure and auto-closes it on recovery. **Open automation gap (Q5):** the
+  `needs-autofix` issue → handoff-loop-intake routing is currently manual/handoff-mediated, not
+  auto-wired. Carry forward as a follow-up, not as drift.
