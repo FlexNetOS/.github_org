@@ -12,7 +12,10 @@ This is the **reconciliation ledger** for the `architecture/` map. It has exactl
 Each question has a status: `OPEN`, `ANSWERED → Lnn`, or `PARTIAL`. When a question is answered,
 the answer is written as a Lesson and the question is cross-linked. Questions/Lessons are grouped
 by the eight subsystem maps. Source: ingested 2026-06-13 from ICM (123 concepts, 218 links, 69
-memory topics) + the parallel synthesis of `architecture/map/01..08`.
+memory topics) + the parallel synthesis of `architecture/map/01..08`. **Section-1 question statuses
+are updated authoritatively in the [Addendum (2026-06-13)](#addendum--resolutions--new-questions-from-the-meta-root-docs--meta-repo-walk-2026-06-13)
+at the end** — it folds in the meta-root docs (maps 09–11) and the `meta*` repo walk (map 12), with
+many answers verified against live code.
 
 > Calibration note carried from ingestion: in `system-architecture.graph.json` nearly every
 > concept carries a uniform export-default `confidence: 0.5` (0.6/0.8 for a few). That blanket
@@ -448,3 +451,120 @@ Confirmed ground truths carried forward (and answers to Section-1 questions).
   on `SessionStart` + `PreCompact` injects a **bounded** (~2KB) compact pack of the
   `system-architecture` memoir — live via `icm --no-embeddings recall-context` when present, else the
   committed `architecture/icm/INDEX.md` (graceful no-op when `icm` is absent → portable to any machine).
+
+---
+
+## Addendum — resolutions & new questions from the meta-root docs + `meta*` repo walk (2026-06-13)
+
+After ingesting ICM, the map was expanded with the authoritative meta-root planning docs
+(maps [09](map/09-meta-root-ruvector.md)–[11](map/11-meta-root-org-hardware.md)) and a walk of the
+11 `meta*` repos (map [12](map/12-meta-repos.md)). Several answers were verified against **live
+code** (envctl HEAD, the mounted `COGNITUM` drive, the `meta*` Cargo.toml graph) — those are the
+strongest. This addendum is the authoritative status update for the Section-1 questions.
+
+### A. Resolutions — Section-1 questions answered/refined
+
+| Q | New status | Answer (short) | Source |
+|---|---|---|---|
+| Q1.3 | **ANSWERED** | `develop`-mirrors-`master` IS fleet canon (create-if-missing, repo-owned tooling); "no develop but weave" retiring; rollout mid-flight | META-ORG-AUDIT Phase-4 · map 11 |
+| Q1.4 | **ANSWERED** | Reclassified, not rolled back. **Current (06-13):** `allow_auto_merge` on **63** repos; protection only on `icm/main` + `envctl/develop` (strict=false, no required reviews → PRs self-land). Supersedes the 06-12 "24 protected + 26 auto-merge". | META-ORG-AUDIT · map 11 |
+| Q2.2 | **PARTIAL** | ADR-0004 makes single-ledger a **fleet** rule: members keep NO local `ledger.db` (events → `meta/.handoff`). But **HFTASK-0007** (the `hf` session start/end verb owning session-ledger location) is **unbuilt** — heads the readiness queue. | SESSION-HANDOFF · GAP-REGISTER 2/13 |
+| Q2.3 | OPEN-confirmed | The `SwarmBundle→handoff.task.v1` seam is a **gap on both sides** (zero MCP server + zero outbound dispatch); HFTASK-0019/0003 carded, unbuilt; the spike is a design proof only. | GAP-REGISTER 10 |
+| Q3.1 | **ANSWERED** | The "inject seam" is **TWO** seams. **(a)** USB-possession/vault-unlock = **MERGED** (PR #50, envctl `master@42b21f9`: `RealUsbProbe`, `SeedPresenceGate` Profile S, seed enroll/unlock). **(b)** auto-injection/data-plane (`injection_template`, `run_child`, `MintResp.injection`, `LocalCa`) = **still `todo!()` on master**; branches `secrets-inject-pr2/pr2b/seam` exist only on origin, NOT merged. | live envctl HEAD · map 11 |
+| Q3.4 | **ANSWERED** | seed-factor strand **live-verified** ("vault unlocked (factor: usb)"/"(factor: passphrase)"); the **data-plane `Run`/inject strand** the "~30%" referred to is **still stubbed** (`injection:None // not wired in Phase 6`). | PLAN-cognitum §5 · live `secretd/grpc.rs:337` |
+| Q3.5 | OPEN-confirmed | No `env-ctl` rename chosen, no socket/systemd/XDG migration scheduled; residue still live (`env-ctl.service`, `~/.config/env-ctl/`, `$XDG_DATA_HOME/env-ctl/`). | META-ORG-AUDIT residual #8 · PORTABILITY-AUDIT B2/B4 |
+| Q4.4 / Q8.6 | **PARTIAL** | Retired weave-repowire refs neutered + settings repointed off `weave-mcp-daemon-tools`; a crash-looping repowire unit disabled (reversible). **But** the FIX-6 lifecycle hooks remain **owner-gated/not-activated** (NEEDS-HUMAN D), and the standing workaround is still "**no subagents in RuVector/ruflo/envctl**". Not fully closed. | SESSION-HANDOFF s5/s6 · NEEDS-HUMAN D |
+| Q4.6 | OPEN-confirmed | rvAgent⇄weave bridge (open-q #3) + N-reviewers→one-verdict reducer (open-q #4) both **open**; ADR-0002 keeps **hf** the sole junction. | GAP-REGISTER W8 scoreboard |
+| Q5.1 | **ANSWERED** | **pass-6b is final** (pass-6 recanted same-day as "too narrow"). Production Rust RVF (`rvf-runtime` napi **and** `rvf-wasm`) IS wired into ruflo via the `ruvector` intelligence facade (6 plugins) + `ruflo-core` witness; `@claude-flow/memory` KV is the **sole** TS-only (dead-napi) exception — matches ADR-125. | RUVECTOR-RESEARCH §PASS 6b |
+| Q5.2 | **ANSWERED** | Yes — the `ruvector` facade **defaults `implementationType='wasm'`** (`rvf-wasm`, no_std), so the **shipped default path is the wasm microkernel**; napi `rvf-runtime` is the interchangeable alternative. ICM map under-stated this. | RUVECTOR-RESEARCH §PASS 6b |
+| Q5.3 | **ANSWERED** | Confirmed: `rvf-crypto` = **ed25519-dalek + sha3 only**; the ML-DSA-65 claim is **false marketing** (PQ lives in `ruvector-dag`/QuDAG: dilithium/kyber). S1 adopts `rvf-crypto::WitnessChain` as SHAKE-256/ed25519. | RUVECTOR-RUNBOOK §doc-contradictions |
+| Q5.4 | **ANSWERED** (hardware) | Cognitum Seed is authoritatively **armv7l** (32-bit Pi-class, kernel `6.12.47+rpt-rpi-v7`, 474 MB) running `cognitum-agent` — **NOT** Pi5/aarch64, **NOT** the `ruvix` microkernel. The Pi5/bcm2711 labels are RuVector crate **compile targets**, not this device. Verified from live `COGNITUM/STATUS.txt`. | COGNITUM-SEED · live STATUS.txt |
+| Q5.5 | **ANSWERED** | Intentional tiers — **THREE**, not two: RVF SHAKE-256/73B (canonical, adopted by the handoff ledger) · RVM FNV-1a/64B (light, in-hypervisor) · ruvix Merkle/attested-boot. Amend L5.8 to three tiers. | RUVECTOR-RUNBOOK §T5 |
+| Q6.1 | OPEN-confirmed | `exo-ai-2025` prototypes (incl. `conscious-language-interface`, `federated-collective-phi`) are **incubating, not wired** (zero internal deps; reimplement own primitives); the "13.78 quadrillion spikes/sec" claim is unverified at code level. | RUVECTOR-RUNBOOK §B17f |
+| Q6.4 | **ANSWERED** | Canonical truth (code beats blurb): `ruvector-dag` = QuDAG post-quantum **governance DAG** (not query-planner); `ruvector-coherence` = lightweight **HNSW health monitor** (not sheaf-Laplacian); `prime-radiant` = wgpu **GPU convergence runtime** (not dashboard); `router-core` = embeddable **vector DB** (not a request router). | RUVECTOR-RUNBOOK §doc-contradictions |
+| Q7.1 | OPEN-confirmed | Transport (prompt_hub MCP server vs HTTP+bridge) **undecided/unbuilt** — HFTASK-0019, the transport ADR still owed. | GAP-REGISTER 10 |
+| Q7.2 | OPEN-confirmed | `/vibe` Intent → real `path_scope`/`acceptance_criteria`/`test_commands` synthesis (HFTASK-0003) is **"THE crux", unbuilt**; nothing in the 3 prompt_hub crates does it. | GAP-REGISTER 10 |
+| Q8.3 | **PARTIAL** | The work-order envelope (WOE) schema **is authored** (STACK-INTEGRATION Plan A; the spike's `handoff.task.v1` is its validated form carrying `correlation_id`); but it is **not built** — owned by HFTASK-0003/0019 (W7). | STACK-INTEGRATION Plan A |
+| Q8.4 | **PARTIAL** | Three connectors **designed + sequenced, unbuilt**: prompt_hub `export_to_weave` + the work-order contract = HFTASK-0003/0019 (W7); weave autonomous `JobRunner` = **deferred** ("the loop is the runner") — the file-based session-relay loop stays the dispatcher and is integrated with, not replaced. | STACK-INTEGRATION · GAP-REGISTER |
+| Q8.5 | **PARTIAL** (hardware) | `lane` unchanged (its remit). USB secret key = **the Cognitum Seed itself** (owner controls via SSH + Ed25519 custody/sign; seed-factor backend implemented + live-verified). Boot-mount **still needs a human**: the USB-Ethernet gadget only enumerates if plugged into a **data-capable** USB-C port **at boot**. | PLAN-cognitum §0/§4/§5 |
+| Q8.7 | OPEN-confirmed | No fix recorded for the duplicate `run:` key in `promote-verify.yml`. | GAP-REGISTER 9 |
+
+### B. New lessons (added to Section 2)
+
+- **L5.8 (amended)** *(Q5.5)* There are **THREE** witness tiers, not two: **RVF** (SHAKE-256, 73-byte
+  records — canonical, adopted by the meta handoff ledger) · **RVM** (FNV-1a, 64-byte — light,
+  in-hypervisor) · **ruvix** (Merkle proof + attested-boot log). Same tamper-evident pattern, different tiers.
+- **L9.4** *(Q5.1)* The RVF-wiring verdict is **FINAL at pass-6b** — read `map/05 §8.4` with pass-6b
+  as the terminus; pass-6 ("TS is the active path") was recanted.
+- **L9.5** *(Q5.2)* The `ruvector` npm facade **defaults to `wasm`** (`rvf-wasm` = `rvf-types` +
+  `rvf-crypto`, no_std); napi `rvf-runtime` is the interchangeable sibling, bridged at the **format**
+  level (via `rvf-types`, the #1 dep hub, 26 dependents), not the code-dependency level.
+- **L9.6** Authoritative crate count is **314 (196 clusters)** = 216 `crates/` + 93 `examples/` +
+  roots; the `RUVECTOR-CRATE-LEDGER.md` is the inventory of record (the export's "91" is a stale scaffold).
+- **L9.7** **S1 "adopt-don't-rebuild" is load-bearing:** ~8 of 12 Ark Handoff Ledger crates already
+  exist production-grade in RuVector/meta; only thin `hf` CLI/daemon/test glue is new. **Law: RuVector
+  is the FOUNDATION the meta stack adds to, not a peer.**
+- **L10.1** The meta-root planning docs are **NEWER** than the ICM export the maps 01–08 were rendered
+  from (STACK 06-09 → GAP-REGISTER 06-12 → NORTH-STAR v2 + SESSION-HANDOFF 06-13) — they **update**,
+  not merely confirm (e.g. `.handoff` fleet rollout 1/58 → 21/21 A/B seeded; prompt_hub's construction
+  loop finished, PRs #94–#106).
+- **L10.2** The chosen autonomy path is explicit: **"B's spine using A's envelope, and C falls out"** —
+  ship the tiny work-order envelope, carry it as a weave Job synced by `correlation_id` (a VIEW, not
+  crowned truth), build `prompt_hub → WOE → weave Job` + teach the session-relay loop, and **defer**
+  weave's `JobRunner`.
+- **L10.3** **NORTH-STAR v2** reframes every NEEDS-HUMAN wall as a **temporary scaffold with a named
+  demolition plan** (account/scope/irreversible/physical → a model carrying that skillset); progress =
+  the shrinking of `NEEDS-HUMAN.md`. Only change-of-intent is reserved to the human forever.
+- **L11.1** *(Q3.1)* **envctl has TWO independent USB/seam strands the map conflates:** the
+  USB-possession/vault-unlock seam is **MERGED + seed-anchored**; the auto-injection/data-plane seam
+  is **still `todo!()` on master**. Always separate "does the vault unlock" from "does it inject keys
+  into a child process".
+- **L11.2** *(Q5.4)* Read the Cognitum Seed board class from the **live `STATUS.txt`**, not crate target
+  triples: it is **armv7l/32-bit** running `cognitum-agent`, not a Pi5/aarch64 ruvix host.
+- **L11.3** The Seed **is** the envctl USB possession factor via deterministic **Ed25519 custody/sign**
+  (possession ≡ a valid signature from device `0e34a5e5…`), consumed over SSH + one REST call; MCP was
+  deliberately **rejected** as token-suck (114 tools). A passphrase keyslot is always enrolled as
+  recovery, so a lost/dead Seed is never a permanent lockout.
+- **L11.4** **Org branch-protection ownership moved** (06-13) from ad-hoc `meta/scripts` to the
+  designated GitHub-management repos (`flexnetos_github_app`/`github_org`/`meta_git_cli`/
+  `flexnetos_runner`). Per-repo default branch varies (`envctl=develop`, hubs=`master`, others=`main`)
+  — read `.default_branch`.
+- **L12.1** *(confirms L1.1)* Every `meta*` dir is an **independent git repo**; the root `Cargo.toml`
+  is dev-convenience only — proven by `meta_dashboard_cli` carrying an empty `[workspace]` to build
+  standalone and `meta_plugin_api` self-pinning `0.1.0`. **Workspace version is now 0.2.24** (canon said 0.2.22).
+- **L12.2** `meta_cli` (pkg `meta`) is a **host** that discovers subprocess-plugin binaries
+  (`meta-git`/`meta-project`/`meta-rust`/`meta-dashboard`), talks JSON over **`meta_plugin_protocol`**,
+  and runs the returned `ExecutionPlan` via `loop_lib`. `meta_core` owns `.meta.yaml` + `~/.meta`;
+  `meta_mcp` re-exports the `meta_cli` **library** to AI tools over MCP (it links the lib, it is **not**
+  a subprocess plugin); `meta_plugin_api` is the **superseded** in-process trait; `meta-plugins` is the
+  GitHub plugin **registry data** repo the host installs from. `run_plugin()` calls `env_logger::init()`
+  — which is why **crate-name == `RUST_LOG` target**.
+
+### C. New questions (carried OPEN)
+
+- **Q-N1** *(rusty-idd path)* STACK-INTEGRATION names the rusty-idd "real repo" as `~/Desktop/idd-merge-idd`
+  while canon names `FlexNetOS/rusty-idd` at `~/Desktop/meta/rusty-idd` — stale local checkout, separate
+  merge-target, or renamed path?
+- **Q-N2** *(prompt_hub HEAD)* SESSION-HANDOFF says prompt_hub's construction loop finished (PRs #94–#106);
+  does the production HEAD now contain **any** outbound-dispatch/MCP code, or is GAP-REGISTER 10's
+  "zero MCP + zero dispatch" still literally true? (re-validate `models.rs:528+547` / `server.rs:38-95`).
+- **Q-N3** *(meta release spine)* NEEDS-HUMAN wall #2: `PARENT_REPO_PAT` resolves **empty** inside meta's
+  own workflows, so release PRs can't pass required checks / auto-merge — still un-actioned? does it block
+  the whole release-please/auto-merge spine for `meta` itself?
+- **Q-N4** *(envctl data-plane disposition)* The auto-injection/data-plane seam is parked on un-merged
+  `secrets-inject-pr2/pr2b/seam` branches — still pursued, deprioritized behind the merged seed-factor
+  path, or abandoned? (Per "never downgrade", treat as incomplete work to carry forward, not drift.)
+- **Q-N5** *(dev vault hygiene)* The PLAN's test daemon wrote to the **real** dev libSQL store
+  (127.0.0.1:8080) leaving `testkey`/`testrelay`/bearers — was cleanup performed; is the live dev vault
+  in a known-clean state?
+- **Q-N6** *(Seed vs separate USB)* Now that the Seed IS the envctl possession factor, is the earlier
+  "separate envctl secret-key USB stick" retired/never-existed, or a still-distinct second physical factor?
+- **Q-N7** *(cross-arch anchor)* The Seed is armv7l running its own RVF/witness stack; does it interop with
+  the x86 SHAKE-256/73-byte handoff-ledger `WitnessChain` (`hf anchor`), or is it a cross-arch REST bridge only?
+- **Q-N8** *(meta layering)* `meta_git_lib` depends on `meta_cli` (pkg `meta`) — a lib←host layering;
+  confirm the `meta_cli` library is deliberately split from its bin (no real cargo cycle, since `meta_cli`
+  does not dep `meta_git_lib`), and that `meta_plugin_api` archival ("archive preferred") has been actioned.
+- **Q-N9** *(plan-B reconciliation)* Which ADR formally reconciles STACK-INTEGRATION Plan-B's "crown weave
+  Jobs as authoritative store" against the locked source-of-truth hierarchy (weave Jobs = view only)?
+- **Q-N10** *(in-kernel witness tier)* With three witness tiers (L5.8 amended), which tier governs
+  in-kernel Cognitum-Seed events, and does `hf anchor` bridge it to the canonical RVF chain? (relates Q-N7).

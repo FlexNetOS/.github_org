@@ -22,12 +22,14 @@ contradictions + their answers: [`../QUESTIONS_LESSONS.md`](../QUESTIONS_LESSONS
 | 07 | [frontdoor-integration](07-frontdoor-integration.md) | prompt_hub/RuVocal front door; n8n, mcp-brain, rtk, icm glue | 9 |
 | 08 | [gaps-seams-merge](08-gaps-seams-merge.md) | Known gaps & missing seams, hard walls, method-notes, rusty-idd merge/port model | 13 |
 
-Plus, appended from the meta-root docs + `meta*` repo walk (tasks #4/#5):
+Plus, appended from the meta-root docs + `meta*` repo walk:
 
 | # | Map | Covers |
 |---|---|---|
-| 09 | [stack-integration](09-stack-integration.md) | Meta-root planning docs (STACK-INTEGRATION-PLANS, RUVECTOR-RUNBOOK, …) reconciled to the ICM map |
-| 10 | [meta-repos](10-meta-repos.md) | Every `meta*` repo (meta CLI, plugins, libs) walked into the architecture |
+| 09 | [meta-root-ruvector](09-meta-root-ruvector.md) | RUVECTOR-RUNBOOK / CRATE-LEDGER / RESEARCH / META-MAPPING-S1 → expands 05 + 06 |
+| 10 | [meta-root-stack-gaps](10-meta-root-stack-gaps.md) | STACK-INTEGRATION-PLANS / GAP-REGISTER / NORTH-STAR / SESSION-HANDOFF / NEEDS-HUMAN → expands 02, 07, 08 |
+| 11 | [meta-root-org-hardware](11-meta-root-org-hardware.md) | META-ORG-AUDIT/POLICY / PORTABILITY-AUDIT / ARCHITECTURE-TRUTH / COGNITUM-SEED / MIROFISH-PORT → expands 01, 03, 05, 08 |
+| 12 | [meta-repos](12-meta-repos.md) | Every `meta*` repo (meta CLI, plugins, protocol, libs) walked into the architecture |
 
 ## How this was built
 
