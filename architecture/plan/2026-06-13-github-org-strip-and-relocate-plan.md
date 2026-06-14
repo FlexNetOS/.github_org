@@ -18,12 +18,19 @@ Everything else lands in typed hubs: **`tool_hub`** (toolchain pins), **`plugin_
 | Item | Kind | Current | Destination | Status |
 |---|---|---|---|---|
 | `cpython` `actionlint` `gitleaks` `trivy` `node` `bun` `uv` | 7 git submodules | `.github_org/tools/*` | `tool_hub` | to relocate |
-| `ecc` | marketplace | settings → `/home/drdave/_work/...` (missing) | `plugin_hub` entry → existing `meta/ECC` | repoint only |
+| `ecc` | marketplace | settings → `/home/drdave/_work/...` (missing) | `plugin_hub` (**already registered**: `entries/ecc.md`) → `meta/ECC` | **repoint settings only** |
 | `karpathy-skills` | marketplace (upstream) | settings → missing | `plugin_hub` (after research-before-fork) | to source |
 | `understand-anything` | marketplace (upstream) | settings → missing | `plugin_hub` (after research-before-fork) | to source |
 | `claude-stack-local` | marketplace (local) | settings → missing | `plugin_hub` (or retire if defunct) | to investigate |
-| `n8n` | plain dir | `.github_org/repos/n8n` | `flow_hub` (likely) | classify |
-| `fabro` `paperclip` `ai-top-utility` | plain dirs | `.github_org/repos/*` | classified hubs (TBD) | classify |
+| `n8n` `fabro` `paperclip` `ai-top-utility` | **empty stub dirs** | `.github_org/repos/*` | n/a — nothing to move | **remove stubs** (Phase 3 trivial) |
+
+> **De-risking findings (2026-06-13 reads):** `plugin_hub/registry.json` already lists `ecc` +
+> `oh-my-claudecode` + `claude-plugins` (`entries/*.md`), so the marketplace home largely exists —
+> only `karpathy-skills` / `understand-anything` / `claude-stack-local` are genuinely new. The four
+> `repos/*` dirs are **empty** (4 KB each) → no content to carry forward; Phase 3 collapses to removing
+> empty stubs. `tool_hub` registers each tool as a **catalog entry** (`tools[]` with `repo`/`hosting`/
+> `workspaceMember`/`forked`, e.g. `entries/envctl.md`) pointing at a peer/pinned source — **not** as a
+> submodule-of-hub; the 7 `tools/*` pins relocate as `hosting: "pinned"` (or "vendored") entries.
 
 ## Phases (each phase ends green; strip only after verify)
 
@@ -67,9 +74,17 @@ Everything else lands in typed hubs: **`tool_hub`** (toolchain pins), **`plugin_
 `meta git snapshot restore pre-github-org-strip`. Because every phase relocates-in before stripping, a
 failure mid-phase leaves the source intact in `.github_org` until its destination is proven.
 
-## Open items (carried to QUESTIONS_LESSONS.md)
+## Open items
 
-- Classification of `fabro` / `paperclip` / `ai-top-utility` (which hub?).
-- `claude-stack-local` provenance (live local marketplace, or defunct?).
-- Whether the `tool_hub` model is "submodule-of-hub" vs "entry-pointing-at-pinned-source" (match the
-  existing `tool_hub` entries' convention before relocating).
+- ~~Classification of `fabro` / `paperclip` / `ai-top-utility`~~ → **resolved: empty stubs, no
+  classification needed; remove in Phase 3.**
+- ~~`tool_hub` model (submodule vs entry)~~ → **resolved: entry-pointing-at-source** (`tools[]` catalog).
+- `claude-stack-local` provenance (live local marketplace, or defunct?) — investigate in Phase 1.
+- `karpathy-skills` / `understand-anything` upstream identities to fork (research-before-fork dossiers).
+
+## Status / gate
+
+Planning (Phase −1) complete and committed. **Phases 1–4 are NOT yet executed.** Phase 1+ involves
+outward actions (forking `karpathy-skills` / `understand-anything` into `FlexNetOS/`) and edits across
+`plugin_hub` / `tool_hub` / `.meta.yaml` / settings — awaiting the go-ahead to begin. Phase 0 (snapshot
++ baseline `make verify`) can run immediately as the safety net.
