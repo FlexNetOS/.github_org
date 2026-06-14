@@ -1,0 +1,131 @@
+# system-architecture — ICM concept index
+
+Lightweight index of the ICM `system-architecture` memoir (123 concepts, 218 links).
+Raw exports: `architecture/icm/memoirs/` (ai.md / graph.json / dot). Synthesized human map: `architecture/map/`.
+This file is the committed fallback injected by `scripts/hooks/icm-architecture-inject.sh` when the `icm` CLI is absent.
+
+## Concepts
+
+- **FlexNetOS branch/CI-CD model** [type:reference] — Observed reality (ADR-0001 §3/§9, Research R8, live gh-api). BRANCHES: master = protected trunk + PR target (never pushe
+- **Front door + Mission Control + Delivery (handoff)** [type:decision] — ADR-0001 §11/§12/§13 + R13/R14 (hand-verified). The handoff loop had heavy 'process' coverage but thin/absent INPUT, OBS
+- **Handoff Loop v2 (ADR-0001)** [type:decision] — The Continuity Ledger Kernel's session+shipping lifecycle, owned by the `hf` CLI as first-class verbs, recorded as witne
+- **Surgical AI gatekeeper (full code knowledge)** [type:decision] — ADR-0001 §5b / HFTASK-0014. The end-state that replaces ALL human-in-the-loop approvals in the handoff loop: a surgical 
+- **adr-2026-06-11-meta-loop-lib-status** [type:adr] — STATUS: decided — premise corrected; NO divergence exists. CONTEXT: task brief asked to compare 'the Meta loop lib prese
+- **adr-2026-06-11-open-questions** [type:adr] — STATUS: open — consolidated unresolved architectural questions, REFRESHED 2026-06-12 evening after the verification sess
+- **adr-2026-06-11-repo-docs-accuracy** [type:adr] — STATUS: decided — trust map for documentation, re-confirmed. CONTEXT: task brief flags repo docs as inaccurate/misdirect
+- **adr-2026-06-11-rust-native-system-overview** [type:adr] — STATUS: decided (re-verified 2026-06-11 for implementation phase). CONTEXT: discovery session re-grounding the 314-crate
+- **architecture-truth-census-2026-06-12** [type:adr] — STATUS: accepted — full-estate census delivered as ARCHITECTURE-TRUTH.md + GAP-REGISTER.md (meta root, 2026-06-12, upgra
+- **buildout-hf-cli-proper-handoff** [type:component] — BUILD-OUT (2026-06-09 s2): the hf CLI is built and produces a PROPER .handoff handoff packet (self-applying). At ~/Downl
+- **codewalk-ann-index-quant-family** [type:internals] — CODE-TRUTH B11 (ANN-index/quantization compute kernels, 7 base crates). HONEST tier, real algorithms, no traps. ruvector
+- **codewalk-b17a-boundary-astro-geo** [type:internals] — CODE-TRUTH B17a (strict, boundary-discovery astro/geo family, 6 examples). ALL depend on ONLY ruvector-mincut + ruvector
+- **codewalk-b17b-boundary-agents-predictive** [type:internals] — CODE-TRUTH B17b (strict + AGENTIC-ROLE lens, boundary bio/social/infra family, 8 examples). AGENTIC ROLE (the user's poi
+- **codewalk-b17c-consciousness-phi-agents** [type:internals] — CODE-TRUTH B17c (strict + agentic lens, consciousness family, 6 examples). ALL depend ONLY on ruvector-consciousness (th
+- **codewalk-b17d-neuro-bio-temporal** [type:internals] — CODE-TRUTH B17d (strict, code-verified, neuro/bio/temporal, 7 examples). CODE-TRUTH CORRECTION: marker-grep falsely flag
+- **codewalk-b17e-exo-cognitive-substrate** [type:subsystem] — CODE-TRUTH B17e (strict + verified, exo-ai-2025 library crates, 9). exo-ai-2025 = a SELF-CONTAINED 'Advanced Cognitive S
+- **codewalk-b17f-exo-research-prototypes** [type:internals] — CODE-TRUTH B17f (strict + verified, exo-ai-2025/research apps, 11). KEY CODE-TRUTH: all 11 have ZERO internal deps (no e
+- **codewalk-b17g-sevensense-bioacoustic** [type:internals] — CODE-TRUTH B17g (strict + verified, vibecast-7sense / sevensense, 11 crates). KEY: this is an INDEPENDENT DDD BIOACOUSTI
+- **codewalk-b17h-agentic-integration** [type:integration] — CODE-TRUTH B17h (strict + verified, the OVERTLY-AGENTIC integration examples, 5). THIS is where real agentic wiring conc
+- **codewalk-b17i-edge-agent-fleet** [type:integration] — CODE-TRUTH B17i (strict + verified, rvf/edge/esp32/onnx, 10). THE DEPLOYED EDGE-AGENT FLEET across the device spectrum. 
+- **codewalk-b17j-data-ingestion-and-demos** [type:internals] — CODE-TRUTH B17j (FINAL example slice, ~18). DATA-ACQUISITION/INGESTION AGENTS: ruvector-data-framework (deps ruvector-on
+- **codewalk-bridge-sweep** [type:integration] — CODE-TRUTH B16 (bridge sweep, 46 -wasm/-node crates). ALL confirmed cdylib (wasm) or cdylib+napi (node) = the npm @ruvec
+- **codewalk-cognition-consciousness-layer** [type:internals] — CODE-TRUTH B9 (cognition/consciousness substrate, 7 crates). ruvector-consciousness = GENUINE IIT-Phi engine: 5 Phi algo
+- **codewalk-cognitum-gate-tier** [type:subsystem] — CODE-TRUTH B8: the COGNITUM HARDWARE COHERENCE-GATE tier = the PHYSICAL ROOT of thesis T1 (governed/gated/attested compu
+- **codewalk-delta-distributed-tier** [type:internals] — CODE-TRUTH B10 (delta-* CRDT family + distributed/persistence tier, 11 crates). HONEST tier (no traps; governance/witnes
+- **codewalk-examples-interconnection** [type:overview] — CODE-TRUTH B17 (examples interconnection map, 90 example crates via dependency graph). THE MISSION ANSWER — HOW THE EXAM
+- **codewalk-foundation-solver-math-dag** [type:internals] — CODE-TRUTH walk (deps+types, NOT docs) of graph-transformer-stack foundation crates. KEY DOC-CONTRADICTION: ruvector-dag
+- **codewalk-graphtransformer-stack** [type:internals] — CODE-TRUTH walk (deps+types) of the rest of the graph-transformer stack. (1) ruvector-verified = THE FORMAL-PROOF BACKBO
+- **codewalk-llm-sona-stack** [type:internals] — CODE-TRUTH walk of LLM-serving + sona stack. ruvllm = full production LLM runtime: deps ruvector-core+sona+attention+gra
+- **codewalk-markets-quantum-domain** [type:internals] — CODE-TRUTH B12 (markets + quantum exotic domain, 9 crates). NEURAL-TRADER = a COHERENCE-GATED + WITNESSED trading system
+- **codewalk-mincut-graph-indexzoo** [type:internals] — CODE-TRUTH B14 (mincut/graph compute + cryptic-named crates, 9). ruvector-mincut-gated-transformer (deps thiserror+serde
+- **codewalk-prime-radiant-and-infra** [type:internals] — CODE-TRUTH B15 (prime-radiant + infra/CLIs, 16 base crates incl 4 prior-deep-walked + 2 fuzz). MAJOR + DOC-TRAP: prime-r
+- **codewalk-robotics-embodied-tier** [type:internals] — CODE-TRUTH B13 (agentic-robotics + embodied/edge tier, 9 crates). TWO DISTINCT ROBOTICS LAYERS. (1) MIDDLEWARE/TRANSPORT
+- **codewalk-ruvix-cluster** [type:subsystem] — CODE-TRUTH walk of ruvix cluster (28 crates) = a GENUINE bare-metal MICROKERNEL OS for AArch64/Raspberry Pi (bcm2711=Pi4
+- **codewalk-rvf-cluster** [type:internals] — CODE-TRUTH walk of the full rvf cluster (26 crates). FORMAT CORE (deps prove the stack, T4): rvf-types(no_std foundation
+- **cognitum-is-ruvector-hardware** [type:component] — COGNITUM = RuVector's HARDWARE coherence-gate tier (pass 1). Crates cognitum-gate-kernel + cognitum-gate-tilezero target
+- **cognitum-seed-activation-ref** [type:reference] — COGNITUM SEED — activation procedure + probe (verified via seed.cognitum.one/guide.html 2026-06-09). It is a ZERO-CONFIG
+- **cognitum-seed-boot-requirement** [type:wall] — COGNITUM SEED ACTIVATION (user 2026-06-09): hot-plug does NOT enumerate the USB gadget interfaces — the seed must be PLU
+- **completion-state-2026-06-09** [type:completion-audit] — VERIFIED COMPLETION STATE (evidence-based audit 2026-06-09). SOLID foundations to build contracts against: kasetto ~95% 
+- **continuity-session-relay** [type:cross-cutting] — CONTINUITY MECHANISM enabling no-human-in-the-loop. Pattern lives in weave-harness-loop/.claude/skills/session-relay + c
+- **critical-missing-seams** [type:insight] — THE AUTONOMY UNLOCK (key insight, verified 2026-06-09): full no-human autonomy is NOT blocked on building more tools — i
+- **decision-log-2026-06-09** [type:decision] — DECISIONS (LOCKED 2026-06-09 after full 314-crate RuVector walk + S1). (1) SOURCE-OF-TRUTH = the .handoff STATE-PRECEDEN
+- **envctl secrets-engine (relay/broker)** [type:reference] — ~/Desktop/meta/envctl/crates/secrets-engine (lib envctl_secrets) — the secret relay/injection tool to integrate into han
+- **envctl-drift-and-merge-state** [type:drift-audit] — ENVCTL MERGE + DRIFT (verified 2026-06-09). MERGE: env-ctl was structurally MERGED into envctl (secrets crates secretd/s
+- **envctl-git-workflow-develop-master-2026-06-12** [type:decision] — ENVCTL GIT WORKFLOW (2026-06-13, WORKING): develop=integration/working branch + GitHub DEFAULT; master=protected MIRROR 
+- **envctl-handoff-fullsync-plan-2026-06-12** [type:plan] — ENVCTL HANDOFF FULL-SYNC (ADR-0001 Epic A, 2026-06-12): envctl/.handoff was ~30% (Tier-B stub: capsule+README+loop/). Pe
+- **envctl-harness-upgrade-2026-06-12** [type:decision] — ENVCTL HARNESS (git-tracked, OUTSIDE kasetto): the Feature Forge crew. Agents (.claude/agents/): feature-architect(Plan)
+- **envctl-os-foundation** [type:layer] — OS/ENV/SECRETS FOUNDATION — the deepest layer. Pure-Rust 8-crate workspace at ~/Desktop/meta/envctl. Binaries: envctl (C
+- **examples-are-agentic-roles** [type:insight] — USER REFRAME (authoritative): the RuVector examples are NOT demos — BY DESIGN each plays a PART/ROLE in the live RuVecto
+- **frontdoor-mapping-ruvocal-prompthub** [type:integration] — FRONT-DOOR MAPPING (user-critical 2026-06-09): map RuVector UI front door (RuVocal) WITH prompt_hub. CODE-TRUTH. RuVocal
+- **gap-front-door-ambiguity** [type:gap] — KEY GAP #2: multiple competing intake paths mean there is no single front door yet — intent can enter at prompthub vibe,
+- **gap-missing-integration-contract** [type:gap] — KEY GAP #3: the hard missing artifact is the inter-layer CONTRACT (a 'work order' envelope) that would flow prompt_hub -
+- **gap-multiple-task-truths** [type:gap] — KEY GAP #1: there are at least FIVE competing task/work sources of truth with no authority order: (a) weave 'jobs' table
+- **gh-aw separation-of-privilege gate** [type:pattern] — PR-automation guardrail model adopted from GitHub Agentic Workflows (github/gh-aw) into Handoff Loop v2 §5a. Worker/revi
+- **handoff-kernel-relocated-to-meta** [type:decision] — RELOCATION DONE (user-directed): the handoff/Continuity-Ledger-Kernel was moved from the TEMP staging path ~/Downloads/t
+- **handoff-ledger-ark-spec** [type:component] — NEW HANDOFF PACKAGE (verified 2026-06-09) at ~/Downloads/tmp/handoff — user-built replacement for the poor file-based HA
+- **hardware-network-walls** [type:wall] — HARDWARE/NETWORK WALLS (user 2026-06-09, blocks autonomy): (1) MAJOR NETWORK ISSUE unresolved — 'lane' (~/Desktop/meta/l
+- **harness-upgrade-hardening-ultraplan-2026-06-12** [type:reference] — ULTRAPLAN-HARDENED facts for the envctl harness upgrade (see [[envctl-harness-upgrade-2026-06-12]]). CRITICAL GOTCHAS: (
+- **hf claim mesh lease (HFTASK-0002)** [type:implementation] — hf claim is mesh-coordinated, not ledger-local: hf/src/lease.rs reserves an advisory weave lease on resource handoff:cla
+- **icm-persistent-memory** [type:cross-cutting] — CROSS-CUTTING memory. ICM (Infinite Context Memory) at ~/Desktop/meta/icm. Persistent cross-session memory via MCP + CLI
+- **interchangeable-parts-runtime-hotswap** [type:insight] — USER INSIGHT (refines T12): the interchangeable vector index/DB/compute parts (the 'zoo') are PRELOADED and AUTOMATICALL
+- **kasetto-agent-provisioner** [type:layer] — AGENT-ENV layer, but it is a declarative CONFIG/PACKAGE manager for agents, not a runtime/container manager. Rust single
+- **kasetto-envctl-unification-2026-06-12** [type:decision] — DECISION (ADR-0001, envctl/.handoff/decisions): UNIFY kasetto (agent-env provisioner, FlexNetOS/env_manager_agent, insta
+- **loop-e2e-proof-2026-06-12** [type:evidence] — STATUS: verified — ONE full no-human cycle ran end-to-end through the handoff kernel (2026-06-12, org-audit mission Phas
+- **loops-use-stale-weave-repowire** [type:root-cause] — ROOT CAUSE of broken tooling (user-confirmed 2026-06-09): the autonomous LOOPS + session-relay HOOKS across the stack (e
+- **mcp-brain-server-convergence** [type:component] — MCP-BRAIN-SERVER = the CONVERGENCE crate = pi.ruv.io collective brain (pass 5, code-confirmed). Cargo deps prove it comp
+- **meta-architecture-canon** [type:canon] — THE META ARCHITECTURE CANON (verified 2026-06-09) — the yardstick other tools must follow. 10 original core repos: loop_
+- **meta-portability-2026-06-12** [type:mission] — PORTABILITY MISSION wave 1 (session 5, 2026-06-12 late evening; spec = PORTABILITY-SESSION-PROMPT.md, scope TOTAL per us
+- **meta-repo-control-plane** [type:layer] — ORG/REPO CONTROL PLANE. ~/Desktop/meta is a META-REPO (NOT a monorepo): ~60 independent git repos listed in .meta.yaml, 
+- **method-docs-untrusted-code-only** [type:method-note] — METHOD CORRECTION (user, hard rule): DOCS ARE NOT ACCURATE — they walk you in circles. Untrusted prose includes: repo .m
+- **mirofish-port-decision** [type:adr] — STATUS: accepted (2026-06-12, W4 of the upgrade mission) — full plan in MIROFISH-PORT-PLAN.md (meta root). VERDICT: teri
+- **n8n-external-glue** [type:layer] — EXTERNAL WORKFLOW/GLUE layer. ~/Desktop/meta/n8n is the OFFICIAL n8n monorepo (v2.25.1, pnpm, 22+ pkgs) PLUS a harness o
+- **obscura-ready-unwired** [type:component] — OBSCURA (verified): a COMPLETE, production-ready Rust headless browser (h4ckf0r0day/obscura, repo at ~/Desktop/meta/obsc
+- **org-audit-results-2026-06-12** [type:audit] — STATUS: verified — full-fleet audit complete, fixes landed; written to ~/Desktop/meta/META-ORG-AUDIT.md. CONTEXT: org-au
+- **org-audit-verification-2026-06-12** [type:verification] — Adversarial verification (session 4, 2026-06-12 evening) of every load-bearing claim from org-audit-results-2026-06-12, 
+- **org-protection-rollout-2026-06-12** [type:rollout] — STATUS: verified (GET-after-PUT) — Phase 4 of the org-audit mission applied branch protection to 24 FlexNetOS repos + au
+- **patience-orphaned-ts-has-rust-consumer** [type:method-note] — USER GUIDANCE (be patient): a TS feature or a Rust adapter crate that looks ORPHANED/dead when first seen WILL reveal it
+- **policy-v2-meta-org** [type:adr] — STATUS: active — POLICY v2 synthesized + written to ~/Desktop/meta/META-ORG-POLICY.md (2026-06-12). CONTEXT: org-audit m
+- **portability-wave2-2026-06-13** [type:decision] — PORTABILITY mission wave 2 (resumed 2026-06-13). Two architectural learnings worth keeping: (1) ENVCTL meta-tool-links D
+- **projects-all-incomplete** [type:root-cause] — ROOT-CAUSE FACT (user-authoritative, 2026-06-09): NONE of the stack projects are finished. They were built SIMULTANEOUSL
+- **prompt_hub-front-door** [type:layer] — INTAKE/INTENT layer (the 'front door'). Rust 2024 workspace at ~/Desktop/meta/prompt_hub (3 crates: prompt-hub lib, prom
+- **research-mission-ruvector-crate-map** [type:context] — MISSION (user-corrected, authoritative): We are RESEARCHING the ruvnet ecosystem via RuVector by MAPPING — specifically 
+- **rtk-token-optimization** [type:cross-cutting] — CROSS-CUTTING optimization. rtk (Rust Token Killer) at ~/Desktop/meta/rtk-tokenkill. Token-optimized CLI proxy giving 60
+- **ruflo-is-claude-flow-v3** [type:component] — RUFLO = CLAUDE-FLOW V3 (pass 1, 2026-06-09). ~/Desktop/meta/ruflo is a TypeScript/Node agent-orchestration runtime publi
+- **rusty-idd merge model + meta conventions** [type:reference] — ADR-0001 R11/R12 (hand-verified). rusty-idd = FlexNetOS/rusty-idd (Intent-Driven Development; ~20k LOC Rust + an idd-mer
+- **rusty-idd-merge-planner** [type:layer] — PLANNING layer, but narrower than assumed: it is a MERGE-planning / intent-driven-development tool, not a general plan->
+- **ruvector-crate-graph-proven** [type:crate-graph] — RUVECTOR CRATE GRAPH (pass 4a, CODE-PROVEN 2026-06-09 via parsing 213 Cargo.toml manifests — /tmp/crate_graph.py). PROVE
+- **ruvector-knowledge-export-scaffold** [type:reference] — docs/research/knowledge-export/ruvector-knowledge.rvf.json (23KB, 371 lines) = a RuVector-authored v2.0-era knowledge ex
+- **ruvector-pass1-shape** [type:component] — RUVECTOR PASS 1 (code-as-truth 2026-06-09; docs are stale per claude-hook-blocks-edits). RuVector (~/Desktop/meta/RuVect
+- **ruvector-unifying-abstraction** [type:abstraction] — RUVECTOR UNIFYING ABSTRACTION (pass 4b, CODE-PROVEN 2026-06-09 by reading core/types.rs, core/index.rs, attention/traits
+- **ruvix-cognition-kernel-subsystem** [type:subsystem] — RUVIX = a from-scratch bare-metal OPERATING SYSTEM (pass 5, code-confirmed 2026-06-09). README: 'RuVix Cognition Kernel 
+- **ruvnet-dev-pattern** [type:dev-pattern] — RUVNET DEV PATTERN (user-authoritative 2026-06-09) — explains MANY 'two implementations' discrepancies across the stack:
+- **rvagent-rust-agent-framework** [type:subsystem] — crates/rvAgent (10 crates, WALKED) = rvAgent: a COMPLETE RUST-NATIVE coding-agent framework — ruvnet's Rust answer to Cl
+- **rvf-format-internals** [type:internals] — RVF FORMAT INTERNALS (pass 2, code-verified 2026-06-09). The .rvf file is a SEGMENT-TYPED binary container. Segment type
+- **rvf-is-self-bootstrapping-container** [type:insight] — KEY INSIGHT (pass 2): the .rvf 'AGI file format' is NOT just storage and rvf-kernel is NOT a bytecode VM. The container 
+- **rvf-kernel-wasm-bridge** [type:integration] — RVF KERNEL + WASM BRIDGE (pass 1, 2026-06-09 — the ruvector<->ruflo connection). RVF = RuVector Format: binary append-on
+- **rvf-wiring-pass6-correction** [type:verdict,type:root-cause] — CORRECTION to rvf-wiring-verdict-pass6 (which was scoped too narrow): I generalized 'ruflo does NOT execute through Rust
+- **rvf-wiring-verdict-pass3** [type:verdict] — RVF WIRING VERDICT (pass 3, 2026-06-09 — TENTATIVE, invites user confirmation). CONFIRMED solid: the napi Rust path SHIP
+- **rvf-wiring-verdict-pass6** [type:verdict] — PASS 6 (code-proven, settles pass-3): ruflo's claude-flow MEMORY subsystem does NOT execute through Rust rvf-runtime. In
+- **rvf-witness-governance** [type:internals] — RVF WITNESS/GOVERNANCE (pass 2). Tamper-evident witness chain (rvf-crypto/src/witness.rs): WitnessEntry = {prev_hash[32]
+- **rvm-microhypervisor-subsystem** [type:subsystem] — crates/rvm (16 crates, WALKED) = RVM 'RuVix Virtual Machine': a COHERENCE-NATIVE MICROHYPERVISOR for edge + multi-agent 
+- **s1-resolved-frontdoor-ledger-naming** [type:decision] — S1 DECISIONS (user-confirmed 2026-06-09). LEDGER #1 APPROVED: v1 = rusqlite (SQLite/WAL) + rvf-crypto::WitnessChain (sta
+- **s1-ruvector-meta-mapping** [type:decision] — S1 SYNTHESIS (RuVector->meta mapping, grounded in SESSION-HANDOFF + STACK-INTEGRATION-PLANS + Ark Handoff Ledger PRD v2 
+- **seam-spec-envctl-meta-env-2026-06-11** [type:seam-spec] — STATUS: open — role split verified: env-manager half READY, secrets-runtime half NOT. CONTEXT: task brief: 'envctl must 
+- **seam-spec-kasetto-agent-env-2026-06-11** [type:seam-spec] — STATUS: decided — role confirmed; one-way integration ALREADY LIVE; spelling + source-repo flags. CONTEXT: task brief sa
+- **seam-spec-ruvocal-prompthub-2026-06-11** [type:seam-spec] — STATUS: open — gap re-confirmed both sides, contract specified. CONTEXT: locked front-door decision = prompt_hub (canoni
+- **seam-spec-weave-a2a-2026-06-11** [type:seam-spec] — STATUS: decided — substrate ready to build against; verdict + dispatch + protocol-bridge gaps specified. CONTEXT: task b
+- **session-handoff-2026-06-09** [type:handoff] — SESSION HANDOFF 2026-06-09 (see ~/Desktop/meta/SESSION-HANDOFF.md). DONE: full stack architecture mapped (47 concepts); 
+- **ship-loop-proof-2026-06-12** [type:evidence] — STATUS: verified — the commit→push→PR→merge policy ran end-to-end on three repos (2026-06-12). CONTEXT: user asked for t
+- **spike-validated-handoff-seam-ledger** [type:component] — SPIKE BUILT + PASSING (2026-06-09, user-authorized) at ~/Downloads/tmp/handoff/spike (cargo workspace, 2 crates, cargo t
+- **stack-topology-reality** [type:overview] — CORE TRUTH (verified 2026-06-09): the FlexNetOS agentic dev stack is NOT a wired pipeline. It is a set of independent, d
+- **subagent-forge-hook-hazard** [type:method-note] — RESEARCH-METHOD HAZARD + LIVE CONFIRMATION (2026-06-09): the envctl/forge-loop + weave session-relay hooks are BROKEN/MI
+- **substrate-committed-files** [type:substrate] — INTEGRATION SUBSTRATE #2: committed files on disk as source of truth. The durable, restart-surviving backbone. Instances
+- **substrate-weave-mesh** [type:substrate] — INTEGRATION SUBSTRATE #1: the weave mesh. The ONLY live cross-agent coordination channel. Tools join as peers (register 
+- **terminal-yazelix-stack** [type:context] — WORKSTATION ENTRY (context, not core). Login shell /bin/bash -> ~/.bashrc auto-enter block (injected by envctl) runs 'yz
+- **todo-reexplore-b17f-exo-research** [type:method-note] — RESOLVED (B17f re-explore, algorithm-level): the exo-ai-2025/research prototypes are NEXT-GEN PRIMITIVES INCUBATING (not
+- **todo-reexplore-b17g-sevensense** [type:method-note] — RESOLVED (B17g re-explore): 7sense (vibecast-7sense) = a 'Bioacoustic Intelligence Platform' that transforms BIRD CALLS 
+- **ts-has-rust-native-replacement** [type:dev-pattern] — USER-STATED PRINCIPLE (authoritative): in the ruvnet ecosystem EVERY TypeScript code unit has a RUST-NATIVE replacement 
+- **upgrade-mission-results-2026-06-12** [type:session-result] — STATUS: session 5 complete (2026-06-12 evening). The VERIFY→UNDERSTAND→UPGRADE mission over the whole estate. DELIVERED:
+- **wasm-path-and-ts-rvf-discrepancy** [type:integration] — WASM PATH + A DISCREPANCY (pass 2, code-verified). BUILD: RuVector crate (crate-type cdylib, e.g. ruvector-gnn-wasm with
+- **weave-coordination-substrate** [type:layer] — COORDINATION SUBSTRATE (not a pipeline orchestrator). Single dependency-light Rust binary v0.2.0 (CLI + MCP server in on
+- **weave-lineage-and-obscura** [type:lineage] — WEAVE LINEAGE (user-authoritative): weave is the UPGRADE/successor of two earlier projects — it absorbs 'mcp-broker' and
+- **weave-lineage-retired** [type:lineage] — LINEAGE RESOLVED (verified): weave FORMALLY RETIRED mcp-broker + repowire (weave/ARCHITECTURE.md section 8, 2026-06). mc

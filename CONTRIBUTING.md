@@ -14,10 +14,15 @@ repository** that inherits it — i.e. any repo that does not ship its own
 
 ## Branch policy
 
-- `main` is the integration branch and is **protected**: PR with one approval, linear history, no force-push, no deletion.
-- Branch off `main` using `<type>/<short-slug>` — e.g. `feat/issue-template`, `fix/runner-label`, `docs/fork-workflow`.
-- Keep PRs focused: one logical change per PR. Split large changes into a stacked series rather than one mega-PR.
-- Rebase on `main` before requesting review; do not merge `main` into your branch.
+> **Repos that have adopted the trunk model** (`develop` present — e.g. the `.github` repo
+> itself) follow [`WORKFLOW.md`](WORKFLOW.md) / ADR-0003: `develop` is the trunk, `main` is the
+> protected mirror advanced only by automated promotion, and **PRs target `develop`, not `main`**.
+> The defaults below are the org-wide baseline for repos that have not yet adopted `develop`.
+
+- `main` is protected: PR with one approval, linear history, no force-push, no deletion.
+- Branch off the trunk (`develop` where present, else `main`) using `<type>/<short-slug>` — e.g. `feat/issue-template`, `fix/runner-label`, `docs/fork-workflow`.
+- Keep PRs focused: **one task per PR**. Split large changes into a stacked series rather than one mega-PR.
+- Rebase on the trunk before requesting review; do not merge the trunk into your branch.
 
 ## Commit messages
 

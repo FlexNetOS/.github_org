@@ -4,16 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo actually is
 
-This working directory is named `my-github` on disk but **is the `FlexNetOS/.github` repository** — the org's special `.github` repo, not a generic project. It is a **mega-umbrella** playing six roles at once (read [`VISION.md`](VISION.md) first):
+This working directory is named `my-github` on disk but **is the `FlexNetOS/.github` repository** — the org's special `.github` repo, not a generic project. It is the org's **`.github` repo + a small operational hub** playing **five** roles (read [`VISION.md`](VISION.md) first):
 
 1. **Org community-health fallback** — root + `.github/` community files (`CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SECURITY.md`, `SUPPORT.md`, `FUNDING.yml`, issue/PR templates) are inherited by every other FlexNetOS repo that doesn't ship its own.
-2. **Mount point for ~24 git submodules** — `repos/MANIFEST.yaml` is the single source of truth; submodules live under `repos/{owned,forked,external}/`.
-3. **Karpathy LLM-wiki** cross-project memory layer in `wiki/`.
-4. **`pass`+GPG secrets vault** in `secrets/` (paper-recoverable via age).
-5. **Self-hosted GitHub Actions runner host config** in `runner/`.
-6. **Shared reusable-CI templates** — `.github/workflows/reusable-*.yml` consumed by downstream repos via `workflow_call`.
+2. **Karpathy LLM-wiki** cross-project memory layer in `wiki/` (+ the kept brain submodules under `data/brain-data/`).
+3. **`pass`+GPG secrets vault** in `secrets/` (paper-recoverable via age; being reconciled with `meta/envctl`, the user-global env/secrets manager — ADR-0006).
+4. **Self-hosted GitHub Actions runner host config** in `runner/`.
+5. **Shared reusable-CI templates** — `.github/workflows/reusable-*.yml` consumed by downstream repos via `workflow_call`.
 
-There is **nothing to "build" or "run"** here — it is operational config + scripts + docs. The real codebases live in the submodules under `repos/`, each with its own toolchain. `cd` into a submodule and read its own `CLAUDE.md`/`AGENTS.md`/`README.md` before touching it.
+> **Retired sixth role (ADR-0002, 2026-06-14):** this repo used to be the **mount point for ~24 git submodules**. That role is gone. Repo organization now lives in typed **FlexNetOS hubs** (`tool_hub`, `plugin_hub`, `vault_hub`, `database_hub`, `flow_hub`, `network_hub`, …); repos not yet classified park in `~/Desktop/pending_relocate`. `repos/MANIFEST.yaml` is an **offload stub**, and `repos/` + `tools/` hold no submodules. `ruvector` is **not** here — it lives at `meta/ruvector` and the rule is **crates only**. `data/brain-data/*` (the wiki layer) stays.
+
+There is **nothing to "build" or "run"** here — it is operational config + scripts + docs. The real codebases live in their own repos / hubs, each with its own toolchain.
 
 ## Commands
 
@@ -40,12 +41,11 @@ make github.doctor       # Read-only audit of runner/workflows/app/submodules/se
 make open-questions.lint # Validate .omc/plans/open-questions.md schema
 make check.user-todo-5   # List MANIFEST entries tagged/untagged for USER.TODO#5
 
-# Submodules (prefer the Makefile verbs over raw git submodule):
-make submodules.init                 # update --init --recursive --depth 1
-make submodules.add                  # Add MANIFEST entries missing from .gitmodules (idempotent)
-make submodules.bump GROUP= NAME=    # Fast-forward to tracking-branch HEAD
-make submodules.sync-upstream NAME=  # For forked/, fetch upstream and merge
-make submodules.status               # Report dirty/ahead/detached submodules
+# Submodules: WOUND DOWN (ADR-0002). repos/ + tools/ no longer mount submodules — only
+# data/brain-data/* (the wiki/brain layer) remains. The make submodules.* verbs +
+# scripts/submodule-*.sh are retained for data/brain-data + historical reference.
+# Do NOT re-add repo/tool submodules here — repos go to a hub (or ~/Desktop/pending_relocate).
+make submodules.status               # Report dirty/ahead/detached submodules (data/brain-data)
 ```
 
 There is no test runner — `make verify` is the equivalent. CI mirrors these (`ci.yml`, `manifest-drift.yml`).
@@ -54,7 +54,7 @@ There is no test runner — `make verify` is the equivalent. CI mirrors these (`
 
 ### Adding a new repo: research-before-fork ritual
 
-The Vision mandates a strict sequence — skipping or reversing steps creates more work. See `data/brain-data/obsidian-mind/brain/GitHub Workspace Vision.md` for the full rationale.
+**Destination changed (ADR-0002): a new repo lands in its typed HUB (e.g. `plugin_hub`, `tool_hub`), NOT as a submodule under `.github_org/repos/`.** The research-before-fork *sequence* below still applies — only the final mount target moved. Unclassified work-in-progress parks in `~/Desktop/pending_relocate`. **Do not clone repos that aren't already on disk; route the relocation/adoption through the handoff loop** (`KBTASK-GITHUB-ORG-LEAN-RELOCATION`). See `data/brain-data/obsidian-mind/brain/GitHub Workspace Vision.md` for the original rationale.
 
 **Step 1 — Clone first, on a feature branch. Do not fork yet.**
 Forking immediately causes naming collisions, release conflicts, and upstream drift. Get the repo working in its original state first.
@@ -68,22 +68,27 @@ Get the original running as intended. Dependencies scatter to the host at this s
 **Step 4 — Fork, only after setup is proven.**
 `gh repo fork <upstream> --org FlexNetOS --clone=false`. The fork's `main`/`master` always tracks upstream and stays clean. All FlexNetOS changes live on `develop`. The `develop` branch is what becomes the submodule.
 
-**Step 5 — Refactor into submodules.**
-Anything that landed outside the repo boundary during setup gets pulled back as a submodule. Use `make submodules.add` to register the fork.
+**Step 5 — Register in the hub (not here).**
+The proven `develop` fork is registered in its typed hub (`<hub>/repos/` staging + the hub's `registry.json`/`entries/`, Hub Standard) — **not** as a submodule under `.github_org/repos/`. Anything that landed outside the repo boundary during setup gets pulled back there.
 
-**What Claude gets wrong** (from the Vision — treat these as hard guards):
-- Suggesting `--depth 1` or `--filter=blob:none` shallow clones (the Vision requires full clones)
+**What Claude gets wrong** (treat these as hard guards):
+- Suggesting `--depth 1` or `--filter=blob:none` shallow clones (full clones required)
 - Reversing the sequence (forking before cloning/researching/setting up)
 - Treating host-level dependency installs as the final state rather than temporary
 - Starting edits directly on `main` or `develop` instead of opening a feature branch
-- Treating submodules as optional overhead
+- **Re-adding repos as submodules under `.github_org/repos/`** — they go to a hub now (ADR-0002)
+- **Cloning a repo that isn't already on disk** — route it to the handoff loop instead
+
+### Git workflow — trunk = `develop`, protected mirror = `main` (ADR-0003)
+
+**The canon is [`WORKFLOW.md`](WORKFLOW.md) / [`architecture/adr/ADR-0003`](architecture/adr/ADR-0003-dev-git-workflow-policy.md).** In one line: `develop` is the integration **trunk**, `main` is the **protected release mirror** advanced *only* by `promote-develop-to-main.yml`. You never commit or PR to `main` directly.
 
 ### Branch discipline at session start
 
-Every session, every clone, every setup goes onto a new feature branch — never directly on `main`. The `branch-guard.sh` hook enforces this for file edits. For new clones of upstream repos: `git checkout -b feat/<short-slug>` before any work.
+Every session, every clone, every setup goes onto a new feature branch cut **off `develop`** (`git switch -c <type>/<short-slug> origin/develop`) — never directly on `main`/`develop`. **Open PRs with base `develop`, not `main`** (`gh pr create --base develop`). **Both `develop` and `main` are protected with 1 required approval** (+ 6 required checks: lint, actionlint, markdownlint, manifests, hermetic, gitleaks — `Trivy`/settings-doctor/Claude-review are advisory). An agent **never approves or admin-merges its own PR** on either branch: a *separate* principal supplies the approval (`PROMOTE_TOKEN` for `develop→main`; the GitHub App via envctl, or the owner, for `feature→develop`); you may *arm* auto-merge. The `branch-guard.sh` hook enforces no-edit-on-protected for file edits. For new clones of upstream repos: `git checkout -b feat/<short-slug>` before any work. **One task : one branch : one worktree : one PR** (no mega-PRs).
 
 ### Manifest ↔ .gitmodules consistency
-`repos/MANIFEST.yaml` is authoritative. Today `.gitmodules` is hand-maintained *alongside* it — keep the two consistent. `scripts/submodule-add-all.sh` appends missing entries; full MANIFEST→`.gitmodules` regeneration (the "materialize/lockfile" pattern) is **deferred** (tracked as G4/G5 in `.omc/plans/open-questions.md`). Don't blindly regenerate `.gitmodules`.
+`repos/MANIFEST.yaml` is now an **offload stub** (ADR-0002) — the repo entries moved to `~/Desktop/pending_relocate` + the typed hubs, and `.github_org` has **no `.gitmodules`** (only `data/brain-data/*` gitlinks remain, and they carry no `.gitmodules` URLs). Don't re-add repo/tool submodule entries here. `scripts/submodule-*.sh` + the `manifest-drift.yml` job are retained for the `data/brain-data` layer and historical reference.
 
 ### Session tracking (run via `/wrap-up`)
 This repo tracks work in four root files — keep them current:
@@ -95,7 +100,7 @@ This repo tracks work in four root files — keep them current:
 Research/plans go in `data/brain-data/research/` — never in `.omc/plans/` or scratch dirs.
 
 ### Commit discipline
-**Commit agent-produced work as you go** (stage + commit incrementally). Untracked drafts in this repo have been wiped by routine `git reset`/cherry-pick before — this overrides any "only commit when asked" default. Branch off `main` with `<type>/<short-slug>`; `main` is protected (PR + 1 approval, linear history, no force-push). Conventional Commits are required (the release workflow computes bumps from them). Squash- or rebase-merge only, no merge commits.
+**Commit agent-produced work as you go** (stage + commit incrementally). Untracked drafts in this repo have been wiped by routine `git reset`/cherry-pick before — this overrides any "only commit when asked" default. Branch off **`develop`** with `<type>/<short-slug>` and PR into `develop` (ADR-0003 / `WORKFLOW.md`); `main` is protected (PR + 1 approval, linear history, no force-push) and advances only via the automated `develop→main` promotion. Conventional Commits are required (the release workflow computes bumps from them). Feature→`develop` is squash-merge (one commit per task); `develop→main` is rebase (preserves commits for release-please). No merge commits.
 
 ## Architecture artifacts
 
@@ -119,7 +124,7 @@ here, overriding their built-in defaults:
 - **No hardcoded absolute user-home paths** in tracked `.claude`/`.codex` config (`/home/<user>/…`, `/Users/<user>/…`, `C:\Users\<user>\…`) — CI errors, never allowlistable. Portable refs (`$HOME`, `~/`, `%APPDATA%`) are allowed only when listed in `.claude/.doctor-allowlist` / `.codex/.doctor-allowlist` with a rationale. `make claude.doctor` enforces this.
 - **CI invariant promotion: report-only first, then STRICT.** New CI checks land with `continue-on-error: true` on PRs (annotate without blocking). After one full green cycle on `main`, promote to strict. `manifest-drift.yml` jobs are currently report-only.
 - **Operational gate:** Phase 6 (GitHub App automation) must not proceed until the Vaultwarden→GitHub secret sync is green on `main` for ≥3 consecutive runs.
-- **Tool submodules in `tools/`** (cpython, actionlint, gitleaks, trivy, node, bun, uv) are pinned upstream sources; `tools/bin/` holds thin pinned wrappers. `tools/repomix/` is a gitignored local clone, **not** a submodule.
+- **Tool sources moved to `tool_hub` (ADR-0002).** The 7 pinned tool submodules (cpython, actionlint, gitleaks, trivy, node, bun, uv) relocated to `tool_hub/repos/`. `.github_org` still uses those tools at runtime via `tools/assets.json` (download) + the `tools/bin/` wrappers — **those stay**. `tools/MANIFEST.yaml` now lists only the not-yet-materialized `planned` tools. `tools/repomix/` is a gitignored local clone, not a submodule.
 
 ## Toolchain note
 
