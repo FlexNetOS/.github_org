@@ -51,33 +51,24 @@ verify.tools: ## Validate tools/MANIFEST.yaml structure
 verify.hermetic: ## Report non-hermetic workflow/script dependencies (advisory)
 	@python3 scripts/hermetic-audit.py .
 
-# ---------- Submodules ----------
+# ---------- Submodules (data/brain-data only) ----------
+# ADR-0002 retired repo/tool submodules in .github_org. The only remaining
+# gitlinks are the data/brain-data wiki/brain submodules.
 
 .PHONY: submodules.init
-submodules.init: ## Initialize and update every submodule (depth-1)
-	git submodule update --init --recursive --depth 1
-
-.PHONY: submodules.add
-submodules.add: ## Add any MANIFEST entry missing from .gitmodules (idempotent)
-	@scripts/submodule-add-all.sh
+submodules.init: ## Initialize and update data/brain-data submodules (full clone)
+	git submodule update --init --recursive
 
 .PHONY: submodules.bump
-submodules.bump: ## Fast-forward submodules to tracking-branch HEAD (filter: GROUP=, NAME=)
-	@args=""; \
-	if [ -n "$$GROUP" ]; then args="$$args --group $$GROUP"; fi; \
-	if [ -n "$$NAME" ];  then args="$$args --name $$NAME"; fi; \
-	scripts/submodule-bump.sh $$args
+submodules.bump: ## Fast-forward data/brain-data submodules to tracking-branch HEAD
+	@scripts/submodule-bump.sh
 
 .PHONY: submodules.sync-upstream
-submodules.sync-upstream: ## For forked/, fetch upstream and merge (filter: NAME=)
-	@if [ -n "$$NAME" ]; then \
-	    scripts/submodule-sync-upstream.sh --name $$NAME; \
-	else \
-	    scripts/submodule-sync-upstream.sh; \
-	fi
+submodules.sync-upstream: ## For forked data/brain-data submodules, fetch upstream and merge
+	@scripts/submodule-sync-upstream.sh
 
 .PHONY: submodules.status
-submodules.status: ## Report dirty / ahead-of-tracking / detached submodules
+submodules.status: ## Report dirty / ahead-of-tracking / detached data/brain-data submodules
 	@git submodule foreach --quiet 'echo "--- $$name ---"; git -C "$$toplevel/$$path" status --short --branch | head -5'
 
 # ---------- Research (Step 0 of the clone-and-research-before-fork ritual) ----------

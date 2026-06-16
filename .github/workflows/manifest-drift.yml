@@ -87,13 +87,4 @@ jobs:
             echo "open-questions linter or log not present yet — skipping"
           fi
 
-  submodules-materialize-noop:
-    name: MANIFEST/.gitmodules lockfile (deferred)
-    runs-on: ubuntu-latest
-    continue-on-error: true   # REPORT_ONLY placeholder
-    steps:
-      - name: Note deferred lockfile pattern
-        run: |
-          echo "deferred: the MANIFEST->.gitmodules lockfile (materialize) pattern is not yet adopted."
-          echo "It refactors the working submodules.add machinery and is tracked in"
-          echo ".omc/plans/open-questions.md (G4/G5)."
+
