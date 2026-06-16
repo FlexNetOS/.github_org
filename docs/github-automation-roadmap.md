@@ -1,38 +1,44 @@
 # GitHub automation roadmap
 
-This is the Ralph loop queue for turning `FlexNetOS/.github` into the full GitHub control plane. The rule is small, safe, stacked PRs: each pass adds one verified automation layer, then hands off the next target.
+This is the queue for turning `FlexNetOS/.github` into the org's reusable GitHub control plane. The rule is small, safe, stacked PRs: each pass adds one verified automation layer, then hands off the next target.
 
-## Current stack
+## In flight
 
-| PR | Branch | Purpose | Base |
+| Branch | Purpose | Base | Status |
 | --- | --- | --- | --- |
-| #12 | `infra/network-slim-control-plane` | Network/Slim control-plane architecture | `main` |
-| #13 | `feat/vaultwarden-github-secrets` | Vaultwarden/Bitwarden to GitHub secret sync | `infra/network-slim-control-plane` |
-| #14 | `feat/github-control-plane-doctor` | One-command read-only GitHub control-plane doctor and roadmap | `feat/vaultwarden-github-secrets` |
-| #15 | `feat/local-runner-lifecycle` | Local runner lifecycle hardening | `feat/github-control-plane-doctor` |
-| #16 | `feat/upgrade-auto-review-merge` | Upgrade-only auto-review/auto-merge gate | `feat/local-runner-lifecycle` |
-| next | `feat/github-app-automation` | GitHub App manifest, permissions, and token smoke test | `feat/upgrade-auto-review-merge` |
+| `docs/meta-foundation-confirmation` | Confirm/repair foundation docs and token wiring after ADR-0002 and the org audit | `develop` | open — P1–P5 landed, P6–P7 pending |
+
+## Recently landed
+
+| Surface | What it does | Location |
+| --- | --- | --- |
+| Semantic PR/commit gate | Validates PR titles and local commits against Conventional Commits | `.github/workflows/semantic-pr-title.yml`, `.githooks/commit-msg` |
+| Renovate automation | Dependency updates grouped by ecosystem, dashboard-approved | `renovate.json5` |
+| Branch promotion | Perpetual `develop → main` promote PR with separate-identity auto-approval | `.github/workflows/promote-develop-to-main.yml` |
+| Release wiring | `release.yml` ready for `RELEASE_TOKEN`; currently `workflow_dispatch`-only | `.github/workflows/release.yml`, `.github/workflows/reusable-release.yml` |
+| Merged-branch cleanup | Deletes feature-branch heads after merge while preserving protected/upgrade branches | `.github/workflows/delete-merged-branch.yml` |
+| CI failure tracker | Opens `ci-failure`/`needs-autofix` issues on watched workflow failures | `.github/workflows/ci-failure-tracker.yml` |
 
 ## Definition of done
 
 The GitHub process is fully automated when a maintainer can run a local doctor, see every missing GitHub control-plane surface, and activate each layer from documented dry-run-first scripts without committing secrets or mutating the host by surprise.
 
-- [ ] One-command local doctor for runner, workflows, GitHub App, submodules, secrets, policy, releases, and live GitHub status.
-- [ ] Local/self-hosted runner install/register/remove/status path with dry-run-first safety.
-- [ ] Reusable workflow templates and caller examples for lint, test, build, security, secrets, submodules, and release.
-- [ ] GitHub App manifest template, permission matrix, private-key storage guidance, and installation-token smoke test.
+- [x] One-command local doctor for runner, workflows, GitHub App, submodules, secrets, policy, releases, and live GitHub status.
+- [x] Local/self-hosted runner install/register/remove/status path with dry-run-first safety.
+- [x] Reusable workflow templates and caller examples for lint, test, build, typecheck, security, secrets, submodules, and release.
+- [x] GitHub App manifest template, permission matrix, private-key storage guidance, and installation-token smoke test.
 - [ ] Subrepo/submodule graph validation against `repos/MANIFEST.yaml`, `.gitmodules`, and live GitHub remotes.
 - [ ] Vaultwarden/Bitwarden secret sync and rotation docs with no committed secret values or real local mapping file.
-- [ ] Branch/ruleset/CODEOWNERS/community-health audit path.
-- [ ] Dependabot, release, and security automation checks documented and locally verifiable.
-- [ ] Manual activation points are explicit for any step needing GitHub admin permissions, runner registration tokens, private keys, or host service changes.
+- [x] Branch/ruleset/CODEOWNERS/community-health audit path.
+- [x] Renovate, release, and security automation checks documented and locally verifiable.
+- [x] Manual activation points are explicit for any step needing GitHub admin permissions, runner registration tokens, private keys, or host service changes.
 - [ ] Active work is represented as focused PRs with CI/check status monitored.
 
 ## Ralph phases
 
 ### Phase 1 — Baseline and doctor
 
-Status: in progress.
+Status: **done** (CI gating deferred until expected surfaces stabilize).
 
 Deliverables:
 
@@ -49,7 +55,7 @@ Acceptance:
 
 ### Phase 2 — Local runner lifecycle
 
-Status: hardened in the local runner lifecycle PR.
+Status: **done**.
 
 Existing surfaces:
 
@@ -60,7 +66,7 @@ Existing surfaces:
 - `runner/systemd/runner-spawn@.timer`
 - `docs/self-hosted-runner.md`
 
-Next deliverables:
+Deliverables:
 
 - [x] Add `runner/.env.example` with labels, runner directory, scope, service mode, and dry-run defaults.
 - [x] Add `scripts/runner-doctor.sh` or fold deeper runner checks into `scripts/github-doctor.py`.
@@ -75,17 +81,18 @@ Acceptance:
 
 ### Phase 3 — Reusable workflows
 
-Status: present, with stacked-branch CI and an upgrade-only auto-review/auto-merge gate added.
+Status: **present**.
 
-Existing surfaces include reusable lint, test, build, security, release, secrets, and submodule workflows under `.github/workflows/`, plus the metadata-only `auto-review-merge.yml` upgrade gate.
+Existing surfaces include reusable lint, test, build, typecheck, security, release, secrets, and submodule workflows under `.github/workflows/`, plus `auto-review-merge.yml`, `promote-develop-to-main.yml`, `ci-failure-tracker.yml`, `semantic-pr-title.yml`, and `delete-merged-branch.yml`.
 
 Next deliverables:
 
-- [ ] Add caller examples for normal repos, submodule repos, and secrets-aware repos.
+- [x] Add caller examples for normal repos, submodule repos, and secrets-aware repos.
 - [ ] Add a workflow permission matrix documenting required `permissions:` and secrets per reusable workflow.
 - [ ] Add local `act --list` guidance or a repo-local wrapper that never requires secrets by default.
 - [x] Run CI on stacked PR branches (`branches: ['**']`) so every PR layer reports checks.
 - [x] Add same-repo upgrade-only auto-review/auto-merge gating that never checks out PR code.
+- [x] Add semantic PR title validation and local commit-message hook.
 
 Acceptance:
 
@@ -95,7 +102,7 @@ Acceptance:
 
 ### Phase 4 — GitHub App automation
 
-Status: materialized in the GitHub App automation PR.
+Status: **materialized**.
 
 Existing surfaces:
 
@@ -105,7 +112,7 @@ Existing surfaces:
 - `docs/templates/github-app/token-smoke.md`
 - `make github-app.smoke`
 
-Next deliverables:
+Deliverables:
 
 - [x] Add `github-app/manifest.example.json`.
 - [x] Add `github-app/permissions.md` least-privilege matrix.
@@ -120,20 +127,19 @@ Acceptance:
 
 ### Phase 5 — Subrepo/submodule graph
 
-Status: partially present.
+Status: **partially present**. External repos moved to typed hubs and `~/Desktop/pending_relocate` per ADR-0002; `repos/MANIFEST.yaml` is now an offload stub. Only `data/brain-data/*` gitlinks remain in this repo.
 
 Existing surfaces:
 
 - `repos/MANIFEST.yaml`
-- `.gitmodules`
-- submodule helper scripts
-- manifest verifier
+- submodule helper scripts (retained for `data/brain-data`)
+- `manifest-drift.yml` (retired repo/tool submodule checks; still validates the manifest stub)
 
 Next deliverables:
 
 - [ ] Add a live remote audit that compares manifest URLs to GitHub API results.
-- [ ] Add a `.gitmodules` drift check.
-- [ ] Add docs for adding/removing/updating owned, forked, and external subrepos.
+- [ ] Add a `.gitmodules` drift check (only relevant for `data/brain-data` gitlinks).
+- [ ] Add docs for adding/removing/updating owned, forked, and external subrepos in typed hubs.
 
 Acceptance:
 
@@ -142,7 +148,7 @@ Acceptance:
 
 ### Phase 6 — Secrets and policy sync
 
-Status: partially present via PR #13.
+Status: **partially present**.
 
 Existing surfaces:
 
@@ -156,6 +162,7 @@ Next deliverables:
 - [ ] Add dry-run CI smoke test with stubbed `bw` and `gh`.
 - [ ] Add branch protection/ruleset/CODEOWNERS audit script.
 - [ ] Document secret rotation from Vaultwarden through GitHub repo/env/org secrets.
+- [ ] Wire `RELEASE_TOKEN` org secret and re-enable automatic `release.yml` triggers.
 
 Acceptance:
 
@@ -165,7 +172,7 @@ Acceptance:
 
 ### Phase 7 — Full control-plane loop
 
-Status: planned.
+Status: **planned**.
 
 Next deliverables:
 
