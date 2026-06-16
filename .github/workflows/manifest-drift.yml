@@ -87,4 +87,14 @@ jobs:
             echo "open-questions linter or log not present yet — skipping"
           fi
 
+  github-doctor-renovate:
+    name: GitHub doctor — Renovate/Dependabot check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          submodules: false
+      - name: Triple-verify Renovate config and no Dependabot residue
+        run: bash scripts/tests/test-github-doctor.sh
+
 

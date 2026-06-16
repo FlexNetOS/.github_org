@@ -45,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed (SESSION-2026-06-16-005)
 - **Enabled automatic `release.yml` trigger.** After setting the `RELEASE_TOKEN` repo secret on `FlexNetOS/.github`, uncommented `push: branches: [main]` in `.github/workflows/release.yml` and updated `RELEASING.md` to describe the now-automatic release-please loop. The first `v1.0.0` release will be proposed automatically once PR #108 merges to `main`.
+- **Updated `scripts/github-doctor.py` for Renovate.** Replaced the stale `Dependabot config` check with a `Renovate config` check (accepts `renovate.json`/`renovate.json5` at root or `.github/`). Added `scripts/tests/test-github-doctor.sh` triple-verify contract test and a `github-doctor-renovate` job in `.github/workflows/manifest-drift.yml` to prevent regression.
 
 ### Notes (SESSION-2026-06-16-005)
 - Branch target for this work: `docs/meta-foundation-confirmation`. The session is intentionally additive/doc-only; no submodule mutations, no forks, no committed secret values, no `main` branch edits.

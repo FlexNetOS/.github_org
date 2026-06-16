@@ -97,7 +97,12 @@ def repo_checks() -> list[Check]:
             exists("docs/automation.md", "baseline", "automation docs"),
             exists("docs/github-automation-roadmap.md", "baseline", "Ralph roadmap", warning_detail("planned queue lives here")),
             exists(".github/CODEOWNERS", "policy", "CODEOWNERS"),
-            exists(".github/dependabot.yml", "policy", "Dependabot config"),
+            Check(
+                "policy",
+                "Renovate config",
+                status((ROOT / "renovate.json").exists() or (ROOT / "renovate.json5").exists() or (ROOT / ".github/renovate.json").exists() or (ROOT / ".github/renovate.json5").exists()),
+                "renovate.json or renovate.json5 (root or .github/)",
+            ),
         ]
     )
 

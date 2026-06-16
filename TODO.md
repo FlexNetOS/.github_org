@@ -26,6 +26,10 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"Phased
 
 ---
 
+## GitHub doctor hygiene (TDD loop — closed 2026-06-16)
+
+- [x] **Dependabot → Renovate check in `scripts/github-doctor.py`.** Replaced the stale `Dependabot config` check with a `Renovate config` check that accepts `renovate.json`/`renovate.json5` at repo root or under `.github/`. Added a triple-verify test at `scripts/tests/test-github-doctor.sh` (contract output, no Dependabot residue, offline `make github.doctor`) and a CI job in `manifest-drift.yml` to keep it green.
+
 ## CI-failure autofix (follow-on to `ci-failure-tracker.yml`)
 
 > `ci-failure-tracker.yml` is now **LIVE on `main`** (promoted via PR #67): it watches the umbrella's workflows and opens an issue tagged `ci-failure` + `needs-autofix` referencing the failed run + per-job logs whenever CI fails. The autofix loop below consumes those issues.

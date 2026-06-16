@@ -30,6 +30,7 @@
 - **P5** — `release.yml` now passes `secrets.release-token` from `RELEASE_TOKEN` and the automatic `push: branches: [main]` trigger is enabled; added `delete-merged-branch.yml` with safe exclusions; documented `PROMOTE_TOKEN`/`RELEASE_TOKEN` roles.
 - **P6** — refreshed `docs/github-automation-roadmap.md` to current state.
 - **P7** — wrote `.handoff/packets/SESSION-2026-06-16-005.md` handoff capsule; confirmed docs-only additive changes still route through `develop`.
+- **TDD follow-on** — closed the stale Dependabot → Renovate check in `scripts/github-doctor.py` with a triple-verify test (`scripts/tests/test-github-doctor.sh`) and a CI enforcement job in `manifest-drift.yml`.
 - Bookkeeping updated: `TODO.md`, `CHANGELOG.md`, `SESSIONS.md`, `USER.TODO.md`.
 
 ### What was actually done this session
@@ -42,7 +43,8 @@
 7. Added `delete-merged-branch.yml` with guardrails for protected and upgrade branches.
 8. Refreshed `docs/github-automation-roadmap.md` and replaced stale PR references.
 9. Wrote `.handoff/packets/SESSION-2026-06-16-005.md` and documented the docs-only branch-target policy across `AGENTS.md`, `CLAUDE.md`, `WORKFLOW.md`, and `architecture/adr/ADR-0003-dev-git-workflow-policy.md`.
-10. Updated session-tracking files.
+10. Ran a TDD loop with triple verify to close the stale Dependabot → Renovate check in `scripts/github-doctor.py`: wrote the failing `scripts/tests/test-github-doctor.sh`, updated the doctor, added a CI job in `manifest-drift.yml`, and verified all three stages pass.
+11. Updated session-tracking files.
 
 ### Reservations / risks
 - The branch-guard hook may block edits to protected-branch source files; this work is on `docs/meta-foundation-confirmation` and only touches exempt doc/agent-config files plus additive workflow files.
