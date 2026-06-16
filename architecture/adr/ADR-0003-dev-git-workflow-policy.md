@@ -92,9 +92,10 @@ the separation property comes from *who approves*, not from the trunk being ungu
 **Q1 — Where is the develop work done?**
 On `develop`. Day-to-day work lands on `develop` through short-lived feature branches cut **off
 `develop`**. `main` is downstream and protected; it receives work only via the automated promote
-PR. (Exception — **forks of upstream repos**: `main`/`master` mirrors pristine upstream and is
-never touched locally; *all* FlexNetOS work lives on `develop`. See the research-before-fork
-ritual in `CLAUDE.md`.)
+PR. This includes docs-only additive changes: branch-guard exemptions for doc/agent-config files
+do not override the branch-target policy. (Exception — **forks of upstream repos**: `main`/`master`
+mirrors pristine upstream and is never touched locally; *all* FlexNetOS work lives on `develop`.
+See the research-before-fork ritual in `CLAUDE.md`.)
 
 **Q2 — Policy for clones / forks / branches / worktrees / staging.**
 

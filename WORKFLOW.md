@@ -41,7 +41,7 @@ You may *arm* auto-merge; a separate principal supplies the approval that releas
 
 | # | Question | Answer |
 |---|---|---|
-| 1 | Where is develop work done? | On `develop`, via feature branches cut **off `develop`**. (Forks: work on `develop`, `main`/`master` mirrors upstream.) |
+| 1 | Where is develop work done? | On `develop`, via feature branches cut **off `develop`**. (Forks: work on `develop`, `main`/`master` mirrors upstream.) Docs-only additive changes also target `develop`; branch-guard exemptions for doc/agent-config files do not override the branch-target policy. |
 | 2 | Clones / forks / branches / worktrees / staging policy | Full clones only; **don't clone repos not on disk → handoff loop**. Fork only after research-before-fork. Trunk=`develop`, protected=`main`. Feature=`<type>/<slug>` off `develop`. Worktree per task off `origin/develop`. **No staging branch.** |
 | 3 | How do PRs move through Actions? | PR→`develop`: `ci.yml` runs; 6 required checks green **+ 1 approval from a separate principal** → squash auto-merge. Then `promote-develop-to-main` auto-promotes to `main` (rebase, `PROMOTE_TOKEN`). Merge to `main` → `release.yml` (automatic once `RELEASE_TOKEN` is wired). Merged feature branches are cleaned up by `delete-merged-branch.yml`. |
 | 4 | What happens on failure? | PR goes `BLOCKED`; auto-merge waits. `ci-failure-tracker.yml` opens a `needs-autofix` issue; auto-closes on next green. |

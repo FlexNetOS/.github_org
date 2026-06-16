@@ -34,6 +34,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed (SESSION-2026-06-16-005)
 - Removed retired submodule references from `CONTRIBUTING.md`, `Makefile`, and `.github/workflows/manifest-drift.yml` that still pointed to `.github_org/repos/` submodules after ADR-0002 moved external repos to typed hubs. `make submodules.status` now only reports on `data/brain-data`. (P1)
 
+### Changed (SESSION-2026-06-16-005)
+- **Token roles clarified.** `PROMOTE_TOKEN` remains the separate-identity credential for `promote-develop-to-main.yml`; `RELEASE_TOKEN` is the org-level credential used by `release.yml` / `reusable-release.yml`. The two may share a credential but are documented as distinct roles. `WORKFLOW.md`, `CLAUDE.md`, `architecture/adr/ADR-0003-dev-git-workflow-policy.md`, and `promote-develop-to-main.yml` updated accordingly. (P5)
+- **Docs-only branch-target policy confirmed.** Even docs/agent-config files exempt from the branch-guard hook must still route through `develop`. Documented in `AGENTS.md`, `CLAUDE.md`, `WORKFLOW.md`, and `architecture/adr/ADR-0003-dev-git-workflow-policy.md`. (P7)
+- **`docs/github-automation-roadmap.md` refreshed** to current state: stale PR stack replaced, completed phases marked, Dependabot references removed, new surfaces (semantic PR title, delete-merged-branch, promote-develop-to-main, ci-failure-tracker) listed. (P6)
+
+### Added (SESSION-2026-06-16-005)
+- `.github/workflows/delete-merged-branch.yml` — deletes merged feature-branch heads while preserving protected default branches, the perpetual `develop→main` promotion PR, and automated upgrade branches (`dependabot/`, `renovate/`, `upgrade/`, `deps/`). (P5)
+- `.handoff/packets/SESSION-2026-06-16-005.md` — handoff capsule summarizing confirmed vs deferred foundation work. (P7)
+
 ### Notes (SESSION-2026-06-16-005)
 - Branch target for this work: `docs/meta-foundation-confirmation`. The session is intentionally additive/doc-only; no submodule mutations, no forks, no secret writes, no `main` branch edits.
 - New user-action item added: `UA-2026-06-16-001` — wire release token and re-enable automatic `release.yml` triggers.

@@ -4,9 +4,9 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-06-16 (SESSION-2026-06-16-005 — meta-foundation confirmation; P1–P4 landed on `docs/meta-foundation-confirmation`)
+**Last updated:** 2026-06-16 (SESSION-2026-06-16-005 — meta-foundation confirmation; P1–P7 + policy decision landed on `docs/meta-foundation-confirmation`)
 **Branch:** `docs/meta-foundation-confirmation`
-**Status:** P1–P4 complete; P5–P7 + policy infrastructure pending.
+**Status:** All meta-foundation phases complete; next step is open PR → `develop` and wire `RELEASE_TOKEN`.
 
 ---
 
@@ -18,12 +18,10 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"Phased
 - [x] **P2** — Add semantic PR title gate (`.github/workflows/semantic-pr-title.yml`) + local `commit-msg` hook.
 - [x] **P3** — Replace Dependabot with Renovate (`renovate.json5`, remove `.github/dependabot.yml`).
 - [x] **P4** — Correct docs that falsely describe reusable workflows as "scaffolds" (`README.md`, `RELEASING.md`) and document the release-token operational gate.
-- [ ] **P5** — Rename `PROMOTE_TOKEN` → `RELEASE_TOKEN` (or document dual use) and wire `delete-branch` bot.
-- [ ] **P6** — Refresh `docs/github-automation-roadmap.md` targets to match current state.
-- [ ] **P7** — Write `.handoff` capsule summarizing confirmed vs deferred foundation work.
-- [ ] **Policy infrastructure** — Decide branch-target policy: are PRs to `main` now allowed for docs-only additive changes, or must everything still route through `develop`?
-
----
+- [x] **P5** — Document dual use of `PROMOTE_TOKEN`/`RELEASE_TOKEN` and add `delete-merged-branch.yml` bot.
+- [x] **P6** — Refresh `docs/github-automation-roadmap.md` targets to match current state.
+- [x] **P7** — Write `.handoff` capsule summarizing confirmed vs deferred foundation work.
+- [x] **Policy infrastructure** — Docs-only additive changes still route through `develop`; branch-guard exemptions do not override branch-target policy. Documented in `AGENTS.md`, `CLAUDE.md`, `WORKFLOW.md`, and `architecture/adr/ADR-0003-dev-git-workflow-policy.md`.
 
 ---
 
