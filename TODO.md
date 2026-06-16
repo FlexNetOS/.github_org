@@ -6,7 +6,8 @@
 
 **Last updated:** 2026-06-16 (SESSION-2026-06-16-005 — meta-foundation confirmation; P1–P7 + policy decision landed on `docs/meta-foundation-confirmation`)
 **Branch:** `docs/meta-foundation-confirmation`
-**Status:** All meta-foundation phases complete; next step is open PR → `develop` and wire `RELEASE_TOKEN`.
+**PR:** #108 → `develop` (auto-merge armed; waits for separate-principal approval and CI)
+**Status:** All meta-foundation phases complete; branch pushed and PR opened. Next: maintainer approval + merge, then wire `RELEASE_TOKEN` per `UA-2026-06-16-001`.
 
 ---
 

@@ -50,7 +50,7 @@
 - `delete-merged-branch.yml` has been actionlint-validated but not exercised live.
 
 ### What's next
-- Open PR for `docs/meta-foundation-confirmation` → `develop`.
+- PR #108 (`docs/meta-foundation-confirmation` → `develop`) is open and auto-merge is armed; it needs a separate-principal approval and green CI.
 - Complete `UA-2026-06-16-001`: create `RELEASE_TOKEN` org secret, uncomment `push: branches: [main]` in `release.yml`, and smoke-test release-please.
 
 ### Files created/modified this session
