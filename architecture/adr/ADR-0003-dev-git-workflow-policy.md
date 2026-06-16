@@ -26,7 +26,7 @@ The owner posed ten questions that this ADR defines and answers (see **Decision*
 ### Ground truth at decision time (cited, not aspirational)
 
 - **Branches exist:** `main` (protected trunk-of-record), `develop` (integration trunk),
-  feature branches `<type>/<slug>`, dependabot branches. `develop` and `main` had **diverged
+  feature branches `<type>/<slug>`, renovate branches. `develop` and `main` had **diverged
   `4/15`** (`git rev-list --left-right --count origin/main...origin/develop`) — the trunk and the
   protected mirror drifted apart, a direct symptom of the undefined flow.
 - **A trunk model already exists in code but was undocumented:**
@@ -43,8 +43,9 @@ The owner posed ten questions that this ADR defines and answers (see **Decision*
     tracking issue labeled `ci-failure` + `needs-autofix`; auto-closes it on the next green run.
     **This is the existing failure → flowback signal.**
   - `.github/workflows/release.yml` + `reusable-release.yml` — release-please; **manual-dispatch
-    only** until the org permits Actions to open PRs or a release-token (App/PAT via envctl) is
-    wired.
+    only** until the org-level `RELEASE_TOKEN` (App/PAT via envctl) is wired.
+  - `.github/workflows/delete-merged-branch.yml` — cleans up merged feature-branch heads while
+    preserving protected branches and automated upgrade branches.
   - `.github/workflows/claude-code-review.yml` / `claude.yml` — Claude PR review + `@claude`.
 - **Docs said the older model:** `CONTRIBUTING.md` / `CLAUDE.md` said "Branch off `main`",
   contradicting the live `develop`-trunk + promote machinery. `CONTRIBUTING.md` is the
@@ -118,7 +119,9 @@ ritual in `CLAUDE.md`.)
    `develop → main` promote PR, auto-approves via `PROMOTE_TOKEN` (separate identity), and
    **rebase** auto-merges when green → `main` advances, commits preserved.
 4. Merge to `main` drives `release.yml` (release-please) — version computed from Conventional
-   Commits; currently manual-dispatch until the org/App token is wired.
+   Commits; currently `workflow_dispatch`-only until the org-level `RELEASE_TOKEN` is wired.
+5. Merged feature branches are deleted by `delete-merged-branch.yml`, while protected branches and
+   automated upgrade branches are preserved.
 
 **Q4 — What happens if there is a failure?**
 The PR self-blocks (`mergeStateStatus = BLOCKED`); armed auto-merge stays armed but will not

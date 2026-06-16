@@ -1,12 +1,22 @@
 name: release
 
-# Umbrella self-release. This is manual until the FlexNetOS org allows
-# GitHub Actions to create pull requests, or this workflow is wired to a
-# release-token secret from a GitHub App/PAT. Without that org-level setting,
-# release-please can compute the release but fails when opening the release PR.
+# Umbrella self-release.
+#
+# This workflow is currently manual-only (`workflow_dispatch:`) because the
+# org-level `RELEASE_TOKEN` secret is not yet wired. Once `RELEASE_TOKEN` is
+# configured, re-enable the `push: branches: [main]` trigger below so
+# release-please opens/updates the release PR automatically on every merge to
+# `main`.
+#
+# `RELEASE_TOKEN` must be a PAT or GitHub App token with `contents:write`,
+# `pull-requests:write`, and `issues:write` scopes. It is passed to
+# `reusable-release.yml` as `secrets.release-token`.
 
 on:
   workflow_dispatch:
+  # Uncomment after RELEASE_TOKEN is wired:
+  # push:
+  #   branches: [main]
 
 permissions:
   contents: read
@@ -22,4 +32,5 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
-    secrets: inherit
+    secrets:
+      release-token: ${{ secrets.RELEASE_TOKEN }}

@@ -178,5 +178,6 @@ jobs:
           PR_NUMBER: ${{ steps.gate.outputs.number }}
         run: |
           # Do not pass --delete-branch: upgrade branches stay intact unless a
-          # maintainer deletes them separately.
+          # maintainer deletes them separately. Normal feature branches are
+          # cleaned up by `.github/workflows/delete-merged-branch.yml` instead.
           gh pr merge "$PR_NUMBER" --auto --squash
