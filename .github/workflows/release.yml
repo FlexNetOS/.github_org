@@ -8,15 +8,14 @@ name: release
 # release-please opens/updates the release PR automatically on every merge to
 # `main`.
 #
-# `RELEASE_TOKEN` must be a PAT or GitHub App token with `contents:write`,
-# `pull-requests:write`, and `issues:write` scopes. It is passed to
-# `reusable-release.yml` as `secrets.release-token`.
+# `RELEASE_TOKEN` must be a token with `contents:write`, `pull-requests:write`,
+# and `issues:write` scopes. It is passed to `reusable-release.yml` as
+# `secrets.release-token`.
 
 on:
   workflow_dispatch:
-  # Uncomment after RELEASE_TOKEN is wired:
-  # push:
-  #   branches: [main]
+  push:
+    branches: [main]
 
 permissions:
   contents: read

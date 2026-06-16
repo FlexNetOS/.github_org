@@ -13,10 +13,10 @@
 - **ID:** `SESSION-2026-06-16-005`
 - **Date:** 2026-06-16
 - **Branch:** `docs/meta-foundation-confirmation`
-- **HEAD at end:** `021fed2`
+- **HEAD at end:** `TBD`
 - **Mode:** manual research + targeted edits
-- **Outcome:** P1–P7 of the `my-github-reconciliation.md` phased plan landed; docs now accurately describe reusable-workflow maturity; Dependabot retired; semantic PR/commit gates added; `RELEASE_TOKEN` wired in `release.yml`; `delete-merged-branch.yml` added; roadmap refreshed; docs-only branch-target policy confirmed.
-- **User-action gates surfaced:** `UA-2026-06-16-001` (wire release token + re-enable automatic `release.yml`)
+- **Outcome:** P1–P7 of the `my-github-reconciliation.md` phased plan landed; docs now accurately describe reusable-workflow maturity; Dependabot retired; semantic PR/commit gates added; `RELEASE_TOKEN` wired in `release.yml` and the automatic `push: branches: [main]` trigger enabled; `delete-merged-branch.yml` added; roadmap refreshed; docs-only branch-target policy confirmed.
+- **User-action gates surfaced:** none — `UA-2026-06-16-001` closed in-session.
 - **Cost:** N/A
 
 ### What the user asked
@@ -27,7 +27,7 @@
 - **P2** — added `.github/workflows/semantic-pr-title.yml` (reusable org-level check) and `.githooks/commit-msg` (local enforcement).
 - **P3** — removed `.github/dependabot.yml` and strengthened `renovate.json5` (dashboard approval, Actions grouping, digest pinning).
 - **P4** — corrected `README.md` and `RELEASING.md` so they no longer call reusable workflows "scaffolds"; documented the release-token operational gate.
-- **P5** — `release.yml` now passes `secrets.release-token` from `RELEASE_TOKEN`; added `delete-merged-branch.yml` with safe exclusions; documented `PROMOTE_TOKEN`/`RELEASE_TOKEN` roles.
+- **P5** — `release.yml` now passes `secrets.release-token` from `RELEASE_TOKEN` and the automatic `push: branches: [main]` trigger is enabled; added `delete-merged-branch.yml` with safe exclusions; documented `PROMOTE_TOKEN`/`RELEASE_TOKEN` roles.
 - **P6** — refreshed `docs/github-automation-roadmap.md` to current state.
 - **P7** — wrote `.handoff/packets/SESSION-2026-06-16-005.md` handoff capsule; confirmed docs-only additive changes still route through `develop`.
 - Bookkeeping updated: `TODO.md`, `CHANGELOG.md`, `SESSIONS.md`, `USER.TODO.md`.
@@ -51,7 +51,7 @@
 
 ### What's next
 - PR #108 (`docs/meta-foundation-confirmation` → `develop`) is open and auto-merge is armed; it needs a separate-principal approval and green CI.
-- Complete `UA-2026-06-16-001`: create `RELEASE_TOKEN` org secret, uncomment `push: branches: [main]` in `release.yml`, and smoke-test release-please.
+- After PR #108 merges to `main`, verify that `release.yml` triggers automatically and release-please opens the `v1.0.0` release PR.
 
 ### Files created/modified this session
 

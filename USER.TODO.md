@@ -727,7 +727,7 @@ feature branch but should not be merged to `main` without picking one of the abo
   3. Re-enable the `push: branches: [main]` trigger in `.github/workflows/release.yml` by removing `workflow_dispatch:` or making both triggers active.
   4. Run a smoke-test release via the Actions UI and verify release-please opens a release PR.
 - **How to verify done:** A push to `main` triggers `release.yml` automatically and a release-please PR appears.
-- **Status:** `open`
+- **Status:** `done (SESSION-2026-06-16-005)` — `RELEASE_TOKEN` set as a repo secret on `FlexNetOS/.github` and the `push: branches: [main]` trigger in `.github/workflows/release.yml` is enabled.
 
 ---
 

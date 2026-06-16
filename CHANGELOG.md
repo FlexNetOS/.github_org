@@ -43,9 +43,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `.github/workflows/delete-merged-branch.yml` — deletes merged feature-branch heads while preserving protected default branches, the perpetual `develop→main` promotion PR, and automated upgrade branches (`dependabot/`, `renovate/`, `upgrade/`, `deps/`). (P5)
 - `.handoff/packets/SESSION-2026-06-16-005.md` — handoff capsule summarizing confirmed vs deferred foundation work. (P7)
 
+### Changed (SESSION-2026-06-16-005)
+- **Enabled automatic `release.yml` trigger.** After setting the `RELEASE_TOKEN` repo secret on `FlexNetOS/.github`, uncommented `push: branches: [main]` in `.github/workflows/release.yml` and updated `RELEASING.md` to describe the now-automatic release-please loop. The first `v1.0.0` release will be proposed automatically once PR #108 merges to `main`.
+
 ### Notes (SESSION-2026-06-16-005)
-- Branch target for this work: `docs/meta-foundation-confirmation`. The session is intentionally additive/doc-only; no submodule mutations, no forks, no secret writes, no `main` branch edits.
-- New user-action item added: `UA-2026-06-16-001` — wire release token and re-enable automatic `release.yml` triggers.
+- Branch target for this work: `docs/meta-foundation-confirmation`. The session is intentionally additive/doc-only; no submodule mutations, no forks, no committed secret values, no `main` branch edits.
+- `UA-2026-06-16-001` closed: `RELEASE_TOKEN` is set as a repo secret on `FlexNetOS/.github`.
 
 ### Changed (SESSION-2026-05-29-015)
 - **PR pipeline driven to finish line.** Repaired `develop` CI and resolved all open PRs: (PR #71) fixed `reusable-typecheck.yml` duplicate `run:` key + losslessly repaired the spliced `.claude/settings.json` (valid JSON; kept the complete copy — 8 hook events / 16 plugins / 5 marketplaces / 28 commands; discarded 335-line duplicate had 0 unique commands); (PR #74) salvaged the unique `network/` slim control-plane scaffolding (8 files absent from develop); (PR #67) squash-promoted develop→main. `main` and `develop` are now content-identical. (SESSION-2026-05-29-015)
