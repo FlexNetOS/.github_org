@@ -30,8 +30,9 @@ Conventional commit messages drive the version bump automatically; see
 
 ## The release-please loop
 
-[`.github/workflows/release.yml`](.github/workflows/release.yml) runs
-on every push to `main`. release-please opens or updates a
+[`.github/workflows/release.yml`](.github/workflows/release.yml) is currently
+**manual-only** (`workflow_dispatch:`) until the org-level release token is
+wired. When triggered, release-please opens or updates a
 **"chore(main): release X.Y.Z"** PR that accumulates the next release's
 changelog. The maintainer reviews the PR and merges it when ready —
 that merge triggers:
@@ -40,6 +41,9 @@ that merge triggers:
 2. Release notes generated from the conventional-commit history.
 3. A re-run of `release.yml` that updates the moving `v1` tag (see
    below).
+
+Once the release token is available, the `push: branches: [main]` trigger
+will be re-enabled so the loop runs automatically.
 
 ## Moving the major tag
 
@@ -57,18 +61,17 @@ on `main` and is not allowed on `vX.Y.Z` tags.
 
 ## The first release — v1.0.0
 
-Until the reusable workflows ship real bodies (not scaffolds), there
-is no v1. The path to v1:
+The reusable workflows already have real bodies. The remaining blockers
+for v1 are operational, not implementation:
 
-1. Fill the bodies of `reusable-lint.yml`, `reusable-test.yml`,
-   `reusable-build.yml`, `reusable-security.yml`, `reusable-release.yml`.
-   (`reusable-secrets.yml` ships when the `pass` vault is initialized;
-    see [`USER.TODO.md`](USER.TODO.md) §4.)
-2. Run the smoke-test caller in this repo's own `ci.yml` against the
-   filled workflows — green CI on `main` for at least one cycle.
+1. Wire the org-level release token so `release.yml` can run automatically
+   on pushes to `main` (currently `workflow_dispatch`-only).
+2. Exercise the remaining reusable workflows (`reusable-test.yml`,
+   `reusable-build.yml`, `reusable-typecheck.yml`, `reusable-release.yml`)
+   in this repo's own `ci.yml` — green CI on `main` for at least one cycle.
 3. Merge the release-please PR that proposes `v1.0.0`.
 4. The workflow tags `v1.0.0` and `v1`. Downstream repos can now pin to
-   `@v1`. Update this repo's README example accordingly.
+   `@v1`.
 
 ## What is in scope for a release here
 

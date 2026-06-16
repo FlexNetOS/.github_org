@@ -4,9 +4,26 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-05-29 (SESSION-2026-05-29-015 — PR pipeline driven to finish line: develop CI repaired, network scaffolding salvaged, #66/#51 closed as superseded, develop→main promoted)
-**Branch:** `develop` (all PRs target develop)
-**Status:** All open PRs resolved; `main`↔`develop` content-in-sync; remote pruned to `main`+`develop`; `ci-failure-tracker` live on `main`. Adoption/forks still gated pending `gh auth login` (UA-005).
+**Last updated:** 2026-06-16 (SESSION-2026-06-16-005 — meta-foundation confirmation; P1–P4 landed on `docs/meta-foundation-confirmation`)
+**Branch:** `docs/meta-foundation-confirmation`
+**Status:** P1–P4 complete; P5–P7 + policy infrastructure pending.
+
+---
+
+## Meta-foundation confirmation (P1–P7)
+
+Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"Phased reconciliation".
+
+- [x] **P1** — Remove retired submodule ghost references from `CONTRIBUTING.md`, `Makefile`, and `manifest-drift.yml`.
+- [x] **P2** — Add semantic PR title gate (`.github/workflows/semantic-pr-title.yml`) + local `commit-msg` hook.
+- [x] **P3** — Replace Dependabot with Renovate (`renovate.json5`, remove `.github/dependabot.yml`).
+- [x] **P4** — Correct docs that falsely describe reusable workflows as "scaffolds" (`README.md`, `RELEASING.md`) and document the release-token operational gate.
+- [ ] **P5** — Rename `PROMOTE_TOKEN` → `RELEASE_TOKEN` (or document dual use) and wire `delete-branch` bot.
+- [ ] **P6** — Refresh `docs/github-automation-roadmap.md` targets to match current state.
+- [ ] **P7** — Write `.handoff` capsule summarizing confirmed vs deferred foundation work.
+- [ ] **Policy infrastructure** — Decide branch-target policy: are PRs to `main` now allowed for docs-only additive changes, or must everything still route through `develop`?
+
+---
 
 ---
 

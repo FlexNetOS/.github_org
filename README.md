@@ -93,9 +93,10 @@ landing page at <https://github.com/FlexNetOS> (above the repo grid).
 
 ## How to use the reusable workflows
 
-These are intentionally **scaffolds** today — they ship the `workflow_call`
-shape, documented inputs, least-privilege `permissions:` blocks, and a
-placeholder body. Bodies will be filled in by follow-on work.
+The reusable workflows are **production-ready**. They ship the `workflow_call`
+shape, documented inputs, least-privilege `permissions:` blocks, and real
+implementation bodies. This repo dogfoods `reusable-lint.yml` and
+`reusable-security.yml` in its own [`ci.yml`](.github/workflows/ci.yml).
 
 In any FlexNetOS repo, drop a thin caller into `.github/workflows/ci.yml`:
 
@@ -125,9 +126,10 @@ jobs:
     secrets: inherit
 ```
 
-Once the scaffolds get real bodies and we cut tagged releases, callers should
-pin to a moving major tag (`@v1`) so non-breaking improvements propagate
-automatically while breaking changes force a deliberate bump.
+Callers should pin to a moving major tag (`@v1`) so non-breaking improvements
+propagate automatically while breaking changes force a deliberate bump. The
+`v1` tag is advanced by [`release.yml`](.github/workflows/release.yml) after each
+release-please-driven release.
 
 ## Best-practices docs
 

@@ -716,6 +716,21 @@ feature branch but should not be merged to `main` without picking one of the abo
 - **How to verify done:** `systemctl --user status n8n n8n-mcp` both show `Active: active (running)`; `curl -s http://localhost:5678/healthz` and `curl -s http://localhost:3001/health` both return `{"status":"ok"}` after a reboot.
 ---
 
+### UA-2026-06-16-001 — Review README/RELEASING doc-accuracy fixes and wire release token
+
+- **Surfaced by:** `SESSION-2026-06-16-005` (meta-foundation confirmation)
+- **Blocks:** `release.yml` running automatically on `main`; downstream consumers pinning to `@v1`
+- **Why:** `README.md` still described reusable workflows as "scaffolds" even though they now contain real bodies. `RELEASING.md` described an automatic `push: branches: [main]` trigger that is currently disabled (`workflow_dispatch:` only) because the org-level release token (`PROMOTE_TOKEN` / `RELEASE_TOKEN`) is not wired. The docs were corrected in this session, but the operational gate remains.
+- **What to do:**
+  1. Create or refresh the GitHub App / PAT used for releases and store it in `pass` (e.g. `pass insert github/apps/release-please/token`).
+  2. Add it as an org-level secret named `RELEASE_TOKEN` (or `PROMOTE_TOKEN` if you prefer to keep one token for both promotion and release workflows) at `https://github.com/organizations/FlexNetOS/settings/secrets/actions`.
+  3. Re-enable the `push: branches: [main]` trigger in `.github/workflows/release.yml` by removing `workflow_dispatch:` or making both triggers active.
+  4. Run a smoke-test release via the Actions UI and verify release-please opens a release PR.
+- **How to verify done:** A push to `main` triggers `release.yml` automatically and a release-please PR appears.
+- **Status:** `open`
+
+---
+
 ### UA-2026-05-29-004 — Review + merge PR #29 (architecture cross-link fix) into develop
 
 - **Surfaced by:** `SESSION-2026-05-29-006` (architecture/ framework)

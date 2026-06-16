@@ -8,6 +8,62 @@
 
 ---
 
+## SESSION-2026-06-16-005 — meta-foundation confirmation (P1–P4)
+
+- **ID:** `SESSION-2026-06-16-005`
+- **Date:** 2026-06-16
+- **Branch:** `docs/meta-foundation-confirmation`
+- **HEAD at end:** TBD
+- **Mode:** manual research + targeted edits
+- **Outcome:** P1–P4 of the `my-github-reconciliation.md` phased plan landed; docs now accurately describe reusable-workflow maturity; Dependabot retired; semantic PR/commit gates added.
+- **User-action gates surfaced:** `UA-2026-06-16-001` (wire release token + re-enable automatic `release.yml`)
+- **Cost:** N/A
+
+### What the user asked
+> Continue through the remaining `.github_org` phases or pause for PR.
+
+### What the answer is
+- **P1** — retired submodule ghost references scrubbed from `CONTRIBUTING.md`, `Makefile`, and `.github/workflows/manifest-drift.yml`.
+- **P2** — added `.github/workflows/semantic-pr-title.yml` (reusable org-level check) and `.githooks/commit-msg` (local enforcement).
+- **P3** — removed `.github/dependabot.yml` and strengthened `renovate.json5` (dashboard approval, Actions grouping, digest pinning).
+- **P4** — corrected `README.md` and `RELEASING.md` so they no longer call reusable workflows "scaffolds"; documented the release-token operational gate.
+- Bookkeeping updated: `TODO.md`, `CHANGELOG.md`, `SESSIONS.md`, and `USER.TODO.md`.
+
+### What was actually done this session
+1. Read `README.md`, `RELEASING.md`, `CONTRIBUTING.md`, `Makefile`, `manifest-drift.yml`, `renovate.json5`, and `USER.TODO.md` to locate stale terminology and retired references.
+2. Edited `README.md`: replaced "scaffold" with "real reusable workflow bodies" and updated the caller snippet to use `needs:` chaining.
+3. Edited `RELEASING.md`: documented that `release.yml` is currently `workflow_dispatch`-only and listed the token-wiring steps needed to re-enable automatic releases.
+4. Removed Dependabot config; left Renovate in charge.
+5. Added semantic PR/commit gates.
+6. Updated session-tracking files.
+
+### Reservations / risks
+- The branch-guard hook may block edits to protected-branch source files; this work is on `docs/meta-foundation-confirmation`.
+- P5–P7 remain pending and may require decisions on token naming (`PROMOTE_TOKEN` vs `RELEASE_TOKEN`) and branch-target policy.
+
+### What's next
+- Land P5 (token/delete-branch bot), P6 (roadmap refresh), P7 (handoff capsule), and decide whether docs-only additive changes may target `main` directly or must still route through `develop`.
+
+### Files created/modified this session
+
+| Path | What |
+|---|---|
+| `README.md` | Removed "scaffold" language; updated reusable workflow description and caller example |
+| `RELEASING.md` | Documented `workflow_dispatch` release gate and v1 blockers |
+| `.github/dependabot.yml` | Removed (superseded by Renovate) |
+| `.github/workflows/semantic-pr-title.yml` | New reusable PR-title validator |
+| `.githooks/commit-msg` | New local commit-message validator |
+| `renovate.json5` | Added dashboard approval, Actions grouping, digest pinning |
+| `CONTRIBUTING.md` | Removed retired submodule references |
+| `Makefile` | Removed retired submodule targets |
+| `.github/workflows/manifest-drift.yml` | Removed retired submodule checks |
+| `TODO.md` | Added P1–P7 tracking; marked P1–P4 done |
+| `CHANGELOG.md` | Added `[Unreleased]` entries for this session |
+| `SESSIONS.md` | Added this session entry |
+| `USER.TODO.md` | Added `UA-2026-06-16-001` |
+
+---
+
 ## SESSION-2026-05-29-015 — ci-failure-tracker workflow + drive all open PRs to the finish line
 
 - **ID:** `SESSION-2026-05-29-015`
