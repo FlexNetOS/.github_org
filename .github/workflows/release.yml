@@ -2,15 +2,13 @@ name: release
 
 # Umbrella self-release.
 #
-# This workflow is currently manual-only (`workflow_dispatch:`) because the
-# org-level `RELEASE_TOKEN` secret is not yet wired. Once `RELEASE_TOKEN` is
-# configured, re-enable the `push: branches: [main]` trigger below so
-# release-please opens/updates the release PR automatically on every merge to
-# `main`.
-#
-# `RELEASE_TOKEN` must be a token with `contents:write`, `pull-requests:write`,
-# and `issues:write` scopes. It is passed to `reusable-release.yml` as
+# `RELEASE_TOKEN` is sourced from `meta/envctl` and injected as a repository/org
+# secret. It must have `contents:write`, `pull-requests:write`, and
+# `issues:write` scopes. It is passed to `reusable-release.yml` as
 # `secrets.release-token`.
+#
+# The `push: branches: [main]` trigger is active once `RELEASE_TOKEN` is
+# configured; until then, use `workflow_dispatch:` to test the release path.
 
 on:
   workflow_dispatch:

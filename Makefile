@@ -27,6 +27,9 @@ bootstrap: ## Idempotent setup: tools check, submodules init, secrets unlock
 .PHONY: verify
 verify: verify.tool-assets verify.actionlint verify.markdown verify.manifest verify.tools verify.hermetic verify.github-policies ## Run every local verification
 
+.PHONY: verify.fast
+verify.fast: verify.actionlint verify.markdown verify.manifest verify.tools ## Fast verification (no live API calls)
+
 .PHONY: install-hooks
 install-hooks: ## Configure Git to use the local hooks in .githooks/
 	@git config core.hooksPath .githooks

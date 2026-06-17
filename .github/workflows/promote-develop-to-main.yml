@@ -7,7 +7,8 @@ name: promote-develop-to-main
 # - PR creation uses GITHUB_TOKEN (github-actions[bot]).
 # - Auto-approval uses PROMOTE_TOKEN (an admin PAT or App token with repo
 #   scope) — a different actor from the PR creator, so GitHub allows the
-#   approval. PROMOTE_TOKEN and RELEASE_TOKEN may point to the same credential,
+#   approval. PROMOTE_TOKEN and RELEASE_TOKEN are sourced from `meta/envctl`
+#   and injected as repository/org secrets. They may point to the same credential,
 #   but they are distinct roles: PROMOTE_TOKEN approves develop→main promotion,
 #   RELEASE_TOKEN is used by release.yml to cut releases.
 # - Without PROMOTE_TOKEN the PR is created but waits for a human reviewer.

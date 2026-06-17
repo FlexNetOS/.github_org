@@ -107,6 +107,17 @@ def repo_checks() -> list[Check]:
             exists(".github/policies/rulesets.json", "policy", "rulesets policy"),
             exists(".github/policies/repo-settings.json", "policy", "repo-settings policy"),
             exists("scripts/apply-github-policies.py", "policy", "policy applier script"),
+            Check(
+                "policy",
+                "community health files",
+                status(
+                    (ROOT / "CODE_OF_CONDUCT.md").exists()
+                    and (ROOT / "SECURITY.md").exists()
+                    and (ROOT / "CONTRIBUTING.md").exists()
+                    and (ROOT / "LICENSE").exists()
+                ),
+                "CODE_OF_CONDUCT.md, SECURITY.md, CONTRIBUTING.md, LICENSE",
+            ),
         ]
     )
 

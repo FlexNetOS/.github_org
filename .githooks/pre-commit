@@ -29,4 +29,15 @@ if [ -n "$MD_FILES" ] && [ -f "scripts/verify-markdown.py" ]; then
   fi
 fi
 
+POLICY_FILES=$(printf '%s\n' "$STAGED" | grep -E '^\.github/policies/.*\.json$' || true)
+if [ -n "$POLICY_FILES" ]; then
+  echo "[pre-commit] Validating policy JSON syntax..."
+  while IFS= read -r f; do
+    if ! python3 -m json.tool "$f" >/dev/null 2>&1; then
+      echo "[pre-commit] JSON syntax error in $f" >&2
+      fail=1
+    fi
+  done <<< "$POLICY_FILES"
+fi
+
 exit "$fail"

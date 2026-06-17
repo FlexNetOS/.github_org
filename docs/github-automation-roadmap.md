@@ -100,6 +100,23 @@ Next deliverables:
 - [x] Add same-repo upgrade-only auto-review/auto-merge gating that never checks out PR code.
 - [x] Add semantic PR title validation and local commit-message hook.
 
+### Workflow permission matrix
+
+| Workflow | `contents` | `pull-requests` | `issues` | `id-token` | `actions` | Secrets / notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `ci.yml` | read | — | — | — | — | none (uses reusable workflows) |
+| `manifest-drift.yml` | read | write | — | — | — | none (report-only comments) |
+| `claude-code-review.yml` | read | read | read | **write** | — | `CLAUDE_CODE_OAUTH_TOKEN` (OIDC exchange, sourced from `meta/envctl`) |
+| `release.yml` | write | write | — | — | — | `RELEASE_TOKEN` (from `meta/envctl`) |
+| `promote-develop-to-main.yml` | write | write | — | — | — | `PROMOTE_TOKEN` (from `meta/envctl`) |
+| `ci-failure-tracker.yml` | read | write | write | — | — | none (default `GITHUB_TOKEN`) |
+| `dependency-review.yml` | read | — | — | — | — | none |
+| `security.yml` / reusable | read | — | — | — | — | none (SARIF upload uses built-in `github/codeql-action`) |
+
+Notes:
+- `id-token: write` is only requested when an action performs an OIDC exchange (currently `claude-code-review.yml`). The token audience is `github.com/anthropics/claude-code-action` and the `sub` claim is `repo:FlexNetOS/.github:pull_request`.
+- Release/promote tokens are **not** stored in this repo; `meta/envctl` injects them as repository/org secrets.
+
 Acceptance:
 
 - Every reusable workflow has explicit permissions.

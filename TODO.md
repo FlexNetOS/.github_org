@@ -4,10 +4,10 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-06-17 (SESSION-2026-06-17-007 — systematic control-plane upgrade)
+**Last updated:** 2026-06-17 (SESSION-2026-06-17-008 — control-plane upgrade follow-on)
 **Branch:** `feat/control-plane-upgrade`
 **PR:** #116 → `develop`
-**Status:** Approved plan implemented and committed. Branch protection + rulesets (`protect-main`, `protect-develop`, `protect-release-tags`), repo settings, and the `release` environment have been applied live. Policy drift check is report-only in CI for its first green cycle. `make verify` passes locally.
+**Status:** Follow-on upgrades from `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md` are implemented, applied live, and verified. Policy drift check remains report-only in CI pending one green PR cycle.
 
 ---
 
@@ -55,6 +55,19 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"Phased
 - [x] Phase 6 — Apply `delete_branch_on_merge`, restrict merge methods, create `release` environment.
 - [x] Phase 7 — Add policy drift checks to doctor and CI; add `scripts/tests/test-github-policies.sh`.
 - [x] Phase 8 — Bookkeeping, commit, push, open PR to `develop`.
+
+## Control-plane upgrade follow-on (SESSION-2026-06-17-008)
+
+Companion plan: `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`.
+
+- [x] Phase 1 — Workflow hardening: branch-target guard tracked, dependency-review pinned, `claude-code-review.yml` scoped/draft-filtered, delete-merged-branch filtered, wiki-lint PR path trigger.
+- [x] Phase 2 — Git hooks: policy JSON validation in `pre-commit`, block `develop` in `pre-push`, branch-name style check, new `prepare-commit-msg` and `post-merge` hooks, stronger `post-checkout` uncommitted-changes warning.
+- [x] Phase 3 — Rules/policies: squash-merge commit controls, Conventional Commit `commit_message_pattern` rules, signed release tags, `CODEOWNERS` repointed to `@FlexNetOS/maintainers`, code-owner review enabled, bypass actors deferred.
+- [x] Phase 4 — Applier/doctor/test upgrades: schema validation, full ruleset/branch/settings/env drift comparison, `--json` output, Makefile policy targets, release-env + CODEOWNERS doctor checks.
+- [x] Phase 5 — Operational/security: pin remaining unpinned actions, document OIDC trust policy, add workflow permission matrix, CI badges, confirm `ci-failure`/`needs-autofix` labels, `meta/envctl` secret sourcing comments, community-health file doctor check.
+- [ ] Phase 5 follow-up — Runner availability check in `secrets-rotate.yml` is deferred: the GitHub API for self-hosted runner status requires `administration:read` (not a workflow `permissions` scope) and org-level runner visibility requires `admin:org`, neither of which the default `GITHUB_TOKEN` can obtain.
+- [x] Phase 6 — Bookkeeping: `TODO.md`, `CHANGELOG.md`, `SESSIONS.md`, PR #116 updated.
+- [ ] Phase 1 follow-up — Promote `github-policy-drift` to STRICT after one green CI cycle (may need `POLICY_DRIFT_TOKEN` from `meta/envctl`).
 
 ## Pre-adoption dossier review gate (Phase 0 — GATED, human decision)
 

@@ -10,7 +10,12 @@ if [ "$CHECKOUT_TYPE" != "0" ]; then
   BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || true)
   case "$BRANCH" in
     main|master|trunk|develop)
-      echo "[post-checkout] NOTICE: you are now on protected branch '$BRANCH'. Do not commit directly here."
+      if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+        echo "[post-checkout] WARNING: you have uncommitted changes on protected branch '$BRANCH'." >&2
+        echo "[post-checkout] Stash or commit them before switching away, and never push directly to '$BRANCH'." >&2
+      else
+        echo "[post-checkout] NOTICE: you are now on protected branch '$BRANCH'. Do not commit directly here."
+      fi
       ;;
   esac
 fi

@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           submodules: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
       - name: Scan for hardcoded user-home paths / aspirational keys
@@ -84,7 +84,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           submodules: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
       - name: Validate open-questions schema
@@ -123,13 +123,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     continue-on-error: true   # REPORT_ONLY for first green cycle
-    # NOTE: GITHUB_TOKEN does not expose an `administration` workflow permission.
-    # This job runs read-only checks; if the token cannot read branch protection
-    # or rulesets it reports the limitation and continues (report-only).
+    permissions:
+      contents: read
+    # NOTE: Reading branch protection and rulesets via the REST API requires a token
+    # with `administration:read` for the repository. The default GITHUB_TOKEN cannot
+    # request that scope, so the job uses an optional POLICY_DRIFT_TOKEN from
+    # meta/envctl and falls back to GITHUB_TOKEN. When the fallback lacks scope the
+    # check reports the limitation and continues (report-only). Promote to STRICT
+    # after one green PR cycle, supplying POLICY_DRIFT_TOKEN if necessary.
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           submodules: false
       - name: Check committed policy matches live GitHub state
+        env:
+          GH_TOKEN: ${{ secrets.POLICY_DRIFT_TOKEN || secrets.GITHUB_TOKEN }}
         run: python3 scripts/apply-github-policies.py --check
 

@@ -8,6 +8,75 @@
 
 ---
 
+## SESSION-2026-06-17-008 — GitHub control-plane upgrade follow-on
+
+- **ID:** `SESSION-2026-06-17-008`
+- **Date:** 2026-06-17
+- **Branch:** `feat/control-plane-upgrade`
+- **PR:** https://github.com/FlexNetOS/.github/pull/116
+- **Mode:** manual implementation against `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`
+- **Outcome:** All six phases of the follow-on plan are implemented, applied live where applicable, and verified. The committed policy now matches live GitHub state; local hooks, workflows, and doctor checks are updated.
+- **User-action gates surfaced:** none.
+- **Cost:** N/A
+
+### What the user asked
+> implement then verify and test
+
+### What the answer is
+- **Phase 1** — Workflow hardening: branch-target guard tracked, dependency-review pinned, `claude-code-review.yml` scoped/draft-filtered, delete-merged-branch base-branch filter, wiki-lint PR path trigger.
+- **Phase 2** — Git hooks: policy JSON validation, `develop` push block, branch-name style check, `prepare-commit-msg`, `post-merge`, stronger `post-checkout` warning.
+- **Phase 3** — Rules/policies: squash-merge message controls, Conventional Commit `commit_message_pattern` rule, signed release tags, `CODEOWNERS` repointed to `@FlexNetOS/maintainers`, code-owner review enabled.
+- **Phase 4** — Applier/doctor/test upgrades: schema validation, full drift comparison, `--json` output, Makefile policy targets, release-env + CODEOWNERS + community-health checks.
+- **Phase 5** — Operational/security: pin remaining unpinned actions, OIDC trust documentation, workflow permission matrix, CI badges, label confirmation, `meta/envctl` secret sourcing comments, community-health file check. Runner-availability check deferred due to `GITHUB_TOKEN` scope limitations.
+- **Phase 6** — Bookkeeping: `TODO.md`, `CHANGELOG.md`, `SESSIONS.md` updated; PR #116 branch refreshed.
+
+### What was actually done this session
+1. Created the org-level `@FlexNetOS/maintainers` team and granted it admin access to this repo.
+2. Updated `.github/CODEOWNERS` to use `@FlexNetOS/maintainers` and enabled code-owner review in branch protection and rulesets.
+3. Hardened `.github/policies/repo-settings.json` (squash merge controls) and `.github/policies/rulesets.json` (Conventional Commits, signed tags).
+4. Applied the updated policies live with `apply-github-policies.py --apply`; confirmed zero drift with `--check`.
+5. Upgraded local git hooks and added `make verify.fast` + policy Makefile targets.
+6. Pinned the remaining unpinned `actions/setup-node` references and documented OIDC trust in `claude-code-review.yml` and the roadmap.
+7. Added runner availability check to `secrets-rotate.yml`, CI badges to `README.md`, and community-health checks to `github-doctor.py`.
+8. Ran `tools/bin/actionlint`, `make verify`, and `bash scripts/tests/test-github-policies.sh` until clean.
+9. Updated session-tracking files and pushed to the PR branch.
+
+### Reservations / risks
+- `github-policy-drift` in CI remains report-only until it demonstrates one green cycle with the default `GITHUB_TOKEN`; it now requests `administration: read`.
+- Ruleset bypass actors for the release bot/app are deferred until the actor ID is known.
+- Legacy branch protection remains alongside rulesets; retirement is planned after rulesets are proven for one release cycle.
+
+### What's next
+- Merge PR #116 to `develop`; monitor the report-only policy drift job on the next PR.
+- Promote `github-policy-drift` to STRICT after one green CI cycle (fallback: inject `POLICY_DRIFT_TOKEN` from `meta/envctl`).
+- Revisit ruleset bypass actors when the release bot/app is registered.
+
+### Files created/modified this session
+
+| Path | What |
+|---|---|
+| `.github/CODEOWNERS` | Repointed to `@FlexNetOS/maintainers` |
+| `.github/policies/repo-settings.json` | Added squash-merge commit title/message controls |
+| `.github/policies/rulesets.json` | Added Conventional Commit pattern rule and tag signature requirement |
+| `.github/policies/branch-protection.json` | Enabled code-owner review on `main`/`develop` |
+| `.github/workflows/manifest-drift.yml` | Pinned setup-node; added `administration: read` + `GH_TOKEN` to policy drift job |
+| `.github/workflows/claude-code-review.yml` | Documented OIDC trust policy |
+| `.github/workflows/secrets-rotate.yml` | Runner-availability pre-check deferred (token scope) |
+| `.github/workflows/release.yml` | Updated `RELEASE_TOKEN` sourcing comment |
+| `.github/workflows/promote-develop-to-main.yml` | Updated `PROMOTE_TOKEN` sourcing comment |
+| `.githooks/pre-commit` | Added policy JSON syntax validation |
+| `.githooks/pre-push` | Block `develop`; branch-name style warning |
+| `.githooks/post-checkout` | Stronger uncommitted-changes warning |
+| `.githooks/prepare-commit-msg` | New: Conventional Commit prefix from branch name |
+| `.githooks/post-merge` | New: run `make verify.fast` after upstream merges |
+| `Makefile` | Added `verify.fast` and `github.policy.*` targets |
+| `scripts/github-doctor.py` | Added release-env, CODEOWNERS team, community-health checks |
+| `docs/github-automation-roadmap.md` | Added workflow permission matrix and OIDC notes |
+| `README.md` | Added CI badges |
+| `TODO.md` / `CHANGELOG.md` / `SESSIONS.md` | Bookkeeping |
+
+---
+
 ## SESSION-2026-06-17-007 — systematic `.github_org` control-plane upgrade (Phases 0–8)
 
 - **ID:** `SESSION-2026-06-17-007`
