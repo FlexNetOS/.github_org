@@ -103,6 +103,8 @@ jobs:
             --secret-config trivy-secret.yaml \
             --ignore-unfixed \
             --exit-code 1 \
+            --skip-files "data/brain-data/research/**/repomix-pack*.xml" \
+            --skip-files ".claude/plugins/cache/**" \
             "${{ inputs.working-directory }}"
 
       - name: Run Trivy IaC scan

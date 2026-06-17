@@ -20,6 +20,21 @@ on:
         required: false
         type: string
         default: '.'
+      sibling-repos:
+        description: 'JSON array of sibling FlexNetOS repos for meta Rust workspace mode'
+        required: false
+        type: string
+        default: '[]'
+      workspace-path:
+        description: 'Path for the current repo inside the generated meta Rust workspace'
+        required: false
+        type: string
+        default: ${{ github.event.repository.name }}
+      token:
+        description: 'GitHub token for cloning private sibling repos (pass a PAT for private repos)'
+        required: false
+        type: string
+        default: ${{ github.token }}
       coverage:
         description: 'Collect coverage and upload as an artifact'
         required: false
@@ -113,8 +128,28 @@ jobs:
             uv run -- pytest ${{ inputs.extra-args }}
           fi
 
+      - name: Set up meta Rust workspace
+        if: (inputs.language == 'rust' || inputs.language == 'mixed') && inputs.sibling-repos != '' && inputs.sibling-repos != '[]'
+        uses: ./.github/actions/meta-rust-workspace
+        id: meta-ws
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ inputs.token }}
+
+      - name: Resolve workspace directory
+        id: final-ws
+        shell: bash
+        run: |
+          if [[ -n "${{ steps.meta-ws.outputs.workspace-dir }}" ]]; then
+            echo "dir=${{ steps.meta-ws.outputs.workspace-dir }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "dir=${{ inputs.working-directory }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Test (rust)
         if: (inputs.language == 'rust' || inputs.language == 'mixed') && hashFiles(format('{0}/Cargo.toml', inputs.working-directory)) != ''
+        working-directory: ${{ steps.final-ws.outputs.dir }}
         shell: bash
         run: |
           if cargo --list 2>/dev/null | grep -q nextest; then

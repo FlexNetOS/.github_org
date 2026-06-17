@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           submodules: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
       - name: Scan for hardcoded user-home paths / aspirational keys
@@ -76,7 +76,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           submodules: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
       - name: Validate open-questions schema
@@ -108,4 +108,16 @@ jobs:
       - name: Triple-verify research repomix archives do not fail Trivy
         run: bash scripts/tests/test-trivy-secret-suppressions.sh
 
+  hermetic-audit:
+    name: Hermetic dependency / clone audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          submodules: false
+      - name: Check for non-hermetic patterns
+        # Advisory enforcement until the repo is clean of pre-existing findings.
+        continue-on-error: true
+        run: python3 scripts/hermetic-audit.py --fail .
 
