@@ -8,6 +8,52 @@
 
 ---
 
+## SESSION-2026-06-17-009 — Verification and cleanup of merged control-plane work
+
+- **ID:** `SESSION-2026-06-17-009`
+- **Date:** 2026-06-17
+- **Branch:** `feat/control-plane-upgrades-continuation`
+- **PR:** #135 → `develop`
+- **Mode:** verification + corrective implementation
+- **Outcome:** Verified the merged meta control-plane changes against `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`, implemented the remaining upgrades, and applied the policy changes live. Fixed/closed: duplicate fleet-policy applier, unpinned actions in `claude-code-review.yml`, stale `.github` badge URLs, missing runner-availability guard in `secrets-rotate.yml`, `github-policy-drift` promotion to STRICT, redundant legacy branch-protection retirement, and `--json` output for all applier modes. `make verify`, actionlint, markdown lint, and live `apply-github-policies.py --check` all pass.
+- **User-action gates surfaced:** review/merge PR #135; unlock `meta/envctl` to provision `RELEASE_TOKEN`/`PROMOTE_TOKEN`.
+- **Cost:** N/A
+
+### What the user asked
+> Verify all your work and code changes, find the original plan, and proceed with the phase implementation.
+
+### What the answer is
+- The original follow-on plan is `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md` in PR #116.
+- PR #116 already implements Phases 0–8 of the systematic control-plane upgrade and most of the plan's Phases 1–6.
+- The merged stacked PRs (#118/#121/#126) introduced a duplicate fleet-policy applier (`scripts/apply-fleet-policies.py`, `.github/policies/fleet.json`, templates) that conflicts with the canonical `scripts/apply-github-policies.py` in PR #116; removed it.
+- Phase 1/3 gaps closed: promoted `github-policy-drift` to STRICT; retired redundant `required_status_checks`/`required_pull_request_reviews`/`required_linear_history`/`allow_deletions` from legacy branch protection (now enforced by rulesets) and applied live.
+- Phase 4 gap closed: `--json` now works for `--dry-run` and `--apply`.
+- Phase 5 gaps addressed: pinned `actions/checkout` and `anthropics/claude-code-action` in `claude-code-review.yml`; fixed README CI badges for the renamed repo; added `runner-availability` check to `secrets-rotate.yml`.
+
+### What was actually done this session
+1. Compared `origin/develop` against PR #116 to identify duplicative and missing pieces.
+2. Removed `scripts/apply-fleet-policies.py`, `.github/policies/fleet.json`, and `.github/policies/templates/`.
+3. Updated `docs/github-automation-roadmap.md` to document the canonical `apply-github-policies.py` model.
+4. Pinned remaining unpinned actions in `.github/workflows/claude-code-review.yml`.
+5. Fixed README CI badge URLs from `FlexNetOS/.github` to `FlexNetOS/.github_org`.
+6. Added a `runner-availability` job to `.github/workflows/secrets-rotate.yml`.
+7. Promoted `github-policy-drift` to STRICT in `manifest-drift.yml` and recorded it in `promote-strict.md`.
+8. Extended `scripts/apply-github-policies.py` `--json` support to `--dry-run` and `--apply`.
+9. Trimmed redundant legacy branch-protection entries and applied the policy live; verified zero drift with `--check`.
+10. Updated `TODO.md`, `CHANGELOG.md`, and `SESSIONS.md`.
+11. Ran `make verify`, `tools/bin/actionlint .github/workflows/*.yml`, `python3 scripts/verify-markdown.py .`, and live policy `--check` until clean.
+
+### Reservations / risks
+- The `runner-availability` check queries repo-level runners with the default `GITHUB_TOKEN`; if the self-hosted runner is registered at org level, the check may report none available even though one exists. In that case it should be extended to query org-level runners (requires `admin:org` scope or a dedicated token).
+- Ruleset `bypass_actors` for the release bot/app is still deferred until the actor ID is known.
+- `RELEASE_TOKEN`/`PROMOTE_TOKEN` provisioning is blocked until the `meta/envctl` vault is unlocked.
+
+### What's next
+- Review/merge PR #135 to `develop`.
+- Unlock `meta/envctl` and provision workflow secrets.
+- Add ruleset bypass actors when the release bot/app is registered.
+
+---
 ## SESSION-2026-06-17-008 — GitHub control-plane upgrade follow-on
 
 - **ID:** `SESSION-2026-06-17-008`
