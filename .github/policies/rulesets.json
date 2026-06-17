@@ -1,11 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Desired repository rulesets for FlexNetOS/.github. Applied via scripts/apply-github-policies.py.",
+  "description": "Desired repository rulesets for FlexNetOS/.github_org. Applied via scripts/apply-github-policies.py.",
   "rulesets": [
     {
       "name": "protect-main",
       "target": "branch",
       "enforcement": "active",
+      "bypass_actors": [
+        { "actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always" }
+      ],
       "conditions": {
         "ref_name": {
           "include": ["~DEFAULT_BRANCH"],
@@ -63,6 +66,9 @@
       "name": "protect-develop",
       "target": "branch",
       "enforcement": "active",
+      "bypass_actors": [
+        { "actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always" }
+      ],
       "conditions": {
         "ref_name": {
           "include": ["refs/heads/develop"],
