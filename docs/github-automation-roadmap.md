@@ -7,6 +7,9 @@ This is the queue for turning `FlexNetOS/.github` into the org's reusable GitHub
 | Branch | Purpose | Base | Status |
 | --- | --- | --- | --- |
 | `docs/meta-foundation-confirmation` | Confirm/repair foundation docs and token wiring after ADR-0002 and the org audit | `develop` | open — P1–P5 landed, P6–P7 pending |
+| `feat/meta-control-plane-gaps` | Reusable Rust/meta CI, full-clone guard, callable semantic PR gate | `develop` | open — PR #118 |
+| `feat/meta-control-plane-gaps-phase2` | Cross-repo dispatch templates for parent/child repo coordination | `feat/meta-control-plane-gaps` | open — PR #121 |
+| `feat/meta-control-plane-gaps-phase3` | Fleet policy-as-code + labels-as-code + standalone fleet applier | `feat/meta-control-plane-gaps-phase2` | in progress |
 
 ## Recently landed
 
@@ -89,6 +92,9 @@ Next deliverables:
 
 - [x] Add caller examples for normal repos, submodule repos, and secrets-aware repos.
 - [x] Add a workflow permission matrix documenting required `permissions:` and secrets per reusable workflow.
+- [x] Add repo onboarding template pack (`docs/templates/repo-onboarding/`) with `ci.yml`, `auto-format.yml`, `notify-parent.yml`, `notify-downstream.yml`, `renovate.json`, and `release.yml` for new FlexNetOS/meta* child repos.
+- [x] Make `reusable-meta-rust-ci.yml` and `reusable-auto-format.yml` work for both in-repo and cross-repo callers by checking out `FlexNetOS/.github` actions when the caller is a child repo.
+- [x] Add reusable Rust binary release workflow (`.github/workflows/reusable-rust-release.yml`) for building and uploading multi-target release artifacts.
 - [ ] Add local `act --list` guidance or a repo-local wrapper that never requires secrets by default.
 - [x] Run CI on stacked PR branches (`branches: ['**']`) so every PR layer reports checks.
 - [x] Add same-repo upgrade-only auto-review/auto-merge gating that never checks out PR code.
@@ -114,6 +120,26 @@ Acceptance:
 | `reusable-notify-downstream.yml` | read | — | — | — | — | — | `PARENT_REPO_PAT` (cross-repo dispatch + check wait) |
 | `reusable-child-update-sync.yml` | write | write | — | — | — | — | `PARENT_REPO_PAT` (sync PR + auto-merge) |
 | `reusable-security.yml` | read | — | — | — | read | write | none (uses GitHub-provided CodeQL/Trivy actions) |
+| `reusable-hermetic-audit.yml` | read | — | — | — | — | — | none (read-only audit) |
+| `reusable-mcp-audit.yml` | read | — | — | — | — | — | none (reads `.mcp.json` from caller repo) |
+| `reusable-rust-release.yml` | write | — | — | — | — | — | `RELEASE_TOKEN` (uploads release assets) |
+| `sync-labels.yml` | read | write | — | — | — | — | `LABEL_SYNC_TOKEN` (org-scoped label management; falls back to `GITHUB_TOKEN`) |
+
+### Fleet policy and labels-as-code
+
+Repo-level policy for the `FlexNetOS/meta*` canon fleet is declared in this repo and applied with a dry-run-first script:
+
+- Registry: `.github/policies/fleet.json` maps each canon repo to the policy templates it should receive.
+- Templates: `.github/policies/templates/<template>/` contains `branch-protection.json`, `repo-settings.json`, and optionally `rulesets.json`.
+- Applier: `scripts/apply-fleet-policies.py` supports `--fleet --dry-run`, `--fleet --apply`, and single-repo `--owner/--repo/--template` targets.
+- Labels: `.github/labels.yml` defines org-wide labels; `.github/workflows/sync-labels.yml` syncs them to repos on `workflow_dispatch`.
+
+Use the script from a maintainer workstation with a sufficiently-scoped `gh` token:
+
+```bash
+python3 scripts/apply-fleet-policies.py --fleet --dry-run
+python3 scripts/apply-fleet-policies.py --fleet --apply
+```
 
 ### Cross-repo dispatch model
 
@@ -186,9 +212,17 @@ Existing surfaces:
 - `secrets/github-secrets.tsv.example`
 - `secrets/README.md`
 - `.gitignore` rule for the real local mapping file
+- `scripts/apply-fleet-policies.py` and `.github/policies/fleet.json`
+- `scripts/mcp-doctor.py` and `.github/workflows/reusable-mcp-audit.yml`
+- `.github/workflows/reusable-hermetic-audit.yml`
 
 Next deliverables:
 
+- [x] Add dry-run-first fleet policy applier (`scripts/apply-fleet-policies.py`) and registry (`.github/policies/fleet.json`).
+- [x] Add MCP configuration audit (`scripts/mcp-doctor.py`, `.github/workflows/reusable-mcp-audit.yml`) and pin the GitHub MCP server image in `.mcp.json` to a digest.
+- [x] Add reusable hermetic audit workflow (`.github/workflows/reusable-hermetic-audit.yml`) so child repos can run the same audit as the umbrella.
+- [x] Add shared Renovate preset for Rust canon repos (`.github/renovate-presets/meta-rust.json`) and onboarding template (`renovate.json`).
+- [x] Add `scripts/secrets-doctor.py` to verify declared secrets exist on GitHub.
 - [ ] Add dry-run CI smoke test with stubbed `bw` and `gh`.
 - [ ] Add branch protection/ruleset/CODEOWNERS audit script.
 - [ ] Document secret rotation from Vaultwarden through GitHub repo/env/org secrets.
@@ -214,3 +248,29 @@ Acceptance:
 
 - A maintainer can identify the next safe action from one local command.
 - Non-dry-run actions require explicit flags and state exactly what they will change.
+
+### Phase 10 — Envctl secret authority (research)
+
+Status: **in progress**.
+
+Research dossier: `data/brain-data/research/meta-envctl.md`.
+
+Findings:
+
+- `envctl` is the intended long-term secrets authority (AEAD vault, relay broker, auto-injection), but it has no native GitHub Actions secret-sync command yet.
+- The practical wiring path today is `envctl`/`secretctl` holding the real credential + `secretctl run --relay ... -- gh secret set ...` to push to GitHub without exposing the plaintext to the parent shell.
+- Secret-name ambiguities resolved in this phase:
+  - `sync-labels.yml` now uses `secrets.LABEL_SYNC_TOKEN || secrets.GITHUB_TOKEN`.
+  - `secrets/github-secrets.tsv.example` renamed `REPO_WRITE_PACKAGES_PAT` to `RELEASE_TOKEN` and added `LABEL_SYNC_TOKEN`.
+
+Next deliverables:
+
+- [ ] Provision `PARENT_REPO_PAT`, `RELEASE_TOKEN`, and `LABEL_SYNC_TOKEN` on GitHub.
+- [ ] Decide whether `REPO_WRITE_PACKAGES_PAT` and `RELEASE_TOKEN` are the same credential or separate.
+- [ ] Migrate the legacy `pass` store into `envctl` per ADR-0007.
+- [ ] Update `reusable-secrets.yml` to read from `envctl` once CI-native injection is available.
+
+Acceptance:
+
+- Every reusable workflow that needs a cross-repo token can resolve it from GitHub Actions secrets.
+- The canonical secret values live in `envctl`, not in shell history, logs, or git.

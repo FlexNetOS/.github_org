@@ -24,11 +24,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `.handoff/context/capsule.json`, `.handoff/README.md`, and `.handoff/packets/2026-06-16-meta-conformity.md` — handoff continuity layer for the `.github` umbrella. (P7 / meta-conformity)
 - `trivy-secret.yaml` — Trivy secret-scanning allow-rule that suppresses false-positive `stripe-secret-token` findings in `data/brain-data/research/*/repomix-pack*.xml` research archives. (CI unblock)
 - `scripts/tests/test-trivy-secret-suppressions.sh` — triple-verify contract test that `trivy-secret.yaml` is loaded, no `stripe-secret-token` CRITICAL findings remain, and no CRITICAL findings remain in research repomix archives. (CI unblock)
+- `scripts/apply-fleet-policies.py` — standalone dry-run-first fleet policy applier that reads `.github/policies/fleet.json` and applies templates from `.github/policies/templates/` to one or many repos. Supports `--fleet --dry-run`, `--fleet --apply`, and single-repo `--owner/--repo/--template` targets. (Phase 3)
+- `.github/policies/templates/rust-canon/` — branch protection and repository settings templates for Rust canon meta repos: `main` branch requires code-owner PR review and conversation resolution; squash/rebase merge allowed; delete branch on merge. (Phase 3)
+- `.github/policies/templates/branch-target-develop/` — `develop` branch protection template for repos using `develop` as the trunk. (Phase 3)
 
 ### Changed (SESSION-2026-06-16-006)
 - `.gitignore` — `.handoff/packets/` is no longer ignored; only the rendered `.handoff/active.md`, auto-generated `.handoff/packets/latest.md`, and local `.handoff/*.db` files stay ignored. (P7 / meta-conformity)
 - `.github/workflows/reusable-security.yml` — passes `--secret-config trivy-secret.yaml` explicitly to the `trivy fs` invocation so the allow-rule is always applied. (CI unblock)
 - `.github/workflows/manifest-drift.yml` — added a `trivy-secret-suppressions` job that runs the contract test (report-only for its first green cycle, then promote to STRICT). (CI unblock)
+- `docs/github-automation-roadmap.md` — added a "Fleet policy and labels-as-code" section documenting the fleet registry, templates, applier, and labels sync; added `sync-labels.yml` to the workflow permission matrix. (Phase 3)
+
+### Added (SESSION-2026-06-16-006)
+- `docs/templates/repo-onboarding/` — copy-ready starter workflows for new FlexNetOS/meta* child repos: `ci.yml`, `auto-format.yml`, `notify-parent.yml`, `notify-downstream.yml`, plus a `README.md` with required-secret notes. (Phase 4)
+- `.github/workflows/reusable-auto-format.yml` — full-clone reusable workflow that formats Rust code in a synthetic workspace and pushes fixes back to the same branch. Uses the `meta-rust-workspace` composite action and never performs shallow clones. (Phase 4)
+
+### Changed (SESSION-2026-06-16-006)
+- `.github/workflows/reusable-meta-rust-ci.yml` and `.github/workflows/reusable-auto-format.yml` — updated to support both in-repo callers (local `./.github/actions/meta-rust-workspace`) and cross-repo child-repo callers (checkout `FlexNetOS/.github` into `.github-org-actions` and use its composite action). (Phase 4)
+
+### Added (SESSION-2026-06-16-006)
+- `scripts/mcp-doctor.py` — validates `.mcp.json`: required shape, no hardcoded secrets, digest-pinned Docker images, HTTPS/localhost URLs for HTTP servers, and env values that reference `${VAR}` placeholders. (Phase 5)
+- `.github/workflows/reusable-mcp-audit.yml` — reusable workflow that runs `mcp-doctor.py` against the caller repo. (Phase 5)
+- `.github/workflows/reusable-hermetic-audit.yml` — reusable workflow that runs `scripts/hermetic-audit.py` against the caller repo, with an optional `--fail` mode. (Phase 5)
+- `mcp-audit` job in `.github/workflows/ci.yml` to exercise `scripts/mcp-doctor.py` on every change. (Phase 5)
+
+### Changed (SESSION-2026-06-16-006)
+- `.mcp.json` — pinned the GitHub MCP server container image from a floating `latest` to `ghcr.io/github/github-mcp-server:v0.29.0@sha256:5049daf7f9eaa63df9f7658a84b5abab8d133f0fe494ab28a314191f315fa738`. (Phase 5)
+- `docs/github-automation-roadmap.md` — added `reusable-hermetic-audit.yml` and `reusable-mcp-audit.yml` to the permission matrix and updated Phase 6 with the new security/hermeticity/MCP surfaces. (Phase 5)
+
+### Added (SESSION-2026-06-16-006)
+- `.github/renovate-presets/meta-rust.json` — shared Renovate preset for FlexNetOS/meta* Rust canon repos: recommended base, digest pinning for Actions, dashboard approval, grouped Cargo and GitHub Actions updates. (Phase 7)
+- `docs/templates/repo-onboarding/renovate.json` — child-repo template that extends the shared preset. (Phase 7)
+- `scripts/secrets-doctor.py` — reads `secrets/github-secrets.tsv` and verifies each declared repo/org/env secret is actually present on GitHub via `gh secret list`. (Phase 7)
+
+### Changed (SESSION-2026-06-16-006)
+- `docs/templates/repo-onboarding/README.md` — added `renovate.json` to the file table. (Phase 7)
+
+### Added (SESSION-2026-06-16-006)
+- `.github/workflows/reusable-rust-release.yml` — reusable workflow that builds Rust release binaries for a configurable JSON array of targets, packages them as `.tar.gz` with SHA-256 checksums, and uploads the assets to an existing GitHub Release. (Phase 8)
+- `docs/templates/repo-onboarding/release.yml` — caller template that combines `reusable-release.yml` and `reusable-rust-release.yml` to cut a release and upload binaries. (Phase 8)
+
+### Changed (SESSION-2026-06-16-006)
+- `docs/github-automation-roadmap.md` — added `reusable-rust-release.yml` to the workflow permission matrix and Phase 3 deliverables; added `release.yml` to the onboarding template pack table. (Phase 8)
+- `docs/templates/repo-onboarding/README.md` — added `release.yml` and `RELEASE_TOKEN` to the required-secrets list. (Phase 8)
+
+### Added (SESSION-2026-06-17-001)
+- `data/brain-data/research/meta-envctl.md` — research dossier on the FlexNetOS `envctl` secrets authority, covering vault model, relay/broker injection, GitHub token wiring, and the gaps blocking fully automated secret provisioning. (Phase 10)
+
+### Changed (SESSION-2026-06-17-001)
+- `.github/workflows/sync-labels.yml` — now uses `secrets.LABEL_SYNC_TOKEN` with a fallback to `secrets.GITHUB_TOKEN`. (Phase 10)
+- `secrets/github-secrets.tsv.example` — renamed `REPO_WRITE_PACKAGES_PAT` to `RELEASE_TOKEN` to match workflow contracts and added `LABEL_SYNC_TOKEN`. (Phase 10)
+- `docs/github-automation-roadmap.md` — added Phase 10 (envctl secret authority), updated the `sync-labels.yml` permission note, and documented the remaining secret-provisioning next steps. (Phase 10)
 
 ### Fixed (SESSION-2026-06-16-006)
 - `.claude/settings.json` hygiene — removed the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key and all hardcoded `/home/` `extraKnownMarketplaces` paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `scripts/claude-settings-doctor.js --check` now passes. Marketplace definitions will be re-injected via `meta/envctl` (portable, no literal user-home paths).

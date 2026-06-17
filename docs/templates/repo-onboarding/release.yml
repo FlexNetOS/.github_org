@@ -1,0 +1,32 @@
+name: Release Rust Binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release-please:
+    name: Release please
+    uses: FlexNetOS/.github/.github/workflows/reusable-release.yml@main
+    with:
+      package-name: 'REPO_NAME_HERE'
+      release-branch: 'main'
+    secrets:
+      release-token: ${{ secrets.RELEASE_TOKEN }}
+
+  release-binaries:
+    name: Release binaries
+    needs: release-please
+    if: needs.release-please.outputs.release-created == 'true'
+    uses: FlexNetOS/.github/.github/workflows/reusable-rust-release.yml@main
+    with:
+      tag: ${{ needs.release-please.outputs.tag-name }}
+      binary-name: 'BINARY_NAME_HERE'
+      targets: '["x86_64-unknown-linux-gnu"]'
+      workspace-path: '.'
+    secrets:
+      token: ${{ secrets.RELEASE_TOKEN }}

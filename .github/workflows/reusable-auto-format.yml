@@ -1,0 +1,125 @@
+name: Reusable Auto Format
+
+# Formats Rust code in a full-clone synthetic workspace and pushes any changes
+# back to the same branch. Designed for FlexNetOS/meta* child repos.
+#
+# Example caller:
+#   jobs:
+#     format:
+#       uses: FlexNetOS/.github/.github/workflows/reusable-auto-format.yml@main
+#       with:
+#         workspace-path: 'meta_cli'
+#       secrets:
+#         token: ${{ secrets.PARENT_REPO_PAT }}
+
+on:
+  workflow_call:
+    inputs:
+      workspace-path:
+        description: 'Path for the current repo inside the generated workspace'
+        required: false
+        type: string
+        default: ${{ github.event.repository.name }}
+      toolchain:
+        description: 'Rust toolchain channel to install'
+        required: false
+        type: string
+        default: stable
+      commit-message:
+        description: 'Commit message used when formatting changes are found'
+        required: false
+        type: string
+        default: 'style: auto-format code'
+      bot-name:
+        description: 'Git user name for the auto-format commit'
+        required: false
+        type: string
+        default: 'github-actions[bot]'
+      bot-email:
+        description: 'Git user email for the auto-format commit'
+        required: false
+        type: string
+        default: 'github-actions[bot]@users.noreply.github.com'
+      token:
+        description: 'GitHub token with contents:write for checkout and push'
+        required: false
+        type: string
+        default: ${{ github.token }}
+    outputs:
+      formatted:
+        description: 'Whether any files were reformatted'
+        value: ${{ jobs.auto-format.outputs.formatted }}
+
+permissions:
+  contents: read
+
+jobs:
+  auto-format:
+    name: Auto Format
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: auto-format-${{ github.head_ref || github.ref_name }}
+      cancel-in-progress: true
+    if: |
+      github.actor != inputs.bot-name &&
+      (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+    outputs:
+      formatted: ${{ steps.changes.outputs.formatted }}
+    steps:
+      - name: Check out shared actions
+        if: github.repository != 'FlexNetOS/.github'
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: FlexNetOS/.github
+          ref: main
+          path: .github-org-actions
+          token: ${{ inputs.token }}
+
+      - name: Set up meta Rust workspace (local)
+        if: github.repository == 'FlexNetOS/.github'
+        uses: ./.github/actions/meta-rust-workspace
+        with:
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ inputs.token }}
+
+      - name: Set up meta Rust workspace (shared)
+        if: github.repository != 'FlexNetOS/.github'
+        uses: ./.github-org-actions/.github/actions/meta-rust-workspace
+        with:
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ inputs.token }}
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          components: rustfmt
+
+      - name: Run cargo fmt
+        working-directory: meta-rust-workspace/${{ inputs.workspace-path }}
+        run: cargo fmt --all
+
+      - name: Check for changes
+        id: changes
+        working-directory: meta-rust-workspace/${{ inputs.workspace-path }}
+        run: |
+          if git diff --quiet; then
+            echo "formatted=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "formatted=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push
+        if: steps.changes.outputs.formatted == 'true'
+        working-directory: meta-rust-workspace/${{ inputs.workspace-path }}
+        env:
+          GIT_AUTHOR_NAME: ${{ inputs.bot-name }}
+          GIT_AUTHOR_EMAIL: ${{ inputs.bot-email }}
+        run: |
+          git config user.name "$GIT_AUTHOR_NAME"
+          git config user.email "$GIT_AUTHOR_EMAIL"
+          git add -A
+          git commit -m "${{ inputs.commit-message }}"
+          git push

@@ -1,0 +1,98 @@
+name: Sync labels
+
+# Applies the org-wide label definitions in `.github/labels.yml` to a target repo.
+# This is a manual workflow; run it when `.github/labels.yml` changes or when
+# onboarding a new repo.
+
+on:
+  workflow_dispatch:
+    inputs:
+      owner:
+        description: 'Target repo owner'
+        required: false
+        type: string
+        default: 'FlexNetOS'
+      repo:
+        description: 'Target repo name'
+        required: true
+        type: string
+      dry-run:
+        description: 'Print changes without applying'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Sync labels to ${{ inputs.owner }}/${{ inputs.repo }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          submodules: false
+
+      - name: Sync labels
+        env:
+          GH_TOKEN: ${{ secrets.LABEL_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          OWNER: ${{ inputs.owner }}
+          REPO: ${{ inputs.repo }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, subprocess, sys
+          from pathlib import Path
+
+          owner = os.environ["OWNER"]
+          repo = os.environ["REPO"]
+          dry_run = os.environ.get("DRY_RUN", "true").lower() == "true"
+          labels_file = Path(".github/labels.yml")
+          import yaml
+          desired = yaml.safe_load(labels_file.read_text())
+
+          def gh(*args):
+              result = subprocess.run(
+                  ["gh", "api", f"/repos/{owner}/{repo}/labels", *args],
+                  text=True, capture_output=True, check=False,
+              )
+              return result
+
+          code, out, err = gh("--method", "GET")
+          if code != 0:
+              print(f"ERROR listing labels: {err}", file=sys.stderr)
+              sys.exit(1)
+          current = {l["name"]: l for l in json.loads(out)}
+
+          for label in desired:
+              name = label["name"]
+              payload = {
+                  "name": name,
+                  "color": label["color"].lstrip("#"),
+                  "description": label.get("description", ""),
+              }
+              if name in current:
+                  cur = current[name]
+                  if (cur.get("color", "").lower() != payload["color"].lower() or
+                      cur.get("description", "") != payload["description"]):
+                      print(f"UPDATE {name}")
+                      if not dry_run:
+                          gh("--method", "PATCH", "-f", f"name={name}",
+                             "-f", f"color={payload['color']}",
+                             "-f", f"description={payload['description']}")
+                  else:
+                      print(f"OK {name}")
+              else:
+                  print(f"CREATE {name}")
+                  if not dry_run:
+                      gh("--method", "POST",
+                         "-f", f"name={name}",
+                         "-f", f"color={payload['color']}",
+                         "-f", f"description={payload['description']}")
+
+          print("Done" + (" (dry-run)" if dry_run else ""))
+          PY
