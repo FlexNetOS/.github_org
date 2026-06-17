@@ -1,0 +1,12 @@
+{
+  "schema": "handoff.context_capsule.v1",
+  "project_name": ".github",
+  "role": "Org-wide `.github` umbrella repo + small operational hub for the FlexNetOS organization: community-health files, reusable CI workflow templates, the Karpathy LLM-wiki (`wiki/` + `data/brain-data/`), a `pass`+GPG secrets vault stub, self-hosted runner host config, and shared GitHub App/runner automation docs. It is a Tier D docs/ops hub per META-ORG-POLICY.md.",
+  "plane": "org-ops",
+  "tier": "D",
+  "northstar": "Keep the `.github` umbrella accurate, safe, and mechanically consistent with the FlexNetOS meta workspace. Serve as the org's shared CI/control-plane reference: reusable workflows are real and consumed here, branch policy is develop→main with separate-principal approval, releases are automated via release-please, and every external dependency/adoption flows through research-before-fork and typed hubs (ADR-0002).",
+  "next_command": "CURRENT MISSION = meta-conformity + unblock develop (2026-06-17). Work: (1) finish this .handoff P7 foundation (capsule + README + .gitignore cleanup), (2) register `.github` in meta's `.meta.yaml`, (3) migrate TODO.md/SESSIONS.md/CHANGELOG.md conventions opportunistically into handoff packets/tasks, (4) fix the Trivy filesystem false positives that are keeping develop CI red so promote-develop-to-main can carry the P1–P7 merge to main and release-please can propose v1.0.0.",
+  "source": "META-ORG-POLICY.md P7 (2026-06-12) + ADR-0002 lean .github_org transformation",
+  "loop": "Not yet an autonomous loop. Session/state tracking currently lives in TODO.md + SESSIONS.md + CHANGELOG.md (legacy). Migration target: handoff tasks/packets + FLEET ledger at meta/.handoff/ledger.db.",
+  "done_this_mission": "P1–P7 meta-foundation confirmation merged to develop (#108): retired submodule ghost references, added semantic PR/commit gates, replaced Dependabot with Renovate, corrected reusable-workflow docs, wired RELEASE_TOKEN, added delete-merged-branch.yml, refreshed automation roadmap, confirmed docs-only branch-target policy."
+}

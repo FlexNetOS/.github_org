@@ -1,5 +1,10 @@
 # Fork-and-track workflow
 
+> **Updated (ADR-0002, 2026-06-14).** The fork-and-track *pattern* below still applies — but the
+> result now lands in its typed **hub**, not as a submodule under `.github_org/repos/`. Do **not**
+> clone repos that aren't already on disk; route adoption through the handoff loop. Current model:
+> [`../VISION.md`](../VISION.md).
+
 How to carry local patches on a third-party repository while staying
 current with upstream releases.
 

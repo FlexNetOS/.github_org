@@ -1,0 +1,105 @@
+name: Reusable Meta Rust CI
+
+# CI for Rust crates that are members of the FlexNetOS/meta workspace.
+# It builds a full-clone synthetic workspace containing the current repo and its
+# sibling path-dependencies, then runs fmt, clippy, and test.
+#
+# Example caller:
+#   jobs:
+#     ci:
+#       uses: FlexNetOS/.github/.github/workflows/reusable-meta-rust-ci.yml@main
+#       with:
+#         sibling-repos: '["meta_core","meta_plugin_protocol","loop_lib"]'
+#         workspace-path: 'meta_cli'
+
+on:
+  workflow_call:
+    inputs:
+      sibling-repos:
+        description: 'JSON array of sibling repo names under FlexNetOS/'
+        required: false
+        type: string
+        default: '[]'
+      workspace-path:
+        description: 'Path for the current repo inside the generated workspace'
+        required: false
+        type: string
+        default: ${{ github.event.repository.name }}
+      fail-on-warning:
+        description: 'Treat Clippy warnings as errors'
+        required: false
+        type: boolean
+        default: true
+      extra-args:
+        description: 'Extra arguments passed to cargo test'
+        required: false
+        type: string
+        default: ''
+      token:
+        description: 'GitHub token for cloning private sibling repos (pass a PAT for private repos)'
+        required: false
+        type: string
+        default: ${{ github.token }}
+
+permissions:
+  contents: read
+
+jobs:
+  meta-rust-ci:
+    name: Meta Rust CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out shared actions
+        if: github.repository != 'FlexNetOS/.github'
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: FlexNetOS/.github
+          ref: main
+          path: .github-org-actions
+          token: ${{ inputs.token }}
+
+      - name: Set up meta Rust workspace (local)
+        if: github.repository == 'FlexNetOS/.github'
+        uses: ./.github/actions/meta-rust-workspace
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ inputs.token }}
+
+      - name: Set up meta Rust workspace (shared)
+        if: github.repository != 'FlexNetOS/.github'
+        uses: ./.github-org-actions/.github/actions/meta-rust-workspace
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ inputs.token }}
+
+      - name: Format check
+        working-directory: meta-rust-workspace
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        working-directory: meta-rust-workspace
+        run: |
+          if [[ "${{ inputs.fail-on-warning }}" == "true" ]]; then
+            cargo clippy --all-targets --all-features -- -D warnings
+          else
+            cargo clippy --all-targets --all-features
+          fi
+
+      - name: Test
+        working-directory: meta-rust-workspace
+        run: cargo test --all-features ${{ inputs.extra-args }}
+
+      - name: Upload cargo logs on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cargo-logs-${{ github.run_id }}-${{ github.job }}
+          path: |
+            meta-rust-workspace/target/**/test-*.log
+            meta-rust-workspace/target/**/*.stdout
+            meta-rust-workspace/target/**/*.stderr
+          if-no-files-found: ignore
+          retention-days: 7

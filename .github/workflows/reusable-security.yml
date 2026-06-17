@@ -67,19 +67,19 @@ jobs:
         language: ${{ fromJSON(needs.matrix-prep.outputs.languages) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@dd903d2e4f5405488e5ef1422510ee31c8b32357 # v3
         with:
           languages: ${{ matrix.language }}
           queries: security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@dd903d2e4f5405488e5ef1422510ee31c8b32357 # v3
 
       - name: Analyze
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@dd903d2e4f5405488e5ef1422510ee31c8b32357 # v3
         with:
           category: /language:${{ matrix.language }}
 
@@ -89,7 +89,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Run Trivy filesystem scan
         shell: bash
@@ -100,8 +100,11 @@ jobs:
             --format sarif \
             --output trivy-fs.sarif \
             --severity "$severity,CRITICAL" \
+            --secret-config trivy-secret.yaml \
             --ignore-unfixed \
             --exit-code 1 \
+            --skip-files "data/brain-data/research/**/repomix-pack*.xml" \
+            --skip-files ".claude/plugins/cache/**" \
             "${{ inputs.working-directory }}"
 
       - name: Run Trivy IaC scan
@@ -119,14 +122,14 @@ jobs:
 
       - name: Upload Trivy filesystem SARIF
         if: always() && hashFiles('trivy-fs.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@dd903d2e4f5405488e5ef1422510ee31c8b32357 # v3
         with:
           sarif_file: 'trivy-fs.sarif'
           category: 'trivy-fs'
 
       - name: Upload Trivy IaC SARIF
         if: always() && hashFiles('trivy-config.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@dd903d2e4f5405488e5ef1422510ee31c8b32357 # v3
         with:
           sarif_file: 'trivy-config.sarif'
           category: 'trivy-config'
@@ -137,7 +140,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           fetch-depth: 1   # tree scan only; no paid Gitleaks action/license required
 

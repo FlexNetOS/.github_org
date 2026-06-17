@@ -1,0 +1,15 @@
+# code-research DONE — repo-state-vs-meta-arch
+
+Question answered from CONFIRMED evidence. Report: reports/repo-state-vs-meta-arch.md
+
+## Completeness sweep (cartographer dimensions + flagged gaps)
+- All 6 dimensions D1-D6: [x] analyzed + adversarially verified (verdicts-D1..D6.md).
+- ~40 claims CONFIRMED, 0 verdict-changing refutations. Material verifier corrections folded into the report.
+- MAP-flagged gaps resolved or named:
+  - ADR-0007/0008 located at handoff/docs/ (not this repo's architecture/adr/ — only ADR-0001 here). RESOLVED (located) + named as a gap (governing decisions off-disk for this repo).
+  - Per-workflow audit of reusable-*.yml — done in D3 (all 8 real, workflow_call-shaped).
+  - network/ split + architecture/ + .omc destinations — open questions, named in report gaps (decision-inputs, not unexamined code).
+- No major module/interface left unexamined for the question.
+
+## Confidence: HIGH
+## Named gaps: ADRs off-disk for this repo · remote-tag read not performed (local tree only) · aspirational-28-vs-17 migration-set decision · network/ runner-vs-peer split · architecture/ + .omc destinations · destinations-empty re-checked for runner/app/wiki/brain but not exhaustively for every peer.

@@ -57,18 +57,17 @@ on `main` and is not allowed on `vX.Y.Z` tags.
 
 ## The first release — v1.0.0
 
-Until the reusable workflows ship real bodies (not scaffolds), there
-is no v1. The path to v1:
+The reusable workflows already have real bodies and the release token is
+wired. The remaining blockers for v1 are:
 
-1. Fill the bodies of `reusable-lint.yml`, `reusable-test.yml`,
-   `reusable-build.yml`, `reusable-security.yml`, `reusable-release.yml`.
-   (`reusable-secrets.yml` ships when the `pass` vault is initialized;
-    see [`USER.TODO.md`](USER.TODO.md) §4.)
-2. Run the smoke-test caller in this repo's own `ci.yml` against the
-   filled workflows — green CI on `main` for at least one cycle.
+1. Merge this branch (`docs/meta-foundation-confirmation`) to `main` so the
+   automatic `release.yml` trigger is active on the default branch.
+2. Exercise the remaining reusable workflows (`reusable-test.yml`,
+   `reusable-build.yml`, `reusable-typecheck.yml`, `reusable-release.yml`)
+   in this repo's own `ci.yml` — green CI on `main` for at least one cycle.
 3. Merge the release-please PR that proposes `v1.0.0`.
 4. The workflow tags `v1.0.0` and `v1`. Downstream repos can now pin to
-   `@v1`. Update this repo's README example accordingly.
+   `@v1`.
 
 ## What is in scope for a release here
 

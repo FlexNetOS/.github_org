@@ -1,15 +1,8 @@
 # FlexNetOS network-layer manifest.
 # This records network control-plane components. Runtime state is intentionally excluded.
+#
+# OFFLOADED 2026-06-14 (ADR-0002): the `network/slim` component was offloaded to
+# ~/Desktop/pending_relocate (see orphan-gitlinks.md — pinned SHA preserved) pending
+# relocation to network_hub. Nothing deleted — never-downgrade.
 
-components:
-  - path: network/slim
-    url: https://github.com/nilbuild/slim.git
-    upstream: https://github.com/nilbuild/slim.git
-    branch: main
-    type: local-https-router
-    trust: external
-    groups: [network, local-dev, https, routing]
-    notes: >
-      Local HTTPS/domain router candidate for LifeOS/Hermes service names.
-      Source is pinned as a submodule. Runtime installation, certs, host-file
-      edits, trust-store changes, and Slim state are not committed.
+components: []

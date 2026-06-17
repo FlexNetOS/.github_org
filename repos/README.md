@@ -1,5 +1,11 @@
 # `repos/` — the FlexNetOS submodule tree
 
+> **OFFLOADED 2026-06-14 (ADR-0002).** The repo mounts that used to live here were offloaded to
+> `~/Desktop/pending_relocate` pending hub-by-type relocation; `MANIFEST.yaml` is now an offload
+> stub. `.github_org` is being reduced to the lean org `.github` role. Exceptions: `ruvector` was
+> strict-deleted (lives at `meta/ruvector`); `tools/*` went to `tool_hub`; `data/brain-data/*` stays.
+> The text below describes the **former** model and will be rewritten in the lean-docs pass.
+
 This directory is the canonical mount point for every project that belongs in
 the FlexNetOS umbrella, referenced as **git submodules**. Nothing here lives
 as a vendored copy — each subdirectory is a pointer at a real GitHub
