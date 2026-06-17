@@ -3,7 +3,7 @@
 # Non-fatal if the local lint tools are missing.
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
 STAGED=$(git diff --cached --name-only --diff-filter=ACM || true)
