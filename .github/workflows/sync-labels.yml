@@ -60,7 +60,7 @@ jobs:
                   ["gh", "api", f"/repos/{owner}/{repo}/labels", *args],
                   text=True, capture_output=True, check=False,
               )
-              return result
+              return result.returncode, result.stdout, result.stderr
 
           code, out, err = gh("--method", "GET")
           if code != 0:

@@ -97,35 +97,47 @@ jobs:
       - name: Test (bun)
         if: (inputs.language == 'bun' || inputs.language == 'mixed') && (hashFiles(format('{0}/bun.lock', inputs.working-directory)) != '' || hashFiles(format('{0}/bun.lockb', inputs.working-directory)) != '')
         shell: bash
+        env:
+          EXTRA_ARGS: ${{ inputs.extra-args }}
         run: |
           bun install --frozen-lockfile
           if [[ "${{ inputs.coverage }}" == "true" ]]; then
-            bun test --coverage ${{ inputs.extra-args }}
+            # shellcheck disable=SC2086
+            bun test --coverage $EXTRA_ARGS
           else
-            bun test ${{ inputs.extra-args }}
+            # shellcheck disable=SC2086
+            bun test $EXTRA_ARGS
           fi
 
       - name: Test (node)
         if: (inputs.language == 'node' || inputs.language == 'mixed') && hashFiles(format('{0}/package-lock.json', inputs.working-directory)) != ''
         shell: bash
+        env:
+          EXTRA_ARGS: ${{ inputs.extra-args }}
         run: |
           npm ci
-          npm test -- ${{ inputs.extra-args }}
+          # shellcheck disable=SC2086
+          npm test -- $EXTRA_ARGS
 
       - name: Test (python)
         if: (inputs.language == 'python' || inputs.language == 'mixed') && (hashFiles(format('{0}/pyproject.toml', inputs.working-directory)) != '' || hashFiles(format('{0}/setup.py', inputs.working-directory)) != '' || hashFiles(format('{0}/requirements.txt', inputs.working-directory)) != '')
         shell: bash
+        env:
+          EXTRA_ARGS: ${{ inputs.extra-args }}
         run: |
+          # shellcheck disable=SC2086
           if [[ -f pyproject.toml ]]; then
             uv sync --all-extras --dev || uv sync || true
           fi
           if [[ "${{ inputs.coverage }}" == "true" ]]; then
             uv tool install coverage
-            uv run -- coverage run -m pytest ${{ inputs.extra-args }}
+            # shellcheck disable=SC2086
+            uv run -- coverage run -m pytest $EXTRA_ARGS
             uv run -- coverage xml -o coverage.xml
             uv run -- coverage report --fail-under=${{ inputs.coverage-threshold }}
           else
-            uv run -- pytest ${{ inputs.extra-args }}
+            # shellcheck disable=SC2086
+            uv run -- pytest $EXTRA_ARGS
           fi
 
       - name: Set up meta Rust workspace
@@ -151,11 +163,15 @@ jobs:
         if: (inputs.language == 'rust' || inputs.language == 'mixed') && hashFiles(format('{0}/Cargo.toml', inputs.working-directory)) != ''
         working-directory: ${{ steps.final-ws.outputs.dir }}
         shell: bash
+        env:
+          EXTRA_ARGS: ${{ inputs.extra-args }}
         run: |
           if cargo --list 2>/dev/null | grep -q nextest; then
-            cargo nextest run --all-features ${{ inputs.extra-args }}
+            # shellcheck disable=SC2086
+            cargo nextest run --all-features $EXTRA_ARGS
           else
-            cargo test --all-features ${{ inputs.extra-args }}
+            # shellcheck disable=SC2086
+            cargo test --all-features $EXTRA_ARGS
           fi
 
       # --- coverage artifact (best-effort, only if a coverage file shows up) ---

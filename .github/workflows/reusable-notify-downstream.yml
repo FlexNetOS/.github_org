@@ -55,10 +55,12 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.parent-repo-pat || secrets.GITHUB_TOKEN }}
+          DOWNSTREAM_REPOS: ${{ inputs.downstream-repos }}
+          EVENT_TYPE: ${{ inputs.event-type }}
         run: |
           set -euo pipefail
-          repos='${{ inputs.downstream-repos }}'
-          event_type='${{ inputs.event-type }}'
+          repos="$DOWNSTREAM_REPOS"
+          event_type="$EVENT_TYPE"
           if [[ "$repos" == "[]" || -z "$repos" ]]; then
             echo "No downstream repos configured."
             exit 0

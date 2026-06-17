@@ -16,7 +16,7 @@ msg=$(head -n1 "$msg_file")
 types='build|chore|ci|deps|docs|feat|fix|perf|refactor|revert|style|test'
 
 # Try commitlint if a config exists and npx is available.
-if command -v npx >/dev/null 2>&1 && [ -f "$(git rev-parse --show-toplevel)/commitlint.config.cjs" -o -f "$(git rev-parse --show-toplevel)/commitlint.config.js" ]; then
+if command -v npx >/dev/null 2>&1 && { [ -f "$(git rev-parse --show-toplevel)/commitlint.config.cjs" ] || [ -f "$(git rev-parse --show-toplevel)/commitlint.config.js" ]; }; then
     if npx --yes @commitlint/cli --edit "$msg_file" 2>/dev/null; then
         exit 0
     fi
