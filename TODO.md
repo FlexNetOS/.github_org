@@ -4,10 +4,10 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-06-16 (SESSION-2026-06-16-005 — meta-foundation confirmation; P1–P7 + policy decision landed on `docs/meta-foundation-confirmation`)
-**Branch:** `docs/meta-foundation-confirmation`
-**PR:** #108 → `develop` (auto-merge armed; waits for separate-principal approval and CI)
-**Status:** All meta-foundation phases complete; `RELEASE_TOKEN` wired; PR #108 open and auto-merge armed. Next: separate-principal approval + merge to `main`.
+**Last updated:** 2026-06-16 (SESSION-2026-06-16-006 — meta-conformity / `.handoff` / develop-CI unblock)
+**Branch:** `feat/handoff-meta-conformity`
+**PR:** (pending) → `develop`
+**Status:** PR #108 merged to `develop` (squash `62a7876`). Current mission: conform `.github_org` to meta workspace (`.handoff`, meta registry, legacy loop-state migration) and unblock the Trivy false positives keeping `develop` CI red. Handoff packet: `.handoff/packets/2026-06-16-meta-conformity.md`.
 
 ---
 
@@ -23,6 +23,19 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"Phased
 - [x] **P6** — Refresh `docs/github-automation-roadmap.md` targets to match current state.
 - [x] **P7** — Write `.handoff` capsule summarizing confirmed vs deferred foundation work.
 - [x] **Policy infrastructure** — Docs-only additive changes still route through `develop`; branch-guard exemptions do not override branch-target policy. Documented in `AGENTS.md`, `CLAUDE.md`, `WORKFLOW.md`, and `architecture/adr/ADR-0003-dev-git-workflow-policy.md`.
+
+---
+
+## Meta-conformity / `.handoff` / develop-CI unblock (SESSION-2026-06-16-006)
+
+Handoff packet: `.handoff/packets/2026-06-16-meta-conformity.md`.
+
+- [x] Create `.handoff/context/capsule.json` + `.handoff/README.md`.
+- [x] Fix `.gitignore` so `.handoff/packets/` are committed (only `latest.md` / `active.md` / `*.db` ignored).
+- [x] Confirm `.github_org` is registered in meta workspace `.meta.yaml` (already present; P1.2 satisfied).
+- [x] Migrate stale `docs/meta-foundation-confirmation` loop state into handoff packet and refresh `TODO.md` / `SESSIONS.md`.
+- [x] Unblock `develop` CI — suppress Trivy false-positive `stripe-secret-token` findings in research repomix archives via `trivy-secret.yaml` + triple-verify contract test.
+- [ ] Push `feat/handoff-meta-conformity`, open PR to `develop`, and promote after green CI.
 
 ---
 
