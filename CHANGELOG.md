@@ -59,6 +59,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed (SESSION-2026-06-16-006)
 - `docs/templates/repo-onboarding/README.md` — added `renovate.json` to the file table. (Phase 7)
 
+### Added (SESSION-2026-06-16-006)
+- `.github/workflows/reusable-rust-release.yml` — reusable workflow that builds Rust release binaries for a configurable JSON array of targets, packages them as `.tar.gz` with SHA-256 checksums, and uploads the assets to an existing GitHub Release. (Phase 8)
+- `docs/templates/repo-onboarding/release.yml` — caller template that combines `reusable-release.yml` and `reusable-rust-release.yml` to cut a release and upload binaries. (Phase 8)
+
+### Changed (SESSION-2026-06-16-006)
+- `docs/github-automation-roadmap.md` — added `reusable-rust-release.yml` to the workflow permission matrix and Phase 3 deliverables; added `release.yml` to the onboarding template pack table. (Phase 8)
+- `docs/templates/repo-onboarding/README.md` — added `release.yml` and `RELEASE_TOKEN` to the required-secrets list. (Phase 8)
+
 ### Fixed (SESSION-2026-06-16-006)
 - `.claude/settings.json` hygiene — removed the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key and all hardcoded `/home/` `extraKnownMarketplaces` paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `scripts/claude-settings-doctor.js --check` now passes. Marketplace definitions will be re-injected via `meta/envctl` (portable, no literal user-home paths).
 - `.handoff/packets/2026-06-16-meta-conformity.md` — removed example credential-like placeholder strings that Gitleaks flagged as false positives.

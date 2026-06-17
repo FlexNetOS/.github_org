@@ -15,11 +15,14 @@ consumes reusable workflows from `FlexNetOS/.github`.
 | `notify-parent.yml` | Tell `FlexNetOS/meta` when this repo's `main` changes |
 | `notify-downstream.yml` | Wait for CI, then notify downstream consumers |
 | `renovate.json` | Extend the shared FlexNetOS Rust Renovate preset |
+| `release.yml` | Cut a release and upload Rust binary artifacts |
 
 ## Required secrets
 
 - `PARENT_REPO_PAT` — PAT with `repo` scope on `FlexNetOS/meta` and any
   downstream repos. Only needed for cross-repo dispatch.
+- `RELEASE_TOKEN` — PAT with `contents:write` for cutting releases and uploading
+  binary artifacts. Only needed for `release.yml`.
 
 ## Notes
 

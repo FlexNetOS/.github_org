@@ -92,8 +92,9 @@ Next deliverables:
 
 - [x] Add caller examples for normal repos, submodule repos, and secrets-aware repos.
 - [x] Add a workflow permission matrix documenting required `permissions:` and secrets per reusable workflow.
-- [x] Add repo onboarding template pack (`docs/templates/repo-onboarding/`) with `ci.yml`, `auto-format.yml`, `notify-parent.yml`, and `notify-downstream.yml` for new FlexNetOS/meta* child repos.
+- [x] Add repo onboarding template pack (`docs/templates/repo-onboarding/`) with `ci.yml`, `auto-format.yml`, `notify-parent.yml`, `notify-downstream.yml`, `renovate.json`, and `release.yml` for new FlexNetOS/meta* child repos.
 - [x] Make `reusable-meta-rust-ci.yml` and `reusable-auto-format.yml` work for both in-repo and cross-repo callers by checking out `FlexNetOS/.github` actions when the caller is a child repo.
+- [x] Add reusable Rust binary release workflow (`.github/workflows/reusable-rust-release.yml`) for building and uploading multi-target release artifacts.
 - [ ] Add local `act --list` guidance or a repo-local wrapper that never requires secrets by default.
 - [x] Run CI on stacked PR branches (`branches: ['**']`) so every PR layer reports checks.
 - [x] Add same-repo upgrade-only auto-review/auto-merge gating that never checks out PR code.
@@ -121,6 +122,7 @@ Acceptance:
 | `reusable-security.yml` | read | — | — | — | read | write | none (uses GitHub-provided CodeQL/Trivy actions) |
 | `reusable-hermetic-audit.yml` | read | — | — | — | — | — | none (read-only audit) |
 | `reusable-mcp-audit.yml` | read | — | — | — | — | — | none (reads `.mcp.json` from caller repo) |
+| `reusable-rust-release.yml` | write | — | — | — | — | — | `RELEASE_TOKEN` (uploads release assets) |
 | `sync-labels.yml` | read | write | — | — | — | — | `LABEL_SYNC_TOKEN` (org-scoped label management) |
 
 ### Fleet policy and labels-as-code
