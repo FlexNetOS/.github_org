@@ -171,11 +171,13 @@ jobs:
       - name: Lint (python)
         if: (inputs.language == 'python' || inputs.language == 'mixed') && (hashFiles(format('{0}/pyproject.toml', inputs.working-directory)) != '' || hashFiles(format('{0}/setup.py', inputs.working-directory)) != '' || hashFiles(format('{0}/requirements.txt', inputs.working-directory)) != '')
         shell: bash
+        env:
+          PATHS: ${{ inputs.paths }}
         run: |
           uv tool install ruff
           uv tool install black
-          ruff check ${{ inputs.paths }}
-          black --check ${{ inputs.paths }}
+          ruff check $PATHS
+          black --check $PATHS
 
       - name: Set up meta Rust workspace
         if: (inputs.language == 'rust' || inputs.language == 'mixed') && inputs.sibling-repos != '' && inputs.sibling-repos != '[]'
