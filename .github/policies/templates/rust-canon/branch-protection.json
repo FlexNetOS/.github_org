@@ -21,7 +21,7 @@
       "required_linear_history": true,
       "allow_force_pushes": false,
       "allow_deletions": false,
-      "required_conversation_resolution": false,
+      "required_conversation_resolution": true,
       "required_signatures": false,
       "block_creations": false,
       "allow_fork_syncing": false,
