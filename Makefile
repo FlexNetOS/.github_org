@@ -163,6 +163,18 @@ github-app.smoke: ## Smoke-test GitHub App installation token exchange (DRY_RUN=
 	if [ "$${JSON:-0}" = "1" ]; then args="$$args --json"; fi; \
 	python3 scripts/github-app-token-smoke.py $$args
 
+.PHONY: github.policy.dry-run
+github.policy.dry-run: ## Dry-run the GitHub policy applier
+	@python3 scripts/apply-github-policies.py --dry-run
+
+.PHONY: github.policy.apply
+github.policy.apply: ## Apply .github/policies/ to live GitHub state
+	@python3 scripts/apply-github-policies.py --apply
+
+.PHONY: github.policy.check
+github.policy.check: ## Check committed policy against live GitHub state
+	@python3 scripts/apply-github-policies.py --check
+
 # ---------- Reconciliation tooling (additive; see data/brain-data/research/my-github-reconciliation.md) ----------
 .PHONY: claude.doctor
 claude.doctor: ## Report hardcoded user-home paths / aspirational keys in .claude/settings.json (read-only)

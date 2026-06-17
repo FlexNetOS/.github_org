@@ -2,6 +2,7 @@
 # Triple-verify contract test for .github/policies/ and scripts/apply-github-policies.py
 #
 # Stages:
+#   0. Policy JSON files pass the applier's schema validation.
 #   1. Policy JSON files are syntactically valid and contain expected top-level keys.
 #   2. Policy applier --dry-run exits 0 and emits no ERROR lines.
 #   3. If GH CLI is authenticated and has repo access, --check reports no drift.
@@ -18,6 +19,30 @@ POLICIES=(
   ".github/policies/repo-settings.json"
 )
 
+echo "=== Stage 0: Policy JSON files pass schema validation ==="
+python3 - <<'PY'
+import json, sys, importlib.util
+
+spec = importlib.util.spec_from_file_location("policy", "scripts/apply-github-policies.py")
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
+with open(".github/policies/branch-protection.json") as f:
+    bp = json.load(f)
+with open(".github/policies/rulesets.json") as f:
+    rs = json.load(f)
+with open(".github/policies/repo-settings.json") as f:
+    settings = json.load(f)
+
+errors = module.validate_all_policies(bp, rs, settings)
+if errors:
+    for err in errors:
+        print(f"FAIL: {err}")
+    sys.exit(1)
+PY
+echo "PASS"
+
+echo ""
 echo "=== Stage 1: Policy JSON files parse and contain expected keys ==="
 for f in "${POLICIES[@]}"; do
   if [ ! -f "$f" ]; then

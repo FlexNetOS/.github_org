@@ -210,6 +210,32 @@ def live_github_checks() -> list[Check]:
     else:
         checks.append(Check("github-live", "branch protection", "WARN", str(bp)))
 
+    owner_slug = repo.get('nameWithOwner', '').split('/')[0] if isinstance(repo, dict) else ''
+    ok, env = gh_json(["api", f"/repos/{repo.get('nameWithOwner')}/environments/release"])
+    if ok and isinstance(env, dict):
+        policy = env.get("deployment_branch_policy") or {}
+        if policy.get("protected_branches") and not policy.get("custom_branch_policies"):
+            checks.append(Check("github-live", "release environment", "OK", "protected-branches policy"))
+        else:
+            checks.append(Check("github-live", "release environment", "WARN", f"unexpected policy: {policy}"))
+    else:
+        checks.append(Check("github-live", "release environment", "WARN", str(env)))
+
+    codeowners = ROOT / ".github" / "CODEOWNERS"
+    if codeowners.exists():
+        text = codeowners.read_text(encoding="utf-8")
+        teams = {line.split()[-1] for line in text.splitlines() if line.strip() and not line.strip().startswith("#")}
+        writable_teams = [t for t in teams if not t.startswith("@FlexNetOS/") or t != "@FlexNetOS"]
+        if "@FlexNetOS" in teams and "@FlexNetOS/maintainers" not in teams:
+            checks.append(Check("github-live", "CODEOWNERS team", "WARN", "points to @FlexNetOS (not a writable team); repoint to @FlexNetOS/maintainers"))
+        elif "@FlexNetOS/maintainers" in teams:
+            ok, team = gh_json(["api", f"/orgs/{owner_slug}/teams/maintainers"])
+            checks.append(Check("github-live", "CODEOWNERS team", status(ok and isinstance(team, dict)), "@FlexNetOS/maintainers"))
+        else:
+            checks.append(Check("github-live", "CODEOWNERS team", "OK", ", ".join(teams) or "no entries"))
+    else:
+        checks.append(Check("github-live", "CODEOWNERS team", "WARN", "CODEOWNERS file missing"))
+
     return checks
 
 
