@@ -1,0 +1,75 @@
+name: Reusable Notify Downstream
+
+# Waits for a named required check on the current ref, then dispatches a
+# repository_dispatch event to each downstream repo.
+#
+# Example caller:
+#   jobs:
+#     notify:
+#       uses: FlexNetOS/.github/.github/workflows/reusable-notify-downstream.yml@main
+#       with:
+#         downstream-repos: '["FlexNetOS/meta_cli","FlexNetOS/meta_git_cli"]'
+#       secrets:
+#         parent-repo-pat: ${{ secrets.PARENT_REPO_PAT }}
+
+on:
+  workflow_call:
+    inputs:
+      downstream-repos:
+        description: 'JSON array of downstream repos in owner/name form'
+        required: true
+        type: string
+      event-type:
+        description: 'repository_dispatch event type'
+        required: false
+        type: string
+        default: 'dependency-updated'
+      check-name:
+        description: 'Name of the required check to wait for'
+        required: false
+        type: string
+        default: 'Test (ubuntu-latest)'
+    secrets:
+      parent-repo-pat:
+        description: 'PAT with repo scope for downstream repos'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  wait-and-dispatch:
+    name: Wait for check and dispatch
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Wait for required check
+        uses: lewagon/wait-on-check-action@96d9100b431964d10e0136aff8b9ccb92470505e # v1.8.0
+        with:
+          ref: ${{ github.sha }}
+          check-name: ${{ inputs.check-name }}
+          repo-token: ${{ secrets.parent-repo-pat || secrets.GITHUB_TOKEN }}
+          wait-interval: 20
+
+      - name: Dispatch to downstream repos
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.parent-repo-pat || secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          repos='${{ inputs.downstream-repos }}'
+          event_type='${{ inputs.event-type }}'
+          if [[ "$repos" == "[]" || -z "$repos" ]]; then
+            echo "No downstream repos configured."
+            exit 0
+          fi
+          while IFS= read -r repo; do
+            echo "Dispatching $event_type to $repo"
+            gh api "repos/$repo/dispatches" \
+              --method POST \
+              -f "event_type=$event_type" \
+              -f "client_payload[repo]=${{ github.repository }}" \
+              -f "client_payload[sha]=${{ github.sha }}" \
+              -f "client_payload[ref]=${{ github.ref }}" \
+              -f "client_payload[run_id]=${{ github.run_id }}"
+          done < <(printf '%s' "$repos" | jq -r '.[]')

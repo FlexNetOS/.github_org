@@ -88,7 +88,7 @@ Existing surfaces include reusable lint, test, build, typecheck, security, relea
 Next deliverables:
 
 - [x] Add caller examples for normal repos, submodule repos, and secrets-aware repos.
-- [ ] Add a workflow permission matrix documenting required `permissions:` and secrets per reusable workflow.
+- [x] Add a workflow permission matrix documenting required `permissions:` and secrets per reusable workflow.
 - [ ] Add local `act --list` guidance or a repo-local wrapper that never requires secrets by default.
 - [x] Run CI on stacked PR branches (`branches: ['**']`) so every PR layer reports checks.
 - [x] Add same-repo upgrade-only auto-review/auto-merge gating that never checks out PR code.
@@ -99,6 +99,36 @@ Acceptance:
 - Every reusable workflow has explicit permissions.
 - Caller examples use GitHub-hosted runners unless they intentionally request the local label set.
 - Secrets are named consistently with `secrets/github-secrets.tsv.example`.
+
+### Workflow permission and secrets matrix
+
+| Workflow | `contents` | `pull-requests` | `issues` | `id-token` | `actions` | `security-events` | Secrets / notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `ci.yml` | read | — | — | — | — | — | none (uses reusable workflows) |
+| `manifest-drift.yml` | read | write | — | — | — | — | none (report-only comments) |
+| `claude-code-review.yml` | read | read | read | **write** | — | — | `CLAUDE_CODE_OAUTH_TOKEN` (OIDC exchange) |
+| `release.yml` / `reusable-release.yml` | write | write | — | — | — | — | `RELEASE_TOKEN` |
+| `promote-develop-to-main.yml` | write | write | — | — | — | — | `PROMOTE_TOKEN` |
+| `reusable-meta-rust-ci.yml` | read | — | — | — | — | — | PAT via `token` input for private sibling repos |
+| `reusable-notify-parent.yml` | read | — | — | — | — | — | `PARENT_REPO_PAT` (cross-repo dispatch) |
+| `reusable-notify-downstream.yml` | read | — | — | — | — | — | `PARENT_REPO_PAT` (cross-repo dispatch + check wait) |
+| `reusable-child-update-sync.yml` | write | write | — | — | — | — | `PARENT_REPO_PAT` (sync PR + auto-merge) |
+| `reusable-security.yml` | read | — | — | — | read | write | none (uses GitHub-provided CodeQL/Trivy actions) |
+
+### Cross-repo dispatch model
+
+The `FlexNetOS/meta` parent repo and its canon child repos coordinate through
+`repository_dispatch` events rather than submodule polling:
+
+- **Child → parent:** `reusable-notify-parent.yml` sends `child-repo-updated` to
+  `FlexNetOS/meta` after a child push to `main`.
+- **Parent → child:** `reusable-notify-downstream.yml` waits for the required
+  check, then sends `dependency-updated` to each registered consumer.
+- **Parent sync:** `reusable-child-update-sync.yml` creates a `sync/<repo>/<sha>`
+  PR in the parent and arms native auto-merge.
+
+Tokens are sourced from `meta/envctl` and injected as `PARENT_REPO_PAT` (repo
+scope for cross-repo dispatch) and `REPO_WRITE_PACKAGES_PAT` (release dispatch).
 
 ### Phase 4 — GitHub App automation
 

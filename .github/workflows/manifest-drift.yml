@@ -107,7 +107,6 @@ jobs:
           submodules: false
       - name: Triple-verify research repomix archives do not fail Trivy
         run: bash scripts/tests/test-trivy-secret-suppressions.sh
-
   hermetic-audit:
     name: Hermetic dependency / clone audit
     runs-on: ubuntu-latest
