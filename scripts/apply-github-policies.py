@@ -129,17 +129,14 @@ def apply_rulesets(owner: str, repo: str, spec: list[dict], *, dry_run: bool) ->
 
 def apply_repo_settings(owner: str, repo: str, spec: dict, *, dry_run: bool) -> bool:
     settings = spec.get("settings", {})
-    flags = []
-    for key, value in settings.items():
-        flags.extend(["-f", f"{key}={value}"])
-    cmd = ["gh", "api", f"/repos/{owner}/{repo}", "--method", "PATCH", *flags]
+    cmd = ["gh", "api", f"/repos/{owner}/{repo}", "--method", "PATCH", "--input", "-"]
     if dry_run:
         print("[dry-run] PATCH /repos/{owner}/{repo} settings")
-        print("  " + "\n  ".join(f"{k}={v}" for k, v in settings.items()))
+        print(json.dumps(settings, indent=2))
         return True
-    code, out, err = run(cmd)
-    if code != 0:
-        print(f"ERROR applying repo settings: {err}", file=sys.stderr)
+    proc = subprocess.run(cmd, input=json.dumps(settings), text=True, capture_output=True, check=False)
+    if proc.returncode != 0:
+        print(f"ERROR applying repo settings: {proc.stderr}", file=sys.stderr)
         return False
     print("Applied repository settings")
     return True
@@ -164,10 +161,60 @@ def apply_environments(owner: str, repo: str, spec: list[dict], *, dry_run: bool
     return ok
 
 
+def check_repo_settings(owner: str, repo: str, desired: dict) -> bool:
+    ok = True
+    code, out, err = run(["gh", "api", f"/repos/{owner}/{repo}"])
+    if code != 0:
+        print(f"DRIFT: could not read repository settings: {err}")
+        return False
+    current = json.loads(out)
+    for key, value in desired.items():
+        if current.get(key) != value:
+            print(f"DRIFT repo setting: {key} is {current.get(key)!r}, expected {value!r}")
+            ok = False
+    return ok
+
+
+def check_environments(owner: str, repo: str, desired: list[dict]) -> bool:
+    ok = True
+    desired_by_name = {e["name"]: e for e in desired}
+    code, out, err = run(["gh", "api", f"/repos/{owner}/{repo}/environments"])
+    existing_names = set()
+    if code == 0:
+        existing_names = {e["name"] for e in json.loads(out).get("environments", [])}
+    else:
+        print(f"DRIFT: could not list environments: {err}")
+        ok = False
+
+    for name in desired_by_name:
+        if name not in existing_names:
+            print(f"DRIFT: environment '{name}' does not exist")
+            ok = False
+            continue
+        ecode, eout, eerr = run(["gh", "api", f"/repos/{owner}/{repo}/environments/{name}"])
+        if ecode != 0:
+            print(f"DRIFT: could not read environment '{name}': {eerr}")
+            ok = False
+            continue
+        current = json.loads(eout)
+        desired_policy = desired_by_name[name].get("deployment_branch_policy")
+        current_policy = current.get("deployment_branch_policy")
+        if desired_policy and current_policy != desired_policy:
+            print(f"DRIFT environment '{name}': deployment_branch_policy is {current_policy!r}, expected {desired_policy!r}")
+            ok = False
+
+    for name in existing_names:
+        if name not in desired_by_name:
+            print(f"DRIFT: unexpected environment '{name}' exists")
+            ok = False
+    return ok
+
+
 def check_drift(owner: str, repo: str) -> bool:
     """Return True if current GitHub state matches committed policy."""
     bp_spec = load_json("branch-protection.json")
     rs_spec = load_json("rulesets.json")
+    settings_spec = load_json("repo-settings.json")
     rs_names = {r["name"] for r in rs_spec.get("rulesets", [])}
     existing = list_rulesets(owner, repo)
     drift = False
@@ -201,6 +248,11 @@ def check_drift(owner: str, repo: str) -> bool:
         if name not in rs_names:
             print(f"DRIFT: unexpected ruleset '{name}' exists")
             drift = True
+
+    if not check_repo_settings(owner, repo, settings_spec.get("settings", {})):
+        drift = True
+    if not check_environments(owner, repo, settings_spec.get("environments", [])):
+        drift = True
 
     if not drift:
         print("No drift detected between committed policy and live GitHub state.")

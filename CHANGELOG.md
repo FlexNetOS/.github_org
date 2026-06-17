@@ -64,6 +64,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Makefile` — added `verify.github-policies` target and included it in the umbrella `make verify` chain. (TODO: systematic control-plane upgrade Phase 7)
 - `.github/workflows/manifest-drift.yml` — added report-only `github-policy-drift` job that runs `scripts/apply-github-policies.py --check` on every PR. (TODO: systematic control-plane upgrade Phase 7)
 
+### Fixed (SESSION-2026-06-17-007)
+- `scripts/apply-github-policies.py` now sends repository settings as a JSON body instead of form fields, so boolean `false` values (e.g., `allow_merge_commit=false`) are applied correctly. Extended `--check` to compare repository settings and environment `deployment_branch_policy` details.
+- `.github/workflows/branch-target-guard.yml` missing `concurrency` block added.
+
 ### Notes (SESSION-2026-06-17-007)
 - Branch target for this work: `feat/control-plane-upgrade` → `develop`. All changes are additive; no submodule mutations, no forks, no committed secrets, no `main` branch edits.
 - The policy applier was applied live with the operator's authenticated `gh` token; the committed policy now matches GitHub state. Report-only CI drift checks will be promoted to STRICT after one green cycle.

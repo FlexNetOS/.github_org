@@ -13,7 +13,7 @@
 - **ID:** `SESSION-2026-06-17-007`
 - **Date:** 2026-06-17
 - **Branch:** `feat/control-plane-upgrade`
-- **HEAD at end:** `10518d9`
+- **HEAD at end:** `fa08351`
 - **PR:** https://github.com/FlexNetOS/.github/pull/116
 - **Mode:** manual implementation against the approved phased plan in `data/brain-data/research/my-github-reconciliation.md`
 - **Outcome:** All eight phases of the systematic control-plane upgrade are committed. Branch protection, repository rulesets, repo settings, and the `release` environment were applied live to `FlexNetOS/.github`. `make verify` passes locally; policy drift check is report-only in CI for its first cycle.
@@ -42,6 +42,7 @@
 6. Applied repo settings and the `release` environment live via the applier.
 7. Extended `github-doctor.py` and added the policy contract test; ran `make verify` until clean.
 8. Updated session-tracking files, committed, pushed, and opened the PR.
+9. Post-PR verification found `allow_merge_commit` still `true` because form-field booleans were not being applied; switched repo settings to JSON body and extended `--check` to cover settings and environment policies. Re-applied and confirmed zero drift.
 
 ### Reservations / risks
 - The `github-policy-drift` CI job is `continue-on-error: true` (report-only) for its first green cycle because the default `GITHUB_TOKEN` lacks an `administration` workflow permission; it will be promoted to STRICT once it runs green.
