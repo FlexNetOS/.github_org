@@ -377,11 +377,11 @@ and the workflow's `runs-on:` matches every label the runner advertises
 
 - **Surfaced by:** `SESSION-2026-06-16-006`
 - **Blocks:** activating the new reusable control plane in the FlexNetOS/meta* child repos
-- **Why:** Phases 1–5 are committed to `feat/meta-control-plane-gaps-phase3`, which stacks on PR #121 (`feat/meta-control-plane-gaps-phase2`), which stacks on PR #118 (`feat/meta-control-plane-gaps`). Only a human can open/approve/merge these PRs.
+- **Why:** PR #118 is `BLOCKED` because branch protection requires an approving review and the author cannot self-approve. PR #121 is `UNSTABLE` because the `claude-review` check fails; that failure is expected when a PR introduces a new workflow file (the action requires the workflow to already exist on the default branch). The agent cannot approve its own PRs and cannot bypass branch protection.
 - **What to do:**
-  1. Confirm CI is green on PR #118 and merge to `develop`.
-  2. Rebase/merge PR #121 onto the updated base and merge to `develop`.
-  3. Open a PR for `feat/meta-control-plane-gaps-phase3` and merge to `develop`.
+  1. Merge PR #118 using **admin override** (or have a second maintainer account approve it). The required status checks (`lint`, `Gate upgrade PR for auto-review/merge`, etc.) are green; only the expected `claude-review` failure and the review requirement remain.
+  2. Merge PR #121 the same way.
+  3. Push `feat/meta-control-plane-gaps-phase3` to origin and open the Phase 3 PR against `feat/meta-control-plane-gaps-phase2`, then merge with admin override.
 - **Status:** `open`
 
 ### UA-2026-06-16-003 — Provision cross-repo dispatch tokens on child meta repos
@@ -389,7 +389,23 @@ and the workflow's `runs-on:` matches every label the runner advertises
 - **Surfaced by:** `SESSION-2026-06-16-006`
 - **Blocks:** `notify-parent.yml`, `notify-downstream.yml`, and `reusable-child-update-sync.yml` working across repos
 - **Why:** The reusable workflows read `secrets.PARENT_REPO_PAT` for cross-repo `repository_dispatch` and PR creation. The agent cannot create GitHub secrets.
-- **What to do:** Create a `PARENT_REPO_PAT` repository secret on every FlexNetOS/meta* repo that participates in dispatch. The token needs `repo` scope (or fine-grained `contents:write` + `pull_requests:write` on the relevant repos).
+- **What to do:** Use `envctl`/`secretctl` to hold the real PAT, then push it to GitHub without exposing it to the parent shell:
+  ```bash
+  secretctl run --relay gh-flexnetos -- \
+    gh secret set PARENT_REPO_PAT --org FlexNetOS --visibility private
+  ```
+  The token needs `repo` scope (or fine-grained `contents:write` + `pull_requests:write` on the relevant repos). See `data/brain-data/research/meta-envctl.md` §6 for the full playbook.
+- **Status:** `open`
+
+### UA-2026-06-17-001 — Provision remaining secrets from envctl
+
+- **Surfaced by:** `SESSION-2026-06-17-001` (Phase 10 envctl research)
+- **Blocks:** releases, label sync, cargo publishing, and homebrew tap updates
+- **Why:** `RELEASE_TOKEN`, `LABEL_SYNC_TOKEN`, `CARGO_REGISTRY_TOKEN`, and `HOMEBREW_TAP_TOKEN` are referenced by workflows/onboarding templates but must be written to GitHub Actions secrets. The canonical values live in `envctl`.
+- **What to do:** From the dossier playbook (`data/brain-data/research/meta-envctl.md` §6.4), run the equivalent `secretctl run --relay gh-flexnetos -- gh secret set ...` commands for each token. At minimum:
+  - `RELEASE_TOKEN` — repo secret on `FlexNetOS/.github` (or org secret).
+  - `LABEL_SYNC_TOKEN` — org secret for `sync-labels.yml` (falls back to `GITHUB_TOKEN`).
+  - `CARGO_REGISTRY_TOKEN` / `HOMEBREW_TAP_TOKEN` — org secrets when those publish steps are enabled.
 - **Status:** `open`
 
 ### UA-2026-06-16-004 — Apply fleet policies to live meta repos
