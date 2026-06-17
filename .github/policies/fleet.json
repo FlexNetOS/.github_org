@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Fleet registry of FlexNetOS/meta canon repos and the policy templates they should use. Consumed by scripts/apply-github-policies.py --fleet.",
+  "description": "Fleet registry of FlexNetOS/meta canon repos and the policy templates they should use. Consumed by scripts/apply-fleet-policies.py.",
   "template_dirs": {
     "rust-canon": ".github/policies/templates/rust-canon",
     "branch-target": ".github/policies/templates/branch-target-develop"

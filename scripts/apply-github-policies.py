@@ -355,6 +355,25 @@ def _find_rule(rules: list[dict], rule_type: str) -> dict | None:
     return None
 
 
+def _bypass_actors_key(actors: list[dict] | None) -> list[tuple]:
+    """Normalize a ruleset's bypass_actors to a sorted list of comparable tuples.
+
+    Each actor is reduced to (actor_id, actor_type, bypass_mode) so that order
+    differences between the desired policy and the live ruleset do not cause
+    false drift, while genuine additions/removals (e.g. an admin bypass added
+    or dropped on GitHub) are detected.
+    """
+    normalized = [
+        (
+            actor.get("actor_id"),
+            actor.get("actor_type"),
+            actor.get("bypass_mode"),
+        )
+        for actor in (actors or [])
+    ]
+    return sorted(normalized, key=lambda t: tuple("" if v is None else str(v) for v in t))
+
+
 def _rule_params_match(current_rule: dict, desired_rule: dict) -> bool:
     """Compare rule parameters, ignoring API-injected defaults not in desired."""
     desired_params = desired_rule.get("parameters", {})
@@ -390,6 +409,9 @@ def check_rulesets(owner: str, repo: str, desired_rulesets: list[dict]) -> list[
 
         if json.dumps(_ordered(current.get("conditions")), sort_keys=True) != json.dumps(_ordered(desired.get("conditions")), sort_keys=True):
             drift.append(f"DRIFT: ruleset '{name}' conditions do not match")
+
+        if _bypass_actors_key(desired.get("bypass_actors", [])) != _bypass_actors_key(current.get("bypass_actors", [])):
+            drift.append(f"DRIFT: ruleset '{name}' bypass_actors do not match")
 
         desired_rules = desired.get("rules", [])
         current_rules = current.get("rules", [])
@@ -435,12 +457,25 @@ def main() -> int:
     parser.add_argument("--apply", action="store_true", help="Apply policies to GitHub")
     parser.add_argument("--check", action="store_true", help="Exit non-zero if live state drifts from policy")
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON output")
+    parser.add_argument(
+        "--expect-repo",
+        metavar="OWNER/REPO",
+        help="Assert the resolved target repo slug matches OWNER/REPO before applying; abort on mismatch",
+    )
     args = parser.parse_args()
 
     if sum([args.dry_run, args.apply, args.check]) != 1:
         parser.error("Specify exactly one of --dry-run, --apply, --check")
 
     owner, repo = repo_slug()
+    resolved_slug = f"{owner}/{repo}"
+    if args.expect_repo and args.expect_repo != resolved_slug:
+        sys.exit(
+            f"ERROR: target repo guard: resolved repo is {resolved_slug!r}, "
+            f"but --expect-repo requires {args.expect_repo!r}. Aborting."
+        )
+    if args.apply:
+        print(f">>> Resolved target repository: {resolved_slug}", file=sys.stderr)
 
     bp_spec = load_json("branch-protection.json")
     rs_spec = load_json("rulesets.json")
