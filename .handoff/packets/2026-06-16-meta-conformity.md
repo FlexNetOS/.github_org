@@ -97,7 +97,7 @@ items in this packet are the current active mission.
 
 ## Next commands
 
-1. `make verify` on `feat/handoff-meta-conformity`.
-2. Push and open PR to `develop`.
+1. ✅ `make verify` on `feat/handoff-meta-conformity`.
+2. ✅ Push and open PR #111 to `develop`.
 3. After merge, watch `security / Trivy filesystem + IaC` on `develop`; once
    green, confirm `promote-develop-to-main.yml` creates the promotion PR.
