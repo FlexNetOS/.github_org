@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Desired repository rulesets for FlexNetOS/.github. Applied via scripts/apply-github-policies.py.",
+  "rulesets": [
+    {
+      "name": "protect-main",
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "include": ["~DEFAULT_BRANCH"],
+          "exclude": []
+        }
+      },
+      "rules": [
+        { "type": "deletion" },
+        { "type": "non_fast_forward" },
+        { "type": "required_linear_history" },
+        {
+          "type": "pull_request",
+          "parameters": {
+            "required_approving_review_count": 1,
+            "dismiss_stale_reviews_on_push": true,
+            "require_code_owner_review": true,
+            "require_last_push_approval": false
+          }
+        },
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "required_status_checks": [
+              { "context": "lint / Lint (mixed)" },
+              { "context": "actionlint .github/workflows" },
+              { "context": "markdownlint" },
+              { "context": "Validate manifests" },
+              { "context": "Hermetic dependency audit" },
+              { "context": "security / Gitleaks secret scan" },
+              { "context": "security / Trivy filesystem + IaC" },
+              { "context": "security / CodeQL SAST (actions)" },
+              { "context": ".claude/settings.json hygiene" },
+              { "context": "GitHub doctor — Renovate/Dependabot check" },
+              { "context": "open-questions.md schema" },
+              { "context": "No PascalCase Claude/ directories" },
+              { "context": "Guard main branch target" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "protect-develop",
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "include": ["refs/heads/develop"],
+          "exclude": []
+        }
+      },
+      "rules": [
+        { "type": "deletion" },
+        { "type": "non_fast_forward" },
+        {
+          "type": "pull_request",
+          "parameters": {
+            "required_approving_review_count": 1,
+            "dismiss_stale_reviews_on_push": true,
+            "require_code_owner_review": false,
+            "require_last_push_approval": false
+          }
+        },
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "required_status_checks": [
+              { "context": "lint / Lint (mixed)" },
+              { "context": "actionlint .github/workflows" },
+              { "context": "markdownlint" },
+              { "context": "Validate manifests" },
+              { "context": "Hermetic dependency audit" },
+              { "context": "security / Gitleaks secret scan" },
+              { "context": "security / Trivy filesystem + IaC" },
+              { "context": "security / CodeQL SAST (actions)" },
+              { "context": ".claude/settings.json hygiene" },
+              { "context": "GitHub doctor — Renovate/Dependabot check" },
+              { "context": "open-questions.md schema" },
+              { "context": "No PascalCase Claude/ directories" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "protect-release-tags",
+      "target": "tag",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "include": ["refs/tags/v*"],
+          "exclude": []
+        }
+      },
+      "rules": [
+        { "type": "deletion" },
+        { "type": "non_fast_forward" }
+      ],
+      "bypass_actors": [
+        {
+          "actor_id": 5,
+          "actor_type": "RepositoryRole",
+          "bypass_mode": "always"
+        }
+      ]
+    }
+  ]
+}

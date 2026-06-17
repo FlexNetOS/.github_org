@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Desired repository settings for FlexNetOS/.github. Applied via scripts/apply-github-policies.py.",
+  "settings": {
+    "delete_branch_on_merge": true,
+    "allow_squash_merge": true,
+    "allow_rebase_merge": true,
+    "allow_merge_commit": false,
+    "allow_auto_merge": true,
+    "allow_update_branch": true
+  },
+  "environments": [
+    {
+      "name": "release",
+      "wait_timer": 0,
+      "protection_rules": [
+        { "type": "required_reviewers", "reviewers": [{ "type": "Team", "id": 0 }] }
+      ],
+      "deployment_branch_policy": {
+        "protected_branches": true,
+        "custom_branch_policies": false
+      }
+    }
+  ]
+}
