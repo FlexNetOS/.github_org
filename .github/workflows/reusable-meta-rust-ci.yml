@@ -51,16 +51,17 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Check out shared actions
-        if: github.repository != 'FlexNetOS/.github'
+        if: (github.repository != 'FlexNetOS/.github' && github.repository != 'FlexNetOS/.github_org')
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
-          repository: FlexNetOS/.github
+          # Umbrella repo; name-agnostic. Set org var UMBRELLA_REPO at the future restore to '.github'. Interim fallback = current name.
+          repository: ${{ vars.UMBRELLA_REPO || 'FlexNetOS/.github_org' }}
           ref: main
           path: .github-org-actions
           token: ${{ inputs.token }}
 
       - name: Set up meta Rust workspace (local)
-        if: github.repository == 'FlexNetOS/.github'
+        if: (github.repository == 'FlexNetOS/.github' || github.repository == 'FlexNetOS/.github_org')
         uses: ./.github/actions/meta-rust-workspace
         with:
           sibling-repos: ${{ inputs.sibling-repos }}
@@ -68,7 +69,7 @@ jobs:
           token: ${{ inputs.token }}
 
       - name: Set up meta Rust workspace (shared)
-        if: github.repository != 'FlexNetOS/.github'
+        if: (github.repository != 'FlexNetOS/.github' && github.repository != 'FlexNetOS/.github_org')
         uses: ./.github-org-actions/.github/actions/meta-rust-workspace
         with:
           sibling-repos: ${{ inputs.sibling-repos }}
