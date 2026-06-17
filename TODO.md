@@ -26,6 +26,19 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"Phased
 
 ---
 
+## Meta-conformity / `.handoff` / develop-CI unblock (SESSION-2026-06-16-006)
+
+Handoff packet: `.handoff/packets/2026-06-16-meta-conformity.md`.
+
+- [x] Create `.handoff/context/capsule.json` + `.handoff/README.md`.
+- [x] Fix `.gitignore` so `.handoff/packets/` are committed (only `latest.md` / `active.md` / `*.db` ignored).
+- [x] Confirm `.github_org` is registered in meta workspace `.meta.yaml` (already present; P1.2 satisfied).
+- [x] Migrate stale `docs/meta-foundation-confirmation` loop state into handoff packet and refresh `TODO.md` / `SESSIONS.md`.
+- [x] Unblock `develop` CI — suppress Trivy false-positive `stripe-secret-token` findings in research repomix archives via `trivy-secret.yaml` + triple-verify contract test.
+- [ ] Push `feat/handoff-meta-conformity`, open PR to `develop`, and promote after green CI.
+
+---
+
 ## GitHub doctor hygiene (TDD loop — closed 2026-06-16)
 
 - [x] **Dependabot → Renovate check in `scripts/github-doctor.py`.** Replaced the stale `Dependabot config` check with a `Renovate config` check that accepts `renovate.json`/`renovate.json5` at repo root or under `.github/`. Added a triple-verify test at `scripts/tests/test-github-doctor.sh` (contract output, no Dependabot residue, offline `make github.doctor`) and a CI job in `manifest-drift.yml` to keep it green.
@@ -38,12 +51,12 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"Phased
   - Gate: do not enable write-mode autofix on `main` until the tracker has run green for ≥1 cycle and the issue-noise/dedupe behaviour is confirmed sane on a feature branch.
   - First create the `ci-failure` + `needs-autofix` repo labels (the tracker assumes they can be applied; `github.rest.issues.create` will create missing labels on first use, but pre-creating them with colors/descriptions is cleaner).
 
-## `.claude/settings.json` hygiene (resolved in PR #111)
+## `.claude/settings.json` hygiene (G8 trim — resolved in PR #111)
 
-> Surfaced SESSION-2026-05-29-015. Fixed in PR #111.
+> Surfaced SESSION-2026-05-29-015. After the splice repair (#71) `settings.json` was valid JSON, but the `.claude/settings.json hygiene` doctor stayed red on pre-existing violations. Fixed in PR #111.
 
-- [x] **Remove forbidden keys/paths from tracked `.claude/settings.json`.** Removed `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` and all hardcoded `/home/` marketplace paths. `make claude.doctor` reports 0 violations.
-- [ ] **Relocate marketplace definitions via meta/envctl.** The removed marketplace paths must be re-injected through `meta/envctl` or portable project-level settings, never with literal `/home/<user>` paths.
+- [x] **Remove forbidden keys/paths from tracked `.claude/settings.json`.** Removed `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` and all hardcoded `/home/` marketplace paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `make claude.doctor` now reports 0 violations.
+- [ ] **Relocate marketplace definitions via meta/envctl.** The removed marketplace paths must be re-injected into the Claude environment through `meta/envctl` or portable project-level settings, never with literal `/home/<user>` paths. Deferred until `envctl` vault is available.
 
 ## Systematic control-plane upgrade (SESSION-2026-06-17-007)
 

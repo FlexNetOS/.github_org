@@ -140,3 +140,16 @@ jobs:
           GH_TOKEN: ${{ secrets.POLICY_DRIFT_TOKEN || secrets.GITHUB_TOKEN }}
         run: python3 scripts/apply-github-policies.py --check
 
+  hermetic-audit:
+    name: Hermetic dependency / clone audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          submodules: false
+      - name: Check for non-hermetic patterns
+        # Advisory enforcement until the repo is clean of pre-existing findings.
+        continue-on-error: true
+        run: python3 scripts/hermetic-audit.py --fail .
+

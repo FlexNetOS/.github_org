@@ -1,0 +1,148 @@
+name: Reusable Child Update Sync
+
+# Creates a sync PR in the current (parent) repo when a child repo dispatches a
+# `child-repo-updated` event. Call this from a caller workflow that triggers on
+# `repository_dispatch`.
+#
+# Example caller in FlexNetOS/meta:
+#   on:
+#     repository_dispatch:
+#       types: [child-repo-updated]
+#   jobs:
+#     sync:
+#       uses: FlexNetOS/.github/.github/workflows/reusable-child-update-sync.yml@main
+#       with:
+#         repo: ${{ github.event.client_payload.repo }}
+#         sha: ${{ github.event.client_payload.sha }}
+#       secrets:
+#         parent-repo-pat: ${{ secrets.PARENT_REPO_PAT }}
+
+on:
+  workflow_call:
+    inputs:
+      repo:
+        description: 'Full owner/name of the child repo that was updated'
+        required: true
+        type: string
+      sha:
+        description: 'Commit SHA in the child repo to sync'
+        required: true
+        type: string
+      base-branch:
+        description: 'Base branch for the sync PR'
+        required: false
+        type: string
+        default: 'develop'
+      auto-merge-method:
+        description: 'Auto-merge method (merge, squash, rebase)'
+        required: false
+        type: string
+        default: 'squash'
+    secrets:
+      parent-repo-pat:
+        description: 'PAT with contents:write and pull-requests:write for the parent repo'
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Sync child update
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout parent repo
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.parent-repo-pat || secrets.GITHUB_TOKEN }}
+
+      - name: Create or update sync PR
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        env:
+          CHILD_REPO: ${{ inputs.repo }}
+          CHILD_SHA: ${{ inputs.sha }}
+          BASE_BRANCH: ${{ inputs.base-branch }}
+          MERGE_METHOD: ${{ inputs.auto-merge-method }}
+        with:
+          github-token: ${{ secrets.parent-repo-pat || secrets.GITHUB_TOKEN }}
+          script: |
+            const childRepo = process.env.CHILD_REPO;
+            const childSha = process.env.CHILD_SHA;
+            const base = process.env.BASE_BRANCH;
+            const mergeMethod = process.env.MERGE_METHOD;
+            const childName = childRepo.split('/')[1];
+            const shortSha = childSha.slice(0, 8);
+            const branch = `sync/${childName}/${shortSha}`;
+            const title = `sync(${childName}): bump to ${shortSha}`;
+            const body = `Automated sync PR for \`${childRepo}@${childSha}\`.`;
+
+            // Create the branch from the current base
+            const { data: baseRef } = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `heads/${base}`,
+            });
+            try {
+              await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `refs/heads/${branch}`,
+                sha: baseRef.object.sha,
+              });
+            } catch (err) {
+              if (err.status !== 422) throw err;
+              // Branch already exists; update it.
+              await github.rest.git.updateRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `heads/${branch}`,
+                sha: baseRef.object.sha,
+                force: true,
+              });
+            }
+
+            // Open or find PR
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:${branch}`,
+              base,
+            });
+            let pr;
+            if (prs.length > 0) {
+              pr = prs[0];
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                body,
+              });
+            } else {
+              const { data: created } = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                head: branch,
+                base,
+                body,
+              });
+              pr = created;
+            }
+
+            // Enable auto-merge when checks pass
+            try {
+              await github.graphql(`
+                mutation($prId: ID!, $method: PullRequestMergeMethod!) {
+                  enablePullRequestAutoMerge(input: {
+                    pullRequestId: $prId,
+                    mergeMethod: $method
+                  }) { clientMutationId }
+                }
+              `, { prId: pr.node_id, method: mergeMethod.toUpperCase() });
+            } catch (err) {
+              console.log(`Could not enable auto-merge: ${err.message}`);
+            }

@@ -1,0 +1,53 @@
+name: Reusable Notify Parent
+
+# Dispatches a repository_dispatch event to a parent repo (default FlexNetOS/meta)
+# when a child repo is updated. The parent can listen for `child-repo-updated` and
+# create a sync PR.
+#
+# Example caller:
+#   jobs:
+#     notify:
+#       uses: FlexNetOS/.github/.github/workflows/reusable-notify-parent.yml@main
+#       secrets:
+#         parent-repo-pat: ${{ secrets.PARENT_REPO_PAT }}
+
+on:
+  workflow_call:
+    inputs:
+      parent-repo:
+        description: 'Owner/name of the parent repo to notify'
+        required: false
+        type: string
+        default: 'FlexNetOS/meta'
+      event-type:
+        description: 'repository_dispatch event type'
+        required: false
+        type: string
+        default: 'child-repo-updated'
+    secrets:
+      parent-repo-pat:
+        description: 'PAT with repo scope for the parent repo (GITHUB_TOKEN works only within the same repo)'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    name: Notify parent
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch to parent
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
+        with:
+          token: ${{ secrets.parent-repo-pat || secrets.GITHUB_TOKEN }}
+          repository: ${{ inputs.parent-repo }}
+          event-type: ${{ inputs.event-type }}
+          client-payload: |
+            {
+              "repo": "${{ github.repository }}",
+              "sha": "${{ github.sha }}",
+              "ref": "${{ github.ref }}",
+              "run_id": "${{ github.run_id }}"
+            }
