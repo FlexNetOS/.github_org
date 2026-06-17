@@ -102,8 +102,10 @@ jobs:
         run: |
           bun install --frozen-lockfile
           if [[ "${{ inputs.coverage }}" == "true" ]]; then
+            # shellcheck disable=SC2086
             bun test --coverage $EXTRA_ARGS
           else
+            # shellcheck disable=SC2086
             bun test $EXTRA_ARGS
           fi
 
@@ -114,6 +116,7 @@ jobs:
           EXTRA_ARGS: ${{ inputs.extra-args }}
         run: |
           npm ci
+          # shellcheck disable=SC2086
           npm test -- $EXTRA_ARGS
 
       - name: Test (python)
@@ -122,15 +125,18 @@ jobs:
         env:
           EXTRA_ARGS: ${{ inputs.extra-args }}
         run: |
+          # shellcheck disable=SC2086
           if [[ -f pyproject.toml ]]; then
             uv sync --all-extras --dev || uv sync || true
           fi
           if [[ "${{ inputs.coverage }}" == "true" ]]; then
             uv tool install coverage
+            # shellcheck disable=SC2086
             uv run -- coverage run -m pytest $EXTRA_ARGS
             uv run -- coverage xml -o coverage.xml
             uv run -- coverage report --fail-under=${{ inputs.coverage-threshold }}
           else
+            # shellcheck disable=SC2086
             uv run -- pytest $EXTRA_ARGS
           fi
 
@@ -161,8 +167,10 @@ jobs:
           EXTRA_ARGS: ${{ inputs.extra-args }}
         run: |
           if cargo --list 2>/dev/null | grep -q nextest; then
+            # shellcheck disable=SC2086
             cargo nextest run --all-features $EXTRA_ARGS
           else
+            # shellcheck disable=SC2086
             cargo test --all-features $EXTRA_ARGS
           fi
 

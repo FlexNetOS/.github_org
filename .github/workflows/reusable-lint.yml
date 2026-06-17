@@ -176,7 +176,9 @@ jobs:
         run: |
           uv tool install ruff
           uv tool install black
+          # shellcheck disable=SC2086
           ruff check $PATHS
+          # shellcheck disable=SC2086
           black --check $PATHS
 
       - name: Set up meta Rust workspace
