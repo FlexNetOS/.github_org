@@ -8,6 +8,80 @@
 
 ---
 
+## SESSION-2026-06-16-005 — meta-foundation confirmation (P1–P7)
+
+- **ID:** `SESSION-2026-06-16-005`
+- **Date:** 2026-06-16
+- **Branch:** `docs/meta-foundation-confirmation`
+- **HEAD at end:** `TBD`
+- **Mode:** manual research + targeted edits
+- **Outcome:** P1–P7 of the `my-github-reconciliation.md` phased plan landed; docs now accurately describe reusable-workflow maturity; Dependabot retired; semantic PR/commit gates added; `RELEASE_TOKEN` wired in `release.yml` and the automatic `push: branches: [main]` trigger enabled; `delete-merged-branch.yml` added; roadmap refreshed; docs-only branch-target policy confirmed.
+- **User-action gates surfaced:** none — `UA-2026-06-16-001` closed in-session.
+- **Cost:** N/A
+
+### What the user asked
+> Continue through the remaining `.github_org` phases or pause for PR.
+
+### What the answer is
+- **P1** — retired submodule ghost references scrubbed from `CONTRIBUTING.md`, `Makefile`, and `.github/workflows/manifest-drift.yml`.
+- **P2** — added `.github/workflows/semantic-pr-title.yml` (reusable org-level check) and `.githooks/commit-msg` (local enforcement).
+- **P3** — removed `.github/dependabot.yml` and strengthened `renovate.json5` (dashboard approval, Actions grouping, digest pinning).
+- **P4** — corrected `README.md` and `RELEASING.md` so they no longer call reusable workflows "scaffolds"; documented the release-token operational gate.
+- **P5** — `release.yml` now passes `secrets.release-token` from `RELEASE_TOKEN` and the automatic `push: branches: [main]` trigger is enabled; added `delete-merged-branch.yml` with safe exclusions; documented `PROMOTE_TOKEN`/`RELEASE_TOKEN` roles.
+- **P6** — refreshed `docs/github-automation-roadmap.md` to current state.
+- **P7** — wrote `.handoff/packets/SESSION-2026-06-16-005.md` handoff capsule; confirmed docs-only additive changes still route through `develop`.
+- **TDD follow-on** — closed the stale Dependabot → Renovate check in `scripts/github-doctor.py` with a triple-verify test (`scripts/tests/test-github-doctor.sh`) and a CI enforcement job in `manifest-drift.yml`.
+- Bookkeeping updated: `TODO.md`, `CHANGELOG.md`, `SESSIONS.md`, `USER.TODO.md`.
+
+### What was actually done this session
+1. Read `README.md`, `RELEASING.md`, `CONTRIBUTING.md`, `Makefile`, `manifest-drift.yml`, `renovate.json5`, `USER.TODO.md`, and `docs/github-automation-roadmap.md` to locate stale terminology and retired references.
+2. Edited `README.md`: replaced "scaffold" with "real reusable workflow bodies" and updated the caller snippet to use `needs:` chaining.
+3. Edited `RELEASING.md`: documented that `release.yml` is currently `workflow_dispatch`-only and listed the token-wiring steps needed to re-enable automatic releases.
+4. Removed Dependabot config; left Renovate in charge.
+5. Added semantic PR/commit gates.
+6. Wired `release.yml` to `RELEASE_TOKEN` while keeping it manual-only until the secret exists.
+7. Added `delete-merged-branch.yml` with guardrails for protected and upgrade branches.
+8. Refreshed `docs/github-automation-roadmap.md` and replaced stale PR references.
+9. Wrote `.handoff/packets/SESSION-2026-06-16-005.md` and documented the docs-only branch-target policy across `AGENTS.md`, `CLAUDE.md`, `WORKFLOW.md`, and `architecture/adr/ADR-0003-dev-git-workflow-policy.md`.
+10. Ran a TDD loop with triple verify to close the stale Dependabot → Renovate check in `scripts/github-doctor.py`: wrote the failing `scripts/tests/test-github-doctor.sh`, updated the doctor, added a CI job in `manifest-drift.yml`, and verified all three stages pass.
+11. Updated session-tracking files.
+
+### Reservations / risks
+- The branch-guard hook may block edits to protected-branch source files; this work is on `docs/meta-foundation-confirmation` and only touches exempt doc/agent-config files plus additive workflow files.
+- `RELEASE_TOKEN` is not yet set as an org secret; `release.yml` remains `workflow_dispatch`-only until that gate is completed.
+- `delete-merged-branch.yml` has been actionlint-validated but not exercised live.
+
+### What's next
+- PR #108 (`docs/meta-foundation-confirmation` → `develop`) is open and auto-merge is armed; it needs a separate-principal approval and green CI.
+- After PR #108 merges to `main`, verify that `release.yml` triggers automatically and release-please opens the `v1.0.0` release PR.
+
+### Files created/modified this session
+
+| Path | What |
+|---|---|
+| `README.md` | Removed "scaffold" language; updated reusable workflow description and caller example |
+| `RELEASING.md` | Documented `workflow_dispatch` release gate and v1 blockers |
+| `.github/dependabot.yml` | Removed (superseded by Renovate) |
+| `.github/workflows/semantic-pr-title.yml` | New reusable PR-title validator |
+| `.githooks/commit-msg` | New local commit-message validator |
+| `renovate.json5` | Added dashboard approval, Actions grouping, digest pinning |
+| `CONTRIBUTING.md` | Removed retired submodule references |
+| `Makefile` | Removed retired submodule targets |
+| `.github/workflows/manifest-drift.yml` | Removed retired submodule checks |
+| `.github/workflows/release.yml` | Wired `RELEASE_TOKEN`; kept manual-only trigger |
+| `.github/workflows/delete-merged-branch.yml` | New merged-branch cleanup workflow |
+| `.github/workflows/promote-develop-to-main.yml` | Documented token roles |
+| `.github/workflows/auto-review-merge.yml` | Referenced delete-merged-branch policy |
+| `docs/github-automation-roadmap.md` | Refreshed targets and current stack |
+| `CLAUDE.md` / `WORKFLOW.md` / `AGENTS.md` / `architecture/adr/ADR-0003-dev-git-workflow-policy.md` | Token-role and branch-target-policy updates |
+| `.handoff/packets/SESSION-2026-06-16-005.md` | Handoff capsule |
+| `TODO.md` | Marked P1–P7 done |
+| `CHANGELOG.md` | Session entries |
+| `SESSIONS.md` | Session entry |
+| `USER.TODO.md` | Added `UA-2026-06-16-001` |
+
+---
+
 ## SESSION-2026-05-29-015 — ci-failure-tracker workflow + drive all open PRs to the finish line
 
 - **ID:** `SESSION-2026-05-29-015`

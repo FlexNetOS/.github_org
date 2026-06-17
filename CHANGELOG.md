@@ -20,6 +20,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed (SESSION-2026-06-16-005)
+- **Docs accuracy: reusable workflows are no longer "scaffolds".** Updated `README.md` and `RELEASING.md` to reflect that `.github/workflows/reusable-*.yml` contain real bodies and are consumed by the umbrella's own `ci.yml`. `RELEASING.md` now documents the operational gate blocking automatic releases (`release.yml` is `workflow_dispatch`-only until the org-level release token is wired). (P4)
+
+### Removed (SESSION-2026-06-16-005)
+- `.github/dependabot.yml` — retired in favor of Renovate (`renovate.json5` already present). Dependabot was duplicating update noise and conflicting with the Renovate dependency-dashboard workflow. (P3)
+
+### Added (SESSION-2026-06-16-005)
+- `.github/workflows/semantic-pr-title.yml` — org-level reusable workflow that validates PR titles against Conventional Commits using `amannn/action-semantic-pull-request@v5`. Includes `scopes:` allowlist matching repo topics and a `types:` allowlist. Can be called as a reusable workflow or copied as a required status check. (P2)
+- `.githooks/commit-msg` — local commit-message hook that enforces the same Conventional Commit format at `git commit` time. Install with `git config core.hooksPath .githooks`. (P2)
+- `renovate.json5` configuration additions: enabled `dependencyDashboardApproval: true`, grouped GitHub Actions minor/patch updates, and pinned digest updates for Actions to reduce PR noise. (P3)
+
+### Fixed (SESSION-2026-06-16-005)
+- Removed retired submodule references from `CONTRIBUTING.md`, `Makefile`, and `.github/workflows/manifest-drift.yml` that still pointed to `.github_org/repos/` submodules after ADR-0002 moved external repos to typed hubs. `make submodules.status` now only reports on `data/brain-data`. (P1)
+
+### Changed (SESSION-2026-06-16-005)
+- **Token roles clarified.** `PROMOTE_TOKEN` remains the separate-identity credential for `promote-develop-to-main.yml`; `RELEASE_TOKEN` is the org-level credential used by `release.yml` / `reusable-release.yml`. The two may share a credential but are documented as distinct roles. `WORKFLOW.md`, `CLAUDE.md`, `architecture/adr/ADR-0003-dev-git-workflow-policy.md`, and `promote-develop-to-main.yml` updated accordingly. (P5)
+- **Docs-only branch-target policy confirmed.** Even docs/agent-config files exempt from the branch-guard hook must still route through `develop`. Documented in `AGENTS.md`, `CLAUDE.md`, `WORKFLOW.md`, and `architecture/adr/ADR-0003-dev-git-workflow-policy.md`. (P7)
+- **`docs/github-automation-roadmap.md` refreshed** to current state: stale PR stack replaced, completed phases marked, Dependabot references removed, new surfaces (semantic PR title, delete-merged-branch, promote-develop-to-main, ci-failure-tracker) listed. (P6)
+
+### Added (SESSION-2026-06-16-005)
+- `.github/workflows/delete-merged-branch.yml` — deletes merged feature-branch heads while preserving protected default branches, the perpetual `develop→main` promotion PR, and automated upgrade branches (`dependabot/`, `renovate/`, `upgrade/`, `deps/`). (P5)
+- `.handoff/packets/SESSION-2026-06-16-005.md` — handoff capsule summarizing confirmed vs deferred foundation work. (P7)
+
+### Changed (SESSION-2026-06-16-005)
+- **Enabled automatic `release.yml` trigger.** After setting the `RELEASE_TOKEN` repo secret on `FlexNetOS/.github`, uncommented `push: branches: [main]` in `.github/workflows/release.yml` and updated `RELEASING.md` to describe the now-automatic release-please loop. The first `v1.0.0` release will be proposed automatically once PR #108 merges to `main`.
+- **Updated `scripts/github-doctor.py` for Renovate.** Replaced the stale `Dependabot config` check with a `Renovate config` check (accepts `renovate.json`/`renovate.json5` at root or `.github/`). Added `scripts/tests/test-github-doctor.sh` triple-verify contract test and a `github-doctor-renovate` job in `.github/workflows/manifest-drift.yml` to prevent regression.
+
+### Notes (SESSION-2026-06-16-005)
+- Branch target for this work: `docs/meta-foundation-confirmation`. The session is intentionally additive/doc-only; no submodule mutations, no forks, no committed secret values, no `main` branch edits.
+- `UA-2026-06-16-001` closed: `RELEASE_TOKEN` is set as a repo secret on `FlexNetOS/.github`.
+
 ### Changed (SESSION-2026-05-29-015)
 - **PR pipeline driven to finish line.** Repaired `develop` CI and resolved all open PRs: (PR #71) fixed `reusable-typecheck.yml` duplicate `run:` key + losslessly repaired the spliced `.claude/settings.json` (valid JSON; kept the complete copy — 8 hook events / 16 plugins / 5 marketplaces / 28 commands; discarded 335-line duplicate had 0 unique commands); (PR #74) salvaged the unique `network/` slim control-plane scaffolding (8 files absent from develop); (PR #67) squash-promoted develop→main. `main` and `develop` are now content-identical. (SESSION-2026-05-29-015)
 - `TODO.md` — de-duplicated the triplicated "CI-failure autofix" section and collapsed the 8-deep stacked `**Last updated:**`/`**Branch:**` header to a single current line (merge-accumulation cruft from concurrent-session merges). (SESSION-2026-05-29-015)

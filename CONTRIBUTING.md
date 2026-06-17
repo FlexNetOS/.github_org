@@ -115,11 +115,13 @@ allowlist (`.claude/.doctor-allowlist`, `.codex/.doctor-allowlist`) with a one-l
 rationale. The `make claude.doctor` / `make config.doctor` targets enforce this
 read-only.
 
-## Resolving a `.gitmodules` merge conflict
+## Submodules in this repo
 
-Today `.gitmodules` is hand-maintained alongside `repos/MANIFEST.yaml`; resolve
-conflicts manually and keep the two consistent. **Forward-looking:** if the
-MANIFEST→`.gitmodules` *lockfile* (materialize) pattern is adopted (deferred —
-tracked as G4/G5 in [`.omc/plans/open-questions.md`](.omc/plans/open-questions.md)),
-`.gitmodules` becomes a generated artifact and conflicts are resolved by
-regenerating it from MANIFEST rather than editing by hand.
+> **ADR-0002 update:** `.github_org` is **no longer the submodule mount point**
+> for FlexNetOS repos. Repo organization moved to typed hubs (`tool_hub`,
+> `plugin_hub`, `vault_hub`, …) and unclassified work parks in
+> `~/Desktop/pending_relocate`. `repos/MANIFEST.yaml` is now an **offload stub**.
+>
+> The only remaining gitlinks in this repo are the `data/brain-data/*` wiki/brain
+> submodules. They are managed directly with `git submodule` commands if needed;
+> there is no hand-maintained `.gitmodules` merge workflow here.

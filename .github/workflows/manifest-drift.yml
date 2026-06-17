@@ -87,13 +87,14 @@ jobs:
             echo "open-questions linter or log not present yet — skipping"
           fi
 
-  submodules-materialize-noop:
-    name: MANIFEST/.gitmodules lockfile (deferred)
+  github-doctor-renovate:
+    name: GitHub doctor — Renovate/Dependabot check
     runs-on: ubuntu-latest
-    continue-on-error: true   # REPORT_ONLY placeholder
     steps:
-      - name: Note deferred lockfile pattern
-        run: |
-          echo "deferred: the MANIFEST->.gitmodules lockfile (materialize) pattern is not yet adopted."
-          echo "It refactors the working submodules.add machinery and is tracked in"
-          echo ".omc/plans/open-questions.md (G4/G5)."
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          submodules: false
+      - name: Triple-verify Renovate config and no Dependabot residue
+        run: bash scripts/tests/test-github-doctor.sh
+
+
