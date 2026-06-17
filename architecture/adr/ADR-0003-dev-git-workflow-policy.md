@@ -86,6 +86,37 @@ admin-merge its **own** PR on either protected branch — that would collapse th
 privilege. Agent PRs still target `develop` (so `main` is only ever reached via promotion), but
 the separation property comes from *who approves*, not from the trunk being unguarded.
 
+### The separate principal is an AGENT, not a human (NORTH-STAR: no human in the loop)
+
+The meta framework's canon (`meta/handoff/NORTH-STAR.md`; ADR-0001 tenet T3 "human replaced by
+capability, not a rubber stamp") replaces the human reviewer with an **agent principal** — the
+FlexNetOS GitHub App (identity `flexnetos-github-app`, app_id 4044997, sealed in envctl) running
+on the self-hosted runner, driven by a steward/gatekeeper agent. **Verified mechanism (source,
+2026-06-14):**
+
+- **A bot APPROVE is forbidden** — it bypasses branch protection (`hf/src/main.rs`
+  `cmd_review_verdict`: *"Never a native GitHub APPROVE"*; `flexnetos_github_app`
+  `merge_gate.rs`). So the autonomous separate principal does **not** post a GitHub review.
+- **Instead** the App posts the gatekeeper's verdict as a **GitHub check-run wired as a *required
+  status check*** and, only when that verdict is green, **arms native auto-merge**
+  (`merge_gate.rs`, ADR-0008 §1/S4). The witnessed judgment is recorded out-of-band via
+  `hf review verdict <id> <pr> approve|deny --by <principal>` in the fleet ledger.
+- The native **"1 required approving review"** is therefore satisfied by a *human* (genuine wall)
+  **or** a separate-principal **PAT** that can post a real review (today: `PROMOTE_TOKEN`, the
+  `drdave-flexnetos` actor, used for `develop→main`) — never a bot APPROVE.
+- **Full no-human autonomy** requires reconfiguring branch protection to require the **App verdict
+  check-run** in place of the human review. That is **DESIGNED + partially live** (App created,
+  installed, webhook→dispatch proven) but the enforcement layer is **scaffold**: `UnwiredMergeGate`
+  (App P3 check-run executor **unbuilt**), envctl credential data-plane `todo!()`, the
+  code-omniscient gatekeeper unbuilt (HFTASK-0014), and no `needs-autofix`→session router yet. See
+  the cross-verification in QUESTIONS_LESSONS §G and ADR-0004 (this series).
+
+So this ADR's earlier shorthand "the approval comes from the GitHub App" is made precise:
+*the App contributes a required-status-check verdict + auto-merge arming (not a review)*; the
+native review approval, while still required by current branch protection, comes from a human or a
+separate-principal PAT until the verdict-check-run model is wired and branch protection is
+switched to it.
+
 ### Answers to the ten questions
 
 **Q1 — Where is the develop work done?**

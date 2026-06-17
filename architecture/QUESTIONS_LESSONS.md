@@ -689,3 +689,46 @@ dev/PR workflow was never written down.** Defining it (ADR-0003 + `WORKFLOW.md`)
   `needs-autofix` issue on failure and auto-closes it on recovery. **Open automation gap (Q5):** the
   `needs-autofix` issue → handoff-loop-intake routing is currently manual/handoff-mediated, not
   auto-wired. Carry forward as a follow-up, not as drift.
+
+### G. Cross-verification of the meta framework: "the separate principal is an AGENT, not a human" (2026-06-14, via `handoff-loop-run`)
+
+Owner directive: the GitHub App (at envctl) + the self-hosted runner = a *local agent* that
+manages GitHub issues and applies upgrades/fixes — taking the meta framework and **replacing the
+human reviewer with an agent**. Ran the `handoff-loop-run` harness (`hf resume` → empty kernel,
+North Star = "NO HUMAN IN THE LOOP") and cross-verified the structure against source.
+
+- **L-G1** *(CONFIRMED — verdict model)* A **bot APPROVE is forbidden by design** (it bypasses
+  branch protection). Source: `meta/handoff/hf/src/main.rs::cmd_review_verdict` — *"verdicts ride
+  OUT-OF-BAND … Never a native GitHub APPROVE (bot-approval bypasses branch protection)"*; and
+  `meta/flexnetos_github_app/crates/app-core/src/merge_gate.rs` — the App posts the gatekeeper
+  verdict as a **GitHub check-run wired as a required status check** and arms native auto-merge
+  only when green; *"never a native …[bot] APPROVE"*. So the autonomous separate principal's
+  contribution is a **verdict-check-run + auto-merge arming**, NOT a review. The witnessed judgment
+  is `hf review verdict <id> <pr> approve|deny --by <principal>` in the fleet ledger. **This
+  corrected ADR-0003's shorthand "approval via the App."**
+- **L-G2** *(verified state — DESIGNED + partially live; enforcement is SCAFFOLD)* The App is
+  created/installed/sealed and its webhook→dispatch chain is proven live (`flexnetos_github_app`
+  app_id 4044997, installation 140063898; key sealed in envctl). But the enforcement layer is
+  **unbuilt**: `UnwiredMergeGate` fails closed (App P3 check-run executor not wired); envctl
+  credential data-plane is `todo!()` (`inject.rs`/`run_child`); the code-omniscient gatekeeper is
+  skill-only (HFTASK-0014); there is no `needs-autofix`→session router. Net: the App-agent **cannot
+  yet** post the verdict-check-run or auto-merge — so it cannot autonomously approve agent PRs
+  today. PROMOTE_TOKEN (separate-actor PAT) is the *working* separate principal, but only for
+  `develop→main` promotion.
+- **L-G3** *(DISCONFIRMED claim)* A sub-agent claimed `meta/handoff/NEEDS-HUMAN.md` carves out
+  `.github_org` as a permanent human-review wall ("bot approval forbidden by design"). **`grep`
+  found no such reference** — the claim is unverified and is **not** treated as canon. The owner's
+  current directive is explicitly to extend the agent-as-reviewer automation to this repo too.
+- **L-G4** *(GAP REGISTER — the path to no-human-in-loop, minted to the FLEET ledger)* In priority
+  order: **G1** App merge-gate executor — wire `app-server` → `merge_gate.rs::GithubMergeGate` to
+  POST the verdict check-run + arm auto-merge (`flexnetos_github_app` P3) — *the load-bearing gap*;
+  **G2** envctl credential data-plane (`inject.rs`/`run_child` `todo!()`, Phase 8) so the App/agents
+  get scoped tokens; **G3** build the code-omniscient gatekeeper (HFTASK-0014, gitkb/RuVector blast
+  -radius judgment); **G4** `needs-autofix`→session dispatcher (consume `ci-failure` issues → mint
+  fix task → open fix PR); **G5** switch `develop`/`main` branch protection to require the App
+  verdict-check-run in place of the human review; **G6/G7** named tunnel + runner real `KernelInvoker`.
+- **L-G5** *(#102 reality under this model)* Because G1/G2 are scaffold (and envctl/App/runner peers
+  are offline/stale), the App-agent **cannot** approve #102 now. #102 stays correctly parked:
+  base=develop, 6/6 required green, auto-merge armed, queued via `weave_review_add` + msgs to
+  `flexnetos_github_app`/`handoff`. Its review today is a genuine wall (owner) **or** a
+  separate-principal PAT — until G1+G2+G5 land and the App becomes the autonomous reviewer.
