@@ -36,6 +36,7 @@ jobs:
   gate:
     name: Gate upgrade PR for auto-review/merge
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Evaluate PR gate
         id: gate

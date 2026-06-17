@@ -33,6 +33,7 @@ jobs:
   promote:
     name: Promote develop → main
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: "github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'"
     steps:
       - name: Find or create promote PR

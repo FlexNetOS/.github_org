@@ -14,6 +14,10 @@ on:
     branches: ['**']
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 # Block default permissions; callers re-grant minimally.
 permissions:
   contents: read
@@ -28,6 +32,7 @@ jobs:
   manifest-validate:
     name: Validate manifests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - name: Validate repo manifest
@@ -38,6 +43,7 @@ jobs:
   actionlint:
     name: actionlint .github/workflows
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - name: Run repo-local actionlint wrapper
@@ -46,6 +52,7 @@ jobs:
   markdownlint:
     name: markdownlint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - run: python3 scripts/verify-markdown.py .
@@ -53,6 +60,7 @@ jobs:
   hermetic-audit:
     name: Hermetic dependency audit
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - run: python3 scripts/hermetic-audit.py .

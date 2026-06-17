@@ -100,6 +100,7 @@ jobs:
             --format sarif \
             --output trivy-fs.sarif \
             --severity "$severity,CRITICAL" \
+            --secret-config trivy-secret.yaml \
             --ignore-unfixed \
             --exit-code 1 \
             "${{ inputs.working-directory }}"
