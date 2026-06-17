@@ -13,10 +13,10 @@
 - **ID:** `SESSION-2026-06-17-009`
 - **Date:** 2026-06-17
 - **Branch:** `feat/control-plane-upgrades-continuation`
-- **PR target:** `feat/control-plane-upgrade` → `develop`
+- **PR:** #135 → `develop`
 - **Mode:** verification + corrective implementation
 - **Outcome:** Verified the merged meta control-plane changes against `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`. Found and fixed: duplicate fleet-policy applier, unpinned actions in `claude-code-review.yml`, stale `.github` badge URLs, missing runner-availability guard in `secrets-rotate.yml`. `make verify`, actionlint, and markdown lint all pass.
-- **User-action gates surfaced:** review/merge the continuation PR into PR #116, then merge PR #116 to `develop`.
+- **User-action gates surfaced:** review/merge PR #135.
 - **Cost:** N/A
 
 ### What the user asked
@@ -43,10 +43,9 @@
 - `github-policy-drift` remains report-only until it runs green with a token that has `administration: read`.
 
 ### What's next
-- Open PR from `feat/control-plane-upgrades-continuation` to `feat/control-plane-upgrade`, merge it, then merge PR #116 to `develop`.
+- Review/merge PR #135 to `develop`.
 
 ---
-
 ## SESSION-2026-06-17-008 — GitHub control-plane upgrade follow-on
 
 - **ID:** `SESSION-2026-06-17-008`
