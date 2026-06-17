@@ -126,12 +126,9 @@ def normalize_branch_protection(spec: dict) -> dict:
         "allow_fork_syncing": spec.get("allow_fork_syncing", False),
         "lock_branch": spec.get("lock_branch", False),
     }
-    # The branch-protection API requires the key "restrictions" even if null,
-    # but rejects null for the review/checks objects, so drop only those.
-    if payload["required_status_checks"] is None:
-        del payload["required_status_checks"]
-    if payload["required_pull_request_reviews"] is None:
-        del payload["required_pull_request_reviews"]
+    # The branch-protection API requires the keys "required_status_checks" and
+    # "required_pull_request_reviews" to be present (null is accepted when the
+    # rulesets handle those concerns). Keep "restrictions" as null as well.
     return payload
 
 
@@ -429,6 +426,21 @@ def check_drift(owner: str, repo: str) -> list[str]:
     return drift
 
 
+class _Tee:
+    """Capture writes while still emitting them to the original stream."""
+
+    def __init__(self, stream):
+        self.stream = stream
+        self.lines: list[str] = []
+
+    def write(self, s: str) -> int:
+        self.lines.append(s)
+        return self.stream.write(s)
+
+    def flush(self) -> None:
+        self.stream.flush()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Apply or check .github_org GitHub policies")
     parser.add_argument("--dry-run", action="store_true", help="Print actions without applying")
@@ -463,6 +475,24 @@ def main() -> int:
         return 0 if not drift else 1
 
     dry_run = not args.apply
+    mode = "dry-run" if dry_run else "apply"
+
+    if args.json:
+        tee = _Tee(sys.stdout)
+        original_stdout = sys.stdout
+        sys.stdout = tee
+        try:
+            ok = True
+            for branch, spec in bp_spec.get("branches", {}).items():
+                ok &= apply_branch_protection(owner, repo, branch, spec, dry_run=dry_run)
+            ok &= apply_rulesets(owner, repo, rs_spec.get("rulesets", []), dry_run=dry_run)
+            ok &= apply_repo_settings(owner, repo, settings_spec, dry_run=dry_run)
+            ok &= apply_environments(owner, repo, settings_spec.get("environments", []), dry_run=dry_run)
+        finally:
+            sys.stdout = original_stdout
+        print(json.dumps({"ok": ok, "mode": mode, "log": "".join(tee.lines).splitlines()}, indent=2))
+        return 0 if ok else 1
+
     ok = True
     for branch, spec in bp_spec.get("branches", {}).items():
         ok &= apply_branch_protection(owner, repo, branch, spec, dry_run=dry_run)

@@ -32,11 +32,13 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"meta-g
 
 Companion plan: `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`.
 
-- [x] **Phase 1** — Workflow hardening and consistency (timeouts, dependency-review pin, branch-target guard tracking, wiki-lint PR trigger).
+- [x] **Phase 1** — Workflow hardening and consistency (dependency-review pin, branch-target guard tracking, wiki-lint PR trigger, `github-policy-drift` promoted to STRICT and applied live).
 - [x] **Phase 2** — Git hooks upgrades (pre-commit JSON check, pre-push protected-ref block, branch-name style, prepare-commit-msg, post-merge, post-checkout warning).
-- [x] **Phase 3** — Rules/policies upgrades (squash-merge message controls, commit-message pattern ruleset, CODEOWNERS team, bypass actors, signed tags).
-- [x] **Phase 4** — Applier/doctor/test upgrades (schema validation, full ruleset/branch-protection `--check`, `--json` output, Makefile targets, release-env/CODEOWNERS checks).
+- [x] **Phase 3** — Rules/policies upgrades (squash-merge message controls, commit-message pattern ruleset, CODEOWNERS team, signed tags, retire redundant legacy branch protection — applied live).
+- [ ] **Phase 3.4** — Add ruleset `bypass_actors` for the release bot/app (deferred until actor ID is known).
+- [x] **Phase 4** — Applier/doctor/test upgrades (schema validation, full ruleset/branch-protection `--check`, `--json` output for all modes, Makefile targets, release-env/CODEOWNERS checks).
 - [x] **Phase 5** — Operational/security upgrades (pin remaining actions, CI badges, label pre-creation, runner-availability check in `secrets-rotate.yml`).
+- [ ] **Phase 5.5** — Provision `RELEASE_TOKEN`/`PROMOTE_TOKEN` from `meta/envctl` (blocked: vault locked).
 - [x] **Phase 6** — Bookkeeping + open continuation PR (#135).
 
 ---

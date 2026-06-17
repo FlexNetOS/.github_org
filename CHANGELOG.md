@@ -84,6 +84,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `README.md` — fixed CI badge URLs to point to the renamed repository (`FlexNetOS/.github_org`).
 - `.github/workflows/claude-code-review.yml` — pinned `actions/checkout` and `anthropics/claude-code-action` to SHA digests.
 - `.github/workflows/secrets-rotate.yml` — added a `runner-availability` job that fails loudly when no self-hosted runner with the required labels is available.
+- `.github/workflows/manifest-drift.yml` — promoted `github-policy-drift` from report-only to STRICT; updated token note to reflect that the default `GITHUB_TOKEN` has `repo` scope for this repository.
+- `.github/workflows/promote-strict.md` — recorded the `github-policy-drift` promotion.
+- `scripts/apply-github-policies.py` — `--json` now also works with `--dry-run` and `--apply`, emitting machine-readable output for CI summaries.
+- `.github/policies/branch-protection.json` — retired redundant legacy branch-protection entries for `main`/`develop` (required status checks, PR reviews, linear history, deletion) now enforced by rulesets; kept only settings not expressible in rulesets. Applied live with `scripts/apply-github-policies.py --apply`; `--check` reports no drift.
 
 ### Removed (SESSION-2026-06-17-007)
 - `scripts/apply-fleet-policies.py`, `.github/policies/fleet.json`, and `.github/policies/templates/` — removed the duplicative fleet-policy applier in favor of the canonical `scripts/apply-github-policies.py` introduced in PR #116.

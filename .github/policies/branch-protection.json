@@ -3,69 +3,20 @@
   "description": "Desired branch protection settings for FlexNetOS/.github. Applied via scripts/apply-github-policies.py.",
   "branches": {
     "main": {
-      "required_status_checks": {
-        "strict": true,
-        "contexts": [
-          "lint / Lint (mixed)",
-          "actionlint .github/workflows",
-          "markdownlint",
-          "Validate manifests",
-          "Hermetic dependency audit",
-          "security / Gitleaks secret scan",
-          "security / Trivy filesystem + IaC",
-          "security / CodeQL SAST (actions)",
-          ".claude/settings.json hygiene",
-          "GitHub doctor — Renovate/Dependabot check",
-          "open-questions.md schema",
-          "No PascalCase Claude/ directories",
-          "Guard main branch target"
-        ]
-      },
       "enforce_admins": false,
-      "required_pull_request_reviews": {
-        "required_approving_review_count": 1,
-        "dismiss_stale_reviews": true,
-        "require_code_owner_reviews": true
-      },
       "restrictions": null,
-      "required_linear_history": true,
       "allow_force_pushes": false,
       "allow_deletions": false,
-      "required_conversation_resolution": false,
       "required_signatures": false,
       "block_creations": false,
       "allow_fork_syncing": false,
       "lock_branch": false
     },
     "develop": {
-      "required_status_checks": {
-        "strict": true,
-        "contexts": [
-          "lint / Lint (mixed)",
-          "actionlint .github/workflows",
-          "markdownlint",
-          "Validate manifests",
-          "Hermetic dependency audit",
-          "security / Gitleaks secret scan",
-          "security / Trivy filesystem + IaC",
-          "security / CodeQL SAST (actions)",
-          ".claude/settings.json hygiene",
-          "GitHub doctor — Renovate/Dependabot check",
-          "open-questions.md schema",
-          "No PascalCase Claude/ directories"
-        ]
-      },
       "enforce_admins": false,
-      "required_pull_request_reviews": {
-        "required_approving_review_count": 1,
-        "dismiss_stale_reviews": true,
-        "require_code_owner_reviews": true
-      },
       "restrictions": null,
-      "required_linear_history": false,
       "allow_force_pushes": false,
       "allow_deletions": false,
-      "required_conversation_resolution": false,
       "required_signatures": false,
       "block_creations": false,
       "allow_fork_syncing": false,

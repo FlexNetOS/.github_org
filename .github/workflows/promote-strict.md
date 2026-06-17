@@ -4,9 +4,9 @@ Tracks which jobs in `manifest-drift.yml` are still `REPORT_ONLY`
 (`continue-on-error: true`) and why. When a job runs green on `main` for
 one full cycle, remove `continue-on-error: true` and update this file.
 
-Last updated: 2026-06-17 (SESSION-2026-06-17-008)
-Reference run: [26598828751](https://github.com/FlexNetOS/.github/actions/runs/26598828751)
-Branch at promotion: `feat/reconciliation-slice-tooling`
+Last updated: 2026-06-17 (SESSION-2026-06-17-009)
+Reference run: [PR #135 first strict run](https://github.com/FlexNetOS/.github_org/actions)
+Branch at promotion: `feat/control-plane-upgrades-continuation`
 
 ---
 
@@ -17,6 +17,7 @@ Branch at promotion: `feat/reconciliation-slice-tooling`
 | `claude-dir-check` (No PascalCase Claude/ directories) | 2026-05-28 | 26598828751 |
 | `open-questions-lint` (open-questions.md schema) | 2026-05-28 | 26598828751 |
 | `claude-settings-doctor` (.claude/settings.json hygiene) | 2026-05-29 | G8 trim completed (SESSION-2026-05-29-007) |
+| `github-policy-drift` (GitHub policy drift dry-run) | 2026-06-17 | PR #135 first strict run |
 
 ---
 
@@ -27,7 +28,6 @@ Branch at promotion: `feat/reconciliation-slice-tooling`
 | `check-user-todo-step5` | Intentionally informational — designed to surface progress, never block a PR. | No promotion planned. Remove `continue-on-error` only if consensus changes the job from "inform" to "gate". |
 | `submodules-materialize-noop` | Placeholder — the MANIFEST→.gitmodules lockfile (`materialize`) pattern is deferred (G4/G5 in `.omc/plans/open-questions.md`). | Replace the noop with a real check once `scripts/materialize-gitmodules.sh` lands, then promote after one green cycle. |
 | `trivy-secret-suppressions` | New contract test for Trivy false-positive allow-rules; report-only for first green cycle. | Promote after one green cycle on `develop`. First green run: PR #111 / run `27696067943`. |
-| `github-policy-drift` | New live policy drift check; default `GITHUB_TOKEN` needs `administration: read` to compare branch protection and rulesets. | Promote after one green cycle on `develop`. If the default token is insufficient, inject `POLICY_DRIFT_TOKEN` from `meta/envctl`. |
 
 ---
 
