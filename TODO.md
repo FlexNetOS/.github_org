@@ -6,8 +6,8 @@
 
 **Last updated:** 2026-06-17 (SESSION-2026-06-17-007 — systematic control-plane upgrade)
 **Branch:** `feat/control-plane-upgrade`
-**PR:** (pending) → `develop`
-**Status:** Implementing the approved plan: workflow hardening, branch protection/rulesets as policy-as-code, Renovate policy, local hooks, repo settings, and doctor tests. Stale CI-failure issues #90–#110 closed.
+**PR:** #116 → `develop`
+**Status:** Approved plan implemented and committed. Branch protection + rulesets (`protect-main`, `protect-develop`, `protect-release-tags`), repo settings, and the `release` environment have been applied live. Policy drift check is report-only in CI for its first green cycle. `make verify` passes locally.
 
 ---
 
@@ -47,14 +47,14 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"Phased
 
 ## Systematic control-plane upgrade (SESSION-2026-06-17-007)
 
-- [ ] Phase 0 — Refresh roadmap, promote-strict tracker, TODO; close stale CI-failure issues.
-- [ ] Phase 1 — Add concurrency/timeouts, branch-target guard, dependency-review on develop, stale ci-failure sweep.
-- [ ] Phase 2-3 — Codify branch protection + rulesets in `.github/policies/`; create `scripts/apply-github-policies.py`.
-- [ ] Phase 4 — Upgrade `renovate.json` with grouping, digest pinning, dashboard approval.
-- [ ] Phase 5 — Add `pre-commit`, `pre-push`, `post-checkout` hooks + `make install-hooks`.
-- [ ] Phase 6 — Apply `delete_branch_on_merge`, restrict merge methods, create `release` environment.
-- [ ] Phase 7 — Add policy drift checks to doctor and CI; add `scripts/tests/test-github-policies.sh`.
-- [ ] Phase 8 — Bookkeeping, commit, push, open PR to `develop`.
+- [x] Phase 0 — Refresh roadmap, promote-strict tracker, TODO; close stale CI-failure issues.
+- [x] Phase 1 — Add concurrency/timeouts, branch-target guard, dependency-review on develop, stale ci-failure sweep.
+- [x] Phase 2-3 — Codify branch protection + rulesets in `.github/policies/`; create `scripts/apply-github-policies.py`.
+- [x] Phase 4 — Upgrade `renovate.json` with grouping, digest pinning, dashboard approval.
+- [x] Phase 5 — Add `pre-commit`, `pre-push`, `post-checkout` hooks + `make install-hooks`.
+- [x] Phase 6 — Apply `delete_branch_on_merge`, restrict merge methods, create `release` environment.
+- [x] Phase 7 — Add policy drift checks to doctor and CI; add `scripts/tests/test-github-policies.sh`.
+- [x] Phase 8 — Bookkeeping, commit, push, open PR to `develop`.
 
 ## Pre-adoption dossier review gate (Phase 0 — GATED, human decision)
 

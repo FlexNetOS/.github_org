@@ -8,6 +8,76 @@
 
 ---
 
+## SESSION-2026-06-17-007 — systematic `.github_org` control-plane upgrade (Phases 0–8)
+
+- **ID:** `SESSION-2026-06-17-007`
+- **Date:** 2026-06-17
+- **Branch:** `feat/control-plane-upgrade`
+- **HEAD at end:** `10518d9`
+- **PR:** https://github.com/FlexNetOS/.github/pull/116
+- **Mode:** manual implementation against the approved phased plan in `data/brain-data/research/my-github-reconciliation.md`
+- **Outcome:** All eight phases of the systematic control-plane upgrade are committed. Branch protection, repository rulesets, repo settings, and the `release` environment were applied live to `FlexNetOS/.github`. `make verify` passes locally; policy drift check is report-only in CI for its first cycle.
+- **User-action gates surfaced:** none.
+- **Cost:** N/A
+
+### What the user asked
+> Create a plan to cover all (1-7) systematically | end with committing all changes and pushing a PR
+
+### What the answer is
+- **Phase 0** — Refreshed `docs/github-automation-roadmap.md`, updated `promote-strict.md`, and closed stale `ci-failure` issues #90–#110.
+- **Phase 1** — Hardened caller workflows with `concurrency`/`timeout-minutes`, added `.github/workflows/branch-target-guard.yml`, extended `dependency-review.yml` to `develop`, and added a stale-issue sweep to `ci-failure-tracker.yml`.
+- **Phases 2-3** — Created `.github/policies/{branch-protection,rulesets,repo-settings}.json` and `scripts/apply-github-policies.py` with `--dry-run`, `--apply`, and `--check` modes.
+- **Phase 4** — Upgraded `renovate.json` with digest pinning, grouping, dashboard approval, and research-path ignores.
+- **Phase 5** — Added `.githooks/{pre-commit,pre-push,post-checkout}` and `make install-hooks`.
+- **Phase 6** — Applied `delete_branch_on_merge=true`, restricted merge methods to squash/rebase, enabled `allow_auto_merge`/`allow_update_branch`, and created the `release` environment with protected-branches deployment policy.
+- **Phase 7** — Added policy-file checks and live ruleset/branch-protection checks to `scripts/github-doctor.py`, created `scripts/tests/test-github-policies.sh`, added `make verify.github-policies`, and wired a report-only `github-policy-drift` job into `.github/workflows/manifest-drift.yml`.
+- **Phase 8** — Updated `TODO.md`, `CHANGELOG.md`, and `SESSIONS.md`; committed all changes and opened PR to `develop`.
+
+### What was actually done this session
+1. Cut `feat/control-plane-upgrade` from `develop` and reviewed the approved phased plan.
+2. Refreshed roadmap and tracker docs; closed 21 stale CI-failure issues.
+3. Added concurrency/timeouts to caller workflows and created the branch-target guard.
+4. Authored policy-as-code JSON files and the Python applier; iterated against live GitHub API errors until `apply` succeeded.
+5. Upgraded Renovate configuration and added local git hooks.
+6. Applied repo settings and the `release` environment live via the applier.
+7. Extended `github-doctor.py` and added the policy contract test; ran `make verify` until clean.
+8. Updated session-tracking files, committed, pushed, and opened the PR.
+
+### Reservations / risks
+- The `github-policy-drift` CI job is `continue-on-error: true` (report-only) for its first green cycle because the default `GITHUB_TOKEN` lacks an `administration` workflow permission; it will be promoted to STRICT once it runs green.
+- Branch protection and rulesets are additive; legacy branch protection remains until rulesets are verified in production.
+- `require_code_owner_review` is disabled in both branch protection and rulesets because `CODEOWNERS` currently points to `@FlexNetOS` rather than a writable team.
+
+### What's next
+- Merge PR to `develop`; monitor the report-only policy drift job on the next PR.
+- Promote `github-policy-drift` to STRICT after one green cycle.
+- Revisit `CODEOWNERS` team assignment if/when a `@FlexNetOS/maintainers` team is created.
+
+### Files created/modified this session
+
+| Path | What |
+|---|---|
+| `.github/workflows/branch-target-guard.yml` | New: block PRs to `main` unless head ref is `develop` or `release/*` |
+| `.github/workflows/manifest-drift.yml` | Added report-only `github-policy-drift` job; workflow hardening |
+| `.github/workflows/dependency-review.yml` | Run on `develop` as well as `main` |
+| `.github/workflows/ci-failure-tracker.yml` | Added stale `ci-failure` issue sweep job |
+| `.github/policies/branch-protection.json` | Declarative branch protection for `main`/`develop` |
+| `.github/policies/rulesets.json` | Declarative rulesets for `main`, `develop`, and release tags |
+| `.github/policies/repo-settings.json` | Declarative repo settings and `release` environment |
+| `scripts/apply-github-policies.py` | Dry-run-first applier with `--dry-run`/`--apply`/`--check` |
+| `scripts/github-doctor.py` | Added policy presence + live ruleset/branch-protection checks |
+| `scripts/tests/test-github-policies.sh` | Triple-verify contract test for policies |
+| `renovate.json` | Explicit Renovate config (grouping, digest pinning, dashboard approval) |
+| `.githooks/pre-commit` | Lint staged workflows and markdown |
+| `.githooks/pre-push` | Block direct pushes to protected branches |
+| `.githooks/post-checkout` | Warn when checkout lands on `main` |
+| `Makefile` | Added `install-hooks` and `verify.github-policies` targets |
+| `docs/github-automation-roadmap.md` | Refreshed to current state |
+| `docs/promote-strict.md` | Updated promotion tracker |
+| `TODO.md` / `CHANGELOG.md` / `SESSIONS.md` | Bookkeeping |
+
+---
+
 ## SESSION-2026-06-16-005 — meta-foundation confirmation (P1–P7)
 
 - **ID:** `SESSION-2026-06-16-005`
