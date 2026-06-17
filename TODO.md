@@ -32,14 +32,26 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"meta-g
 
 Companion plan: `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`.
 
-- [x] **Phase 1** — Workflow hardening and consistency (dependency-review pin, branch-target guard tracking, wiki-lint PR trigger, `github-policy-drift` promoted to STRICT and applied live).
+- [x] **Phase 1** — Workflow hardening and consistency (dependency-review pin, branch-target guard tracking, wiki-lint PR trigger).
+- [ ] **Phase 1.3** — Add `timeout-minutes` to reusable-workflow caller jobs in `ci.yml`. **Blocked by GitHub Actions syntax:** `timeout-minutes` is not permitted on jobs that use `uses:` to call reusable workflows; timeouts live inside the reusable workflows.
 - [x] **Phase 2** — Git hooks upgrades (pre-commit JSON check, pre-push protected-ref block, branch-name style, prepare-commit-msg, post-merge, post-checkout warning).
 - [x] **Phase 3** — Rules/policies upgrades (squash-merge message controls, commit-message pattern ruleset, CODEOWNERS team, signed tags, retire redundant legacy branch protection — applied live).
-- [ ] **Phase 3.4** — Add ruleset `bypass_actors` for the release bot/app (deferred until actor ID is known).
+- [ ] **Phase 3.4** — Add ruleset `bypass_actors` for the release bot/app (deferred until actor ID/slug is known).
 - [x] **Phase 4** — Applier/doctor/test upgrades (schema validation, full ruleset/branch-protection `--check`, `--json` output for all modes, Makefile targets, release-env/CODEOWNERS checks).
 - [x] **Phase 5** — Operational/security upgrades (pin remaining actions, CI badges, label pre-creation, runner-availability check in `secrets-rotate.yml`).
 - [ ] **Phase 5.5** — Provision `RELEASE_TOKEN`/`PROMOTE_TOKEN` from `meta/envctl` (blocked: vault locked).
-- [x] **Phase 6** — Bookkeeping + open continuation PR (#135).
+- [x] **Phase 6** — Bookkeeping + PR #135 (merged via admin override after resolving develop conflicts).
+
+### Post-merge corrections
+- [x] **github-policy-drift strict promotion reverted to REPORT_ONLY** — the default `GITHUB_TOKEN` cannot read branch protection, rulesets, or repo settings. Re-promote after provisioning `POLICY_DRIFT_TOKEN` from `meta/envctl` and confirming one green strict run.
+
+### Deep-review upgrade follow-ups (`architecture/plan/2026-06-17-deep-review-upgrade-plan.md`)
+- [ ] **2.1** — Make `apply-github-policies.py` `_rule_params_match` symmetric so surplus/removed live rule parameters are detected.
+- [ ] **2.3** — Reconcile fleet policy templates: ensure `rust-canon/rulesets.json` is the canonical fleet ruleset source and remove any duplicate/loose template files.
+- [ ] **2.4** — Deduplicate `apply-fleet-policies.py`/`apply-github-policies.py` by extracting a shared module (or fleet wrapper around the canonical applier).
+- [ ] **4.5** — Defend reusable workflows against script injection: move interpolated `inputs.*` / `github.*` values into `env:` and quote `"$VAR"` in `run:` shells.
+- [ ] **4.8** — Tighten `mcp-doctor.py` `SECRET_RE` to catch `github_pat_…`/`glpat-`/AWS keys and avoid 40-hex SHA false positives.
+- [ ] **4.9** — Paginate GitHub reads in `apply-*-policies.py` (`list_rulesets`, `check_environments`).
 
 ---
 
