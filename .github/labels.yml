@@ -1,0 +1,34 @@
+# Org-wide labels for FlexNetOS repos.
+# Synced to a target repo via .github/workflows/sync-labels.yml.
+
+- name: ci-failure
+  color: D93F0B
+  description: A CI check or required workflow is failing
+
+- name: needs-autofix
+  color: FBCA04
+  description: Needs an automated or manual fix before merge
+
+- name: automerge-upgrade
+  color: 0E8A16
+  description: Auto-merge has been armed for an automated upgrade PR
+
+- name: dependencies
+  color: 0366D6
+  description: Pull request that updates a dependency
+
+- name: security
+  color: B60205
+  description: Security-related change or alert
+
+- name: breaking
+  color: B60205
+  description: Introduces a breaking change
+
+- name: docs
+  color: 0075CA
+  description: Documentation only
+
+- name: deferred
+  color: CCCCCC
+  description: Intentionally deferred work

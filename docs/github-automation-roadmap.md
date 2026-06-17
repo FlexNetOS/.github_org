@@ -7,6 +7,9 @@ This is the queue for turning `FlexNetOS/.github` into the org's reusable GitHub
 | Branch | Purpose | Base | Status |
 | --- | --- | --- | --- |
 | `docs/meta-foundation-confirmation` | Confirm/repair foundation docs and token wiring after ADR-0002 and the org audit | `develop` | open — P1–P5 landed, P6–P7 pending |
+| `feat/meta-control-plane-gaps` | Reusable Rust/meta CI, full-clone guard, callable semantic PR gate | `develop` | open — PR #118 |
+| `feat/meta-control-plane-gaps-phase2` | Cross-repo dispatch templates for parent/child repo coordination | `feat/meta-control-plane-gaps` | open — PR #121 |
+| `feat/meta-control-plane-gaps-phase3` | Fleet policy-as-code + labels-as-code + standalone fleet applier | `feat/meta-control-plane-gaps-phase2` | in progress |
 
 ## Recently landed
 
@@ -114,6 +117,23 @@ Acceptance:
 | `reusable-notify-downstream.yml` | read | — | — | — | — | — | `PARENT_REPO_PAT` (cross-repo dispatch + check wait) |
 | `reusable-child-update-sync.yml` | write | write | — | — | — | — | `PARENT_REPO_PAT` (sync PR + auto-merge) |
 | `reusable-security.yml` | read | — | — | — | read | write | none (uses GitHub-provided CodeQL/Trivy actions) |
+| `sync-labels.yml` | read | write | — | — | — | — | `LABEL_SYNC_TOKEN` (org-scoped label management) |
+
+### Fleet policy and labels-as-code
+
+Repo-level policy for the `FlexNetOS/meta*` canon fleet is declared in this repo and applied with a dry-run-first script:
+
+- Registry: `.github/policies/fleet.json` maps each canon repo to the policy templates it should receive.
+- Templates: `.github/policies/templates/<template>/` contains `branch-protection.json`, `repo-settings.json`, and optionally `rulesets.json`.
+- Applier: `scripts/apply-fleet-policies.py` supports `--fleet --dry-run`, `--fleet --apply`, and single-repo `--owner/--repo/--template` targets.
+- Labels: `.github/labels.yml` defines org-wide labels; `.github/workflows/sync-labels.yml` syncs them to repos on `workflow_dispatch`.
+
+Use the script from a maintainer workstation with a sufficiently-scoped `gh` token:
+
+```bash
+python3 scripts/apply-fleet-policies.py --fleet --dry-run
+python3 scripts/apply-fleet-policies.py --fleet --apply
+```
 
 ### Cross-repo dispatch model
 

@@ -24,11 +24,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `.handoff/context/capsule.json`, `.handoff/README.md`, and `.handoff/packets/2026-06-16-meta-conformity.md` — handoff continuity layer for the `.github` umbrella. (P7 / meta-conformity)
 - `trivy-secret.yaml` — Trivy secret-scanning allow-rule that suppresses false-positive `stripe-secret-token` findings in `data/brain-data/research/*/repomix-pack*.xml` research archives. (CI unblock)
 - `scripts/tests/test-trivy-secret-suppressions.sh` — triple-verify contract test that `trivy-secret.yaml` is loaded, no `stripe-secret-token` CRITICAL findings remain, and no CRITICAL findings remain in research repomix archives. (CI unblock)
+- `scripts/apply-fleet-policies.py` — standalone dry-run-first fleet policy applier that reads `.github/policies/fleet.json` and applies templates from `.github/policies/templates/` to one or many repos. Supports `--fleet --dry-run`, `--fleet --apply`, and single-repo `--owner/--repo/--template` targets. (Phase 3)
+- `.github/policies/templates/rust-canon/` — branch protection and repository settings templates for Rust canon meta repos: `main` branch requires code-owner PR review and conversation resolution; squash/rebase merge allowed; delete branch on merge. (Phase 3)
+- `.github/policies/templates/branch-target-develop/` — `develop` branch protection template for repos using `develop` as the trunk. (Phase 3)
 
 ### Changed (SESSION-2026-06-16-006)
 - `.gitignore` — `.handoff/packets/` is no longer ignored; only the rendered `.handoff/active.md`, auto-generated `.handoff/packets/latest.md`, and local `.handoff/*.db` files stay ignored. (P7 / meta-conformity)
 - `.github/workflows/reusable-security.yml` — passes `--secret-config trivy-secret.yaml` explicitly to the `trivy fs` invocation so the allow-rule is always applied. (CI unblock)
 - `.github/workflows/manifest-drift.yml` — added a `trivy-secret-suppressions` job that runs the contract test (report-only for its first green cycle, then promote to STRICT). (CI unblock)
+- `docs/github-automation-roadmap.md` — added a "Fleet policy and labels-as-code" section documenting the fleet registry, templates, applier, and labels sync; added `sync-labels.yml` to the workflow permission matrix. (Phase 3)
 
 ### Fixed (SESSION-2026-06-16-006)
 - `.claude/settings.json` hygiene — removed the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key and all hardcoded `/home/` `extraKnownMarketplaces` paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `scripts/claude-settings-doctor.js --check` now passes. Marketplace definitions will be re-injected via `meta/envctl` (portable, no literal user-home paths).
