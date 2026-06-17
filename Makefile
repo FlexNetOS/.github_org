@@ -27,6 +27,11 @@ bootstrap: ## Idempotent setup: tools check, submodules init, secrets unlock
 .PHONY: verify
 verify: verify.tool-assets verify.actionlint verify.markdown verify.manifest verify.tools verify.hermetic ## Run every local verification
 
+.PHONY: install-hooks
+install-hooks: ## Configure Git to use the local hooks in .githooks/
+	@git config core.hooksPath .githooks
+	@echo "Local hooks configured from .githooks/"
+
 .PHONY: verify.actionlint
 verify.actionlint: ## Lint .github/workflows/*.yml
 	@tools/bin/actionlint .github/workflows/*.yml
