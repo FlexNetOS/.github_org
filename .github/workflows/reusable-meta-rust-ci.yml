@@ -91,7 +91,11 @@ jobs:
 
       - name: Test
         working-directory: meta-rust-workspace
-        run: cargo test --all-features ${{ inputs.extra-args }}
+        env:
+          EXTRA_ARGS: ${{ inputs.extra-args }}
+        run: |
+          # shellcheck disable=SC2086
+          cargo test --all-features $EXTRA_ARGS
 
       - name: Upload cargo logs on failure
         if: failure()
