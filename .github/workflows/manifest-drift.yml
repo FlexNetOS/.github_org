@@ -97,4 +97,15 @@ jobs:
       - name: Triple-verify Renovate config and no Dependabot residue
         run: bash scripts/tests/test-github-doctor.sh
 
+  trivy-secret-suppressions:
+    name: Trivy secret suppressions
+    runs-on: ubuntu-latest
+    continue-on-error: true   # REPORT_ONLY for first green cycle; promote after CI validates
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          submodules: false
+      - name: Triple-verify research repomix archives do not fail Trivy
+        run: bash scripts/tests/test-trivy-secret-suppressions.sh
+
 
