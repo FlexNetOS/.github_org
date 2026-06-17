@@ -51,6 +51,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `.mcp.json` — pinned the GitHub MCP server container image from a floating `latest` to `ghcr.io/github/github-mcp-server:v0.29.0@sha256:5049daf7f9eaa63df9f7658a84b5abab8d133f0fe494ab28a314191f315fa738`. (Phase 5)
 - `docs/github-automation-roadmap.md` — added `reusable-hermetic-audit.yml` and `reusable-mcp-audit.yml` to the permission matrix and updated Phase 6 with the new security/hermeticity/MCP surfaces. (Phase 5)
 
+### Added (SESSION-2026-06-16-006)
+- `.github/renovate-presets/meta-rust.json` — shared Renovate preset for FlexNetOS/meta* Rust canon repos: recommended base, digest pinning for Actions, dashboard approval, grouped Cargo and GitHub Actions updates. (Phase 7)
+- `docs/templates/repo-onboarding/renovate.json` — child-repo template that extends the shared preset. (Phase 7)
+- `scripts/secrets-doctor.py` — reads `secrets/github-secrets.tsv` and verifies each declared repo/org/env secret is actually present on GitHub via `gh secret list`. (Phase 7)
+
+### Changed (SESSION-2026-06-16-006)
+- `docs/templates/repo-onboarding/README.md` — added `renovate.json` to the file table. (Phase 7)
+
 ### Fixed (SESSION-2026-06-16-006)
 - `.claude/settings.json` hygiene — removed the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key and all hardcoded `/home/` `extraKnownMarketplaces` paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `scripts/claude-settings-doctor.js --check` now passes. Marketplace definitions will be re-injected via `meta/envctl` (portable, no literal user-home paths).
 - `.handoff/packets/2026-06-16-meta-conformity.md` — removed example credential-like placeholder strings that Gitleaks flagged as false positives.

@@ -219,6 +219,8 @@ Next deliverables:
 - [x] Add dry-run-first fleet policy applier (`scripts/apply-fleet-policies.py`) and registry (`.github/policies/fleet.json`).
 - [x] Add MCP configuration audit (`scripts/mcp-doctor.py`, `.github/workflows/reusable-mcp-audit.yml`) and pin the GitHub MCP server image in `.mcp.json` to a digest.
 - [x] Add reusable hermetic audit workflow (`.github/workflows/reusable-hermetic-audit.yml`) so child repos can run the same audit as the umbrella.
+- [x] Add shared Renovate preset for Rust canon repos (`.github/renovate-presets/meta-rust.json`) and onboarding template (`renovate.json`).
+- [x] Add `scripts/secrets-doctor.py` to verify declared secrets exist on GitHub.
 - [ ] Add dry-run CI smoke test with stubbed `bw` and `gh`.
 - [ ] Add branch protection/ruleset/CODEOWNERS audit script.
 - [ ] Document secret rotation from Vaultwarden through GitHub repo/env/org secrets.

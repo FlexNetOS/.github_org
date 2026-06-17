@@ -14,6 +14,7 @@ consumes reusable workflows from `FlexNetOS/.github`.
 | `auto-format.yml` | Auto-format Rust code on PR/push and push fixes back |
 | `notify-parent.yml` | Tell `FlexNetOS/meta` when this repo's `main` changes |
 | `notify-downstream.yml` | Wait for CI, then notify downstream consumers |
+| `renovate.json` | Extend the shared FlexNetOS Rust Renovate preset |
 
 ## Required secrets
 
