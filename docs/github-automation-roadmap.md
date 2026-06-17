@@ -127,18 +127,18 @@ Acceptance:
 
 ### Fleet policy and labels-as-code
 
-Repo-level policy for the `FlexNetOS/meta*` canon fleet is declared in this repo and applied with a dry-run-first script:
+Policy for **this repo** (`FlexNetOS/.github`) is declared under `.github/policies/` and applied with a dry-run-first script:
 
-- Registry: `.github/policies/fleet.json` maps each canon repo to the policy templates it should receive.
-- Templates: `.github/policies/templates/<template>/` contains `branch-protection.json`, `repo-settings.json`, and optionally `rulesets.json`.
-- Applier: `scripts/apply-fleet-policies.py` supports `--fleet --dry-run`, `--fleet --apply`, and single-repo `--owner/--repo/--template` targets.
-- Labels: `.github/labels.yml` defines org-wide labels; `.github/workflows/sync-labels.yml` syncs them to repos on `workflow_dispatch`.
+- `scripts/apply-github-policies.py` reads `.github/policies/branch-protection.json`, `.github/policies/repo-settings.json`, and `.github/policies/rulesets.json`.
+- Run `--dry-run` to preview, `--apply` to write to GitHub, `--check` to detect drift.
+- Labels: `.github/labels.yml` defines org-wide labels; `.github/workflows/sync-labels.yml` syncs them to target repos on `workflow_dispatch`.
 
-Use the script from a maintainer workstation with a sufficiently-scoped `gh` token:
+Fleet-wide policy for child `FlexNetOS/meta*` repos is intentionally out of scope here; child repos will carry their own `.github/policies/` once the canonical applier and JSON schema are proven on this repo.
 
 ```bash
-python3 scripts/apply-fleet-policies.py --fleet --dry-run
-python3 scripts/apply-fleet-policies.py --fleet --apply
+python3 scripts/apply-github-policies.py --dry-run
+python3 scripts/apply-github-policies.py --check
+python3 scripts/apply-github-policies.py --apply
 ```
 
 ### Cross-repo dispatch model
