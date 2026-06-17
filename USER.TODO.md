@@ -373,6 +373,39 @@ and the workflow's `runs-on:` matches every label the runner advertises
 > to decide or act on something it cannot do itself. The numbered sections above are
 > hand-authored by the maintainer and are never edited by the agent.
 
+### UA-2026-06-16-002 — Review and merge stacked meta control-plane PRs
+
+- **Surfaced by:** `SESSION-2026-06-16-006`
+- **Blocks:** activating the new reusable control plane in the FlexNetOS/meta* child repos
+- **Why:** Phases 1–5 are committed to `feat/meta-control-plane-gaps-phase3`, which stacks on PR #121 (`feat/meta-control-plane-gaps-phase2`), which stacks on PR #118 (`feat/meta-control-plane-gaps`). Only a human can open/approve/merge these PRs.
+- **What to do:**
+  1. Confirm CI is green on PR #118 and merge to `develop`.
+  2. Rebase/merge PR #121 onto the updated base and merge to `develop`.
+  3. Open a PR for `feat/meta-control-plane-gaps-phase3` and merge to `develop`.
+- **Status:** `open`
+
+### UA-2026-06-16-003 — Provision cross-repo dispatch tokens on child meta repos
+
+- **Surfaced by:** `SESSION-2026-06-16-006`
+- **Blocks:** `notify-parent.yml`, `notify-downstream.yml`, and `reusable-child-update-sync.yml` working across repos
+- **Why:** The reusable workflows read `secrets.PARENT_REPO_PAT` for cross-repo `repository_dispatch` and PR creation. The agent cannot create GitHub secrets.
+- **What to do:** Create a `PARENT_REPO_PAT` repository secret on every FlexNetOS/meta* repo that participates in dispatch. The token needs `repo` scope (or fine-grained `contents:write` + `pull_requests:write` on the relevant repos).
+- **Status:** `open`
+
+### UA-2026-06-16-004 — Apply fleet policies to live meta repos
+
+- **Surfaced by:** `SESSION-2026-06-16-006`
+- **Blocks:** enforcing the desired branch-protection/repo-settings baseline on FlexNetOS/meta*
+- **Why:** `scripts/apply-fleet-policies.py` can dry-run and apply, but the agent will not run mutating `gh api` calls against live repos without explicit human direction.
+- **What to do:**
+  ```bash
+  cd /home/drdave/Desktop/meta/.github_org
+  python3 scripts/apply-fleet-policies.py --fleet --dry-run
+  # review output
+  python3 scripts/apply-fleet-policies.py --fleet --apply
+  ```
+- **Status:** `open`
+
 ### UA-2026-05-28-002 — Rotate Anthropic + OpenRouter API keys IMMEDIATELY (chat-transcript leak)
 
 - **Surfaced by:** `SESSION-2026-05-28-004`

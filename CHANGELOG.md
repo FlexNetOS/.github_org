@@ -34,20 +34,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `.github/workflows/manifest-drift.yml` — added a `trivy-secret-suppressions` job that runs the contract test (report-only for its first green cycle, then promote to STRICT). (CI unblock)
 - `docs/github-automation-roadmap.md` — added a "Fleet policy and labels-as-code" section documenting the fleet registry, templates, applier, and labels sync; added `sync-labels.yml` to the workflow permission matrix. (Phase 3)
 
-### Added (SESSION-2026-06-16-007)
+### Added (SESSION-2026-06-16-006)
 - `docs/templates/repo-onboarding/` — copy-ready starter workflows for new FlexNetOS/meta* child repos: `ci.yml`, `auto-format.yml`, `notify-parent.yml`, `notify-downstream.yml`, plus a `README.md` with required-secret notes. (Phase 4)
 - `.github/workflows/reusable-auto-format.yml` — full-clone reusable workflow that formats Rust code in a synthetic workspace and pushes fixes back to the same branch. Uses the `meta-rust-workspace` composite action and never performs shallow clones. (Phase 4)
 
-### Changed (SESSION-2026-06-16-007)
+### Changed (SESSION-2026-06-16-006)
 - `.github/workflows/reusable-meta-rust-ci.yml` and `.github/workflows/reusable-auto-format.yml` — updated to support both in-repo callers (local `./.github/actions/meta-rust-workspace`) and cross-repo child-repo callers (checkout `FlexNetOS/.github` into `.github-org-actions` and use its composite action). (Phase 4)
 
-### Added (SESSION-2026-06-16-008)
+### Added (SESSION-2026-06-16-006)
 - `scripts/mcp-doctor.py` — validates `.mcp.json`: required shape, no hardcoded secrets, digest-pinned Docker images, HTTPS/localhost URLs for HTTP servers, and env values that reference `${VAR}` placeholders. (Phase 5)
 - `.github/workflows/reusable-mcp-audit.yml` — reusable workflow that runs `mcp-doctor.py` against the caller repo. (Phase 5)
 - `.github/workflows/reusable-hermetic-audit.yml` — reusable workflow that runs `scripts/hermetic-audit.py` against the caller repo, with an optional `--fail` mode. (Phase 5)
 - `mcp-audit` job in `.github/workflows/ci.yml` to exercise `scripts/mcp-doctor.py` on every change. (Phase 5)
 
-### Changed (SESSION-2026-06-16-008)
+### Changed (SESSION-2026-06-16-006)
 - `.mcp.json` — pinned the GitHub MCP server container image from a floating `latest` to `ghcr.io/github/github-mcp-server:v0.29.0@sha256:5049daf7f9eaa63df9f7658a84b5abab8d133f0fe494ab28a314191f315fa738`. (Phase 5)
 - `docs/github-automation-roadmap.md` — added `reusable-hermetic-audit.yml` and `reusable-mcp-audit.yml` to the permission matrix and updated Phase 6 with the new security/hermeticity/MCP surfaces. (Phase 5)
 
