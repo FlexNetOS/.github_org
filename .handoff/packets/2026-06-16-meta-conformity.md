@@ -58,22 +58,23 @@ so it conforms to the meta-workspace conventions:
 - `SESSIONS.md` gets a new `SESSION-2026-06-16-006` entry that closes the stale
   `docs/meta-foundation-confirmation` loop and hands off to `.handoff`.
 
+### Workflow-hygiene follow-ups discovered in PR #111
+- `.claude/settings.json` — removed the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`
+  key and all hardcoded `/home/` marketplace paths; `claude-settings-doctor` now passes.
+  Marketplace definitions are to be re-injected via `meta/envctl` (never literal user-home paths).
+- `.handoff/packets/2026-06-16-meta-conformity.md` — redacted example credential-like
+  placeholder strings so Gitleaks stays green.
+
 ## Why this unblocks `develop`
 
 The latest `develop` push failed because `security / Trivy filesystem + IaC`
 reported 3 CRITICAL `stripe-secret-token` findings in
-`data/brain-data/research/n8n-mcp/repomix-pack.xml`:
-
-```text
-'ValidApiKey123',
-'VALID_API_KEY_456',
-'sk_test_...',
-```
-
-These are upstream n8n test fixtures. With the allow-rule in place, Trivy
-reports zero secret findings and the job exits clean, which allows
-`promote-develop-to-main.yml` to open the perpetual `develop → main` promotion
-PR and lets release-please propose `v1.0.0`.
+`data/brain-data/research/n8n-mcp/repomix-pack.xml`. The matches were literal
+placeholder strings used as upstream n8n test fixtures (e.g. `ValidApiKey123`,
+`VALID_API_KEY_456`, and a Stripe `sk_test_*` sample), not real secrets.
+With the allow-rule in place, Trivy reports zero secret findings and the job
+exits clean, which allows `promote-develop-to-main.yml` to open the perpetual
+`develop → main` promotion PR and lets release-please propose `v1.0.0`.
 
 ## Open backlog (remains in `TODO.md`)
 

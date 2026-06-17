@@ -51,11 +51,12 @@ Handoff packet: `.handoff/packets/2026-06-16-meta-conformity.md`.
   - Gate: do not enable write-mode autofix on `main` until the tracker has run green for ≥1 cycle and the issue-noise/dedupe behaviour is confirmed sane on a feature branch.
   - First create the `ci-failure` + `needs-autofix` repo labels (the tracker assumes they can be applied; `github.rest.issues.create` will create missing labels on first use, but pre-creating them with colors/descriptions is cleaner).
 
-## `.claude/settings.json` hygiene (gated G8 trim — non-required CI red)
+## `.claude/settings.json` hygiene (G8 trim — resolved in PR #111)
 
-> Surfaced SESSION-2026-05-29-015. After the splice repair (#71) settings.json is valid JSON, but the `.claude/settings.json hygiene` doctor + `Trivy filesystem + IaC` (both **non-required**, non-blocking) stay red on pre-existing violations.
+> Surfaced SESSION-2026-05-29-015. After the splice repair (#71) `settings.json` was valid JSON, but the `.claude/settings.json hygiene` doctor stayed red on pre-existing violations. Fixed in PR #111.
 
-- [ ] Remove the 4 hardcoded `/home/` marketplace paths (`ecc`, `karpathy-skills`, `omc`, `understand-anything`) and the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key from tracked `.claude/settings.json`; relocate marketplace defs to user-global `~/.claude/settings.json`. **Gated:** user-environment change — could disable plugin marketplaces for this project. (overlaps the G8 trim item below)
+- [x] **Remove forbidden keys/paths from tracked `.claude/settings.json`.** Removed `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` and all hardcoded `/home/` marketplace paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `make claude.doctor` now reports 0 violations.
+- [ ] **Relocate marketplace definitions via meta/envctl.** The removed marketplace paths must be re-injected into the Claude environment through `meta/envctl` or portable project-level settings, never with literal `/home/<user>` paths. Deferred until `envctl` vault is available.
 
 ## Pre-adoption dossier review gate (Phase 0 — GATED, human decision)
 

@@ -30,6 +30,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `.github/workflows/reusable-security.yml` — passes `--secret-config trivy-secret.yaml` explicitly to the `trivy fs` invocation so the allow-rule is always applied. (CI unblock)
 - `.github/workflows/manifest-drift.yml` — added a `trivy-secret-suppressions` job that runs the contract test (report-only for its first green cycle, then promote to STRICT). (CI unblock)
 
+### Fixed (SESSION-2026-06-16-006)
+- `.claude/settings.json` hygiene — removed the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key and all hardcoded `/home/` `extraKnownMarketplaces` paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `scripts/claude-settings-doctor.js --check` now passes. Marketplace definitions will be re-injected via `meta/envctl` (portable, no literal user-home paths).
+- `.handoff/packets/2026-06-16-meta-conformity.md` — removed example credential-like placeholder strings that Gitleaks flagged as false positives.
+
 ### Notes (SESSION-2026-06-16-006)
 - Confirmed `github_org` is already registered in `/home/drdave/Desktop/meta/.meta.yaml` (lines 111–114); P1.2 meta-registry requirement is satisfied.
 - Migrated stale `docs/meta-foundation-confirmation` loop state into `.handoff/packets/2026-06-16-meta-conformity.md` and refreshed `TODO.md` / `SESSIONS.md`.

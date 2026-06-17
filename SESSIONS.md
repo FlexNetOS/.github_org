@@ -15,7 +15,7 @@
 - **Branch:** `feat/handoff-meta-conformity`
 - **HEAD at end:** `TBD`
 - **Mode:** manual + TDD triple-verify
-- **Outcome:** `.handoff` continuity layer created and configured; `.github_org` registration in meta `.meta.yaml` confirmed; stale `docs/meta-foundation-confirmation` loop state migrated into `.handoff/packets/2026-06-16-meta-conformity.md`; `develop` CI Trivy false positives suppressed via `trivy-secret.yaml` + contract test.
+- **Outcome:** `.handoff` continuity layer created and configured; `.github_org` registration in meta `.meta.yaml` confirmed; stale `docs/meta-foundation-confirmation` loop state migrated into `.handoff/packets/2026-06-16-meta-conformity.md`; `develop` CI Trivy false positives suppressed via `trivy-secret.yaml` + contract test; `.claude/settings.json` hygiene fixed by removing the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key and hardcoded `/home/` marketplace paths; example credential-like strings removed from the handoff packet so Gitleaks stays green.
 - **User-action gates surfaced:** none.
 
 ### What the user asked
@@ -49,6 +49,9 @@
 8. Updated `reusable-security.yml` to pass `--secret-config trivy-secret.yaml`.
 9. Added a report-only `trivy-secret-suppressions` job to `manifest-drift.yml`.
 10. Validated workflows with `tools/bin/actionlint`.
+11. Re-checked PR #111 CI after the initial push; fixed the two failures:
+    - Gitleaks flagged example credential-like placeholder strings in the handoff packet — redacted them.
+    - `.claude/settings.json hygiene` failed on pre-existing hardcoded `/home/` marketplace paths and the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key — removed them from the tracked file; marketplace definitions to be re-injected via `meta/envctl`.
 
 ### Reservations / risks
 - The new `manifest-drift.yml` job is report-only for one green cycle; promote it
@@ -73,7 +76,9 @@
 | `scripts/tests/test-trivy-secret-suppressions.sh` | Triple-verify contract test |
 | `.github/workflows/reusable-security.yml` | Explicit `--secret-config trivy-secret.yaml` |
 | `.github/workflows/manifest-drift.yml` | New `trivy-secret-suppressions` job |
-| `TODO.md` | Refreshed header + meta-conformity section |
+| `.claude/settings.json` | Removed forbidden env key + hardcoded `/home/` marketplace paths |
+| `TODO.md` | Refreshed header + meta-conformity section + G8 trim status |
+| `CHANGELOG.md` | Added Unreleased entries for this session |
 | `SESSIONS.md` | This entry |
 
 ---
