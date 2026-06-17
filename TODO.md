@@ -4,10 +4,10 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-06-17 (SESSION-2026-06-16-006 — meta control-plane gap closure + Phase 10 envctl research on `feat/meta-control-plane-gaps-phase3`)
-**Branch:** `feat/meta-control-plane-gaps-phase3`
-**PRs:** #118 (Phase 1), #121 (Phase 2), TBD (Phase 3)
-**Status:** Phases 1–8 complete and committed; Phase 10 envctl research dossier written. Next: provision tokens via envctl/secretctl + gh secret set, then push/open Phase 3 PR.
+**Last updated:** 2026-06-17 (SESSION-2026-06-16-006 — meta control-plane gap closure merged to `develop`)
+**Branch:** `develop`
+**PRs:** #118 (Phases 1–2), #121 (Phases 3–8), #126 (Phases 9–10) — all merged
+**Status:** Stacked meta control-plane gap closure landed. `protect-develop` ruleset restored. Next human action: unlock the envctl/secretctl USB vault and provision GitHub tokens (`PARENT_REPO_PAT`, `RELEASE_TOKEN`, `LABEL_SYNC_TOKEN`) per `data/brain-data/research/meta-envctl.md`.
 
 ---
 

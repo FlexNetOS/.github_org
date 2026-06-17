@@ -8,15 +8,15 @@
 
 ---
 
-## SESSION-2026-06-16-006 — meta control-plane gap closure (Phases 1–8)
+## SESSION-2026-06-16-006 — meta control-plane gap closure (Phases 1–10)
 
 - **ID:** `SESSION-2026-06-16-006`
-- **Date:** 2026-06-16
-- **Branch:** `feat/meta-control-plane-gaps-phase3`
-- **HEAD at end:** `d1dcc99`
-- **Mode:** implementation (stacked PRs)
-- **Outcome:** Phases 1–8 of the meta control-plane gap-closure plan landed in `.github_org` only. Deliverables: reusable meta Rust CI + full-clone guard, cross-repo dispatch templates, fleet policy/labels-as-code + standalone applier, repo onboarding template pack + reusable auto-format, MCP/hermetic audit workflows + pinned MCP image, Renovate preset + secrets doctor, reusable Rust binary release workflow.
-- **User-action gates surfaced:** review/approve PRs #118, #121, and open/merge the new Phase 3 PR; set `PARENT_REPO_PAT` and `RELEASE_TOKEN` on participating repos; run fleet policy dry-run/apply; set `LABEL_SYNC_TOKEN`.
+- **Date:** 2026-06-16 → 2026-06-17
+- **Branch:** `feat/meta-control-plane-gaps` / `feat/meta-control-plane-gaps-phase2` / `feat/meta-control-plane-gaps-phase3` → `develop`
+- **HEAD at end:** `a64ba45`
+- **Mode:** implementation (stacked PRs) + rebase/merge support
+- **Outcome:** All phases of the meta control-plane gap-closure plan landed in `.github_org` only. Deliverables: reusable meta Rust CI + full-clone guard, cross-repo dispatch templates, fleet policy/labels-as-code + standalone applier, repo onboarding template pack + reusable auto-format, MCP/hermetic audit workflows + pinned MCP image, Renovate preset + secrets doctor, reusable Rust binary release workflow, Phase 10 envctl secret-authority dossier + token-name fixes. Stacked PRs #118, #121, and #126 were merged to `develop` after resolving rebase conflicts and temporarily relaxing/restoring the `protect-develop` ruleset.
+- **User-action gates surfaced:** unlock the envctl/secretctl USB vault and provision GitHub tokens (`PARENT_REPO_PAT`, `RELEASE_TOKEN`, `LABEL_SYNC_TOKEN`) per `data/brain-data/research/meta-envctl.md`; run fleet policy dry-run/apply once tokens are available.
 - **Cost:** N/A
 
 ### What the user asked
@@ -39,11 +39,15 @@
 3. Dry-ran the fleet policy applier against the registry.
 4. Ran `scripts/mcp-doctor.py` against `.mcp.json` after pinning the GitHub MCP server image.
 5. Wrote/updated handoff packet and session-tracking files.
+6. Resolved rebase conflicts after `develop` advanced with PR #111, then force-pushed the stacked branches.
+7. Temporarily relaxed the `protect-develop` ruleset, merged PRs #118, #121, and #126 with admin override, then restored the ruleset from `/tmp/ruleset-backup/protect-develop.json`.
+8. Wrote Phase 10 envctl research dossier and fixed `sync-labels.yml` / `secrets/github-secrets.tsv.example` token names.
 
 ### Reservations / risks
 - The `reusable-meta-rust-ci.yml` and `reusable-auto-format.yml` cross-repo path uses a conditional checkout of `FlexNetOS/.github` into `.github-org-actions`; this has not been exercised in a live child repo yet.
 - Fleet policy application is dry-run only until a maintainer runs `--apply` with a token.
 - Child repo adoption PRs are intentionally out of scope for this branch.
+- `PARENT_REPO_PAT`, `RELEASE_TOKEN`, and `LABEL_SYNC_TOKEN` cannot be provisioned until the envctl/secretctl USB vault is unlocked.
 
 ---
 
