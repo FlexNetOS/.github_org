@@ -36,6 +36,7 @@ on:
       - promote-develop-to-main
       - dependency-review
       - submodule-bump
+      - Branch Target Guard
     types: [completed]
   schedule:
     - cron: '0 10 * * 1'   # Weekly Monday 10:00 UTC stale-issue sweep

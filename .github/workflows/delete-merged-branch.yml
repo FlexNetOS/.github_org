@@ -13,6 +13,7 @@ name: delete-merged-branch
 on:
   pull_request:
     types: [closed]
+    branches: [main, develop]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}

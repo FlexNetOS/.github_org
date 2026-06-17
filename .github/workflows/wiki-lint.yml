@@ -5,6 +5,9 @@ name: wiki-lint
 # structural checks scriptable from CI.
 
 on:
+  pull_request:
+    paths:
+      - "wiki/**"
   schedule:
     - cron: '0 11 * * *'      # 11:00 UTC nightly
   workflow_dispatch:
