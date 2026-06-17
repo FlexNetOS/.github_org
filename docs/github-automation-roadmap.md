@@ -92,6 +92,8 @@ Next deliverables:
 
 - [x] Add caller examples for normal repos, submodule repos, and secrets-aware repos.
 - [x] Add a workflow permission matrix documenting required `permissions:` and secrets per reusable workflow.
+- [x] Add repo onboarding template pack (`docs/templates/repo-onboarding/`) with `ci.yml`, `auto-format.yml`, `notify-parent.yml`, and `notify-downstream.yml` for new FlexNetOS/meta* child repos.
+- [x] Make `reusable-meta-rust-ci.yml` and `reusable-auto-format.yml` work for both in-repo and cross-repo callers by checking out `FlexNetOS/.github` actions when the caller is a child repo.
 - [ ] Add local `act --list` guidance or a repo-local wrapper that never requires secrets by default.
 - [x] Run CI on stacked PR branches (`branches: ['**']`) so every PR layer reports checks.
 - [x] Add same-repo upgrade-only auto-review/auto-merge gating that never checks out PR code.

@@ -50,8 +50,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Set up meta Rust workspace
+      - name: Check out shared actions
+        if: github.repository != 'FlexNetOS/.github'
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: FlexNetOS/.github
+          ref: main
+          path: .github-org-actions
+          token: ${{ inputs.token }}
+
+      - name: Set up meta Rust workspace (local)
+        if: github.repository == 'FlexNetOS/.github'
         uses: ./.github/actions/meta-rust-workspace
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ inputs.token }}
+
+      - name: Set up meta Rust workspace (shared)
+        if: github.repository != 'FlexNetOS/.github'
+        uses: ./.github-org-actions/.github/actions/meta-rust-workspace
         with:
           sibling-repos: ${{ inputs.sibling-repos }}
           workspace-path: ${{ inputs.workspace-path }}

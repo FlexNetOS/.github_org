@@ -34,6 +34,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `.github/workflows/manifest-drift.yml` — added a `trivy-secret-suppressions` job that runs the contract test (report-only for its first green cycle, then promote to STRICT). (CI unblock)
 - `docs/github-automation-roadmap.md` — added a "Fleet policy and labels-as-code" section documenting the fleet registry, templates, applier, and labels sync; added `sync-labels.yml` to the workflow permission matrix. (Phase 3)
 
+### Added (SESSION-2026-06-16-007)
+- `docs/templates/repo-onboarding/` — copy-ready starter workflows for new FlexNetOS/meta* child repos: `ci.yml`, `auto-format.yml`, `notify-parent.yml`, `notify-downstream.yml`, plus a `README.md` with required-secret notes. (Phase 4)
+- `.github/workflows/reusable-auto-format.yml` — full-clone reusable workflow that formats Rust code in a synthetic workspace and pushes fixes back to the same branch. Uses the `meta-rust-workspace` composite action and never performs shallow clones. (Phase 4)
+
+### Changed (SESSION-2026-06-16-007)
+- `.github/workflows/reusable-meta-rust-ci.yml` and `.github/workflows/reusable-auto-format.yml` — updated to support both in-repo callers (local `./.github/actions/meta-rust-workspace`) and cross-repo child-repo callers (checkout `FlexNetOS/.github` into `.github-org-actions` and use its composite action). (Phase 4)
+
 ### Fixed (SESSION-2026-06-16-006)
 - `.claude/settings.json` hygiene — removed the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key and all hardcoded `/home/` `extraKnownMarketplaces` paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `scripts/claude-settings-doctor.js --check` now passes. Marketplace definitions will be re-injected via `meta/envctl` (portable, no literal user-home paths).
 - `.handoff/packets/2026-06-16-meta-conformity.md` — removed example credential-like placeholder strings that Gitleaks flagged as false positives.
