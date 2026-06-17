@@ -200,43 +200,53 @@ def live_github_checks() -> list[Check]:
     else:
         checks.append(Check("github-live", "active workflows", "WARN", str(workflows)))
 
+    repo = None
+    default_branch = None
+    name_with_owner = None
     ok, repo = gh_json(["repo", "view", "--json", "nameWithOwner,defaultBranchRef,isPrivate"])
     if ok and isinstance(repo, dict):
         default_branch = (repo.get("defaultBranchRef") or {}).get("name", "unknown")
-        checks.append(Check("github-live", "repo identity", "OK", f"{repo.get('nameWithOwner')} default={default_branch} private={repo.get('isPrivate')}"))
+        name_with_owner = repo.get("nameWithOwner")
+        checks.append(Check("github-live", "repo identity", "OK", f"{name_with_owner} default={default_branch} private={repo.get('isPrivate')}"))
     else:
         checks.append(Check("github-live", "repo identity", "WARN", str(repo)))
 
-    ok, rulesets = gh_json(["api", f"/repos/{repo.get('nameWithOwner')}/rulesets"])
-    if ok and isinstance(rulesets, list):
-        checks.append(Check("github-live", "repository rulesets", status(bool(rulesets), warning=True), f"{len(rulesets)} ruleset(s)"))
-    else:
-        checks.append(Check("github-live", "repository rulesets", "WARN", str(rulesets)))
-
-    ok, bp = gh_json(["api", f"/repos/{repo.get('nameWithOwner')}/branches/{default_branch}/protection"])
-    if ok and isinstance(bp, dict):
-        checks.append(Check("github-live", "branch protection", "OK", f"present on {default_branch}"))
-    elif ok:
-        checks.append(Check("github-live", "branch protection", "WARN", f"not present or unreadable on {default_branch}"))
-    else:
-        checks.append(Check("github-live", "branch protection", "WARN", str(bp)))
-
-    owner_slug = repo.get('nameWithOwner', '').split('/')[0] if isinstance(repo, dict) else ''
-    ok, env = gh_json(["api", f"/repos/{repo.get('nameWithOwner')}/environments/release"])
-    if ok and isinstance(env, dict):
-        policy = env.get("deployment_branch_policy") or {}
-        if policy.get("protected_branches") and not policy.get("custom_branch_policies"):
-            checks.append(Check("github-live", "release environment", "OK", "protected-branches policy"))
+    # The following live checks require a resolved repo identity. If `gh repo view`
+    # failed, skip them with a WARN instead of dereferencing an unbound `repo`.
+    if name_with_owner:
+        ok, rulesets = gh_json(["api", f"/repos/{name_with_owner}/rulesets"])
+        if ok and isinstance(rulesets, list):
+            checks.append(Check("github-live", "repository rulesets", status(bool(rulesets), warning=True), f"{len(rulesets)} ruleset(s)"))
         else:
-            checks.append(Check("github-live", "release environment", "WARN", f"unexpected policy: {policy}"))
+            checks.append(Check("github-live", "repository rulesets", "WARN", str(rulesets)))
+
+        ok, bp = gh_json(["api", f"/repos/{name_with_owner}/branches/{default_branch}/protection"])
+        if ok and isinstance(bp, dict):
+            checks.append(Check("github-live", "branch protection", "OK", f"present on {default_branch}"))
+        elif ok:
+            checks.append(Check("github-live", "branch protection", "WARN", f"not present or unreadable on {default_branch}"))
+        else:
+            checks.append(Check("github-live", "branch protection", "WARN", str(bp)))
+
+        ok, env = gh_json(["api", f"/repos/{name_with_owner}/environments/release"])
+        if ok and isinstance(env, dict):
+            policy = env.get("deployment_branch_policy") or {}
+            if policy.get("protected_branches") and not policy.get("custom_branch_policies"):
+                checks.append(Check("github-live", "release environment", "OK", "protected-branches policy"))
+            else:
+                checks.append(Check("github-live", "release environment", "WARN", f"unexpected policy: {policy}"))
+        else:
+            checks.append(Check("github-live", "release environment", "WARN", str(env)))
     else:
-        checks.append(Check("github-live", "release environment", "WARN", str(env)))
+        for label in ("repository rulesets", "branch protection", "release environment"):
+            checks.append(Check("github-live", label, "WARN", "skipped: repo identity unavailable (gh repo view failed)"))
+
+    owner_slug = name_with_owner.split('/')[0] if name_with_owner else ''
 
     codeowners = ROOT / ".github" / "CODEOWNERS"
     if codeowners.exists():
         text = codeowners.read_text(encoding="utf-8")
         teams = {line.split()[-1] for line in text.splitlines() if line.strip() and not line.strip().startswith("#")}
-        writable_teams = [t for t in teams if not t.startswith("@FlexNetOS/") or t != "@FlexNetOS"]
         if "@FlexNetOS" in teams and "@FlexNetOS/maintainers" not in teams:
             checks.append(Check("github-live", "CODEOWNERS team", "WARN", "points to @FlexNetOS (not a writable team); repoint to @FlexNetOS/maintainers"))
         elif "@FlexNetOS/maintainers" in teams:

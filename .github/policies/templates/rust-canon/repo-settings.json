@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Repository settings template for a main-default Rust canon repo in the FlexNetOS/meta fleet.",
+  "settings": {
+    "delete_branch_on_merge": true,
+    "allow_squash_merge": true,
+    "squash_merge_commit_title": "PR_TITLE",
+    "squash_merge_commit_message": "PR_BODY",
+    "allow_rebase_merge": true,
+    "allow_merge_commit": false,
+    "allow_auto_merge": true,
+    "allow_update_branch": true
+  },
+  "environments": []
+}

@@ -17,7 +17,17 @@ import sys
 from pathlib import Path
 
 MCP_PATH = Path(".mcp.json")
-SECRET_RE = re.compile(r"\b(gh[pousr]_[A-Za-z0-9_]{36}|sk-[A-Za-z0-9]{48}|\b[0-9a-f]{40}\b)\b")
+# Token shapes we treat as hardcoded secrets. Note: a bare 40-char hex string is
+# deliberately NOT matched — it collides with git SHAs and pinned action/image
+# refs (e.g. uses: actions/checkout@<40-hex>), which are not secrets.
+SECRET_RE = re.compile(
+    r"\b("
+    r"gh[pousr]_[A-Za-z0-9_]{36}"          # classic GitHub PAT / OAuth / app / refresh / server tokens
+    r"|github_pat_[A-Za-z0-9_]{82}"        # fine-grained GitHub PAT
+    r"|glpat-[A-Za-z0-9_-]{20}"            # GitLab personal access token
+    r"|sk-[A-Za-z0-9]{48}"                 # OpenAI-style secret key
+    r")\b"
+)
 DIGEST_RE = re.compile(r"@sha256:[a-fA-F0-9]{64}$")
 
 
