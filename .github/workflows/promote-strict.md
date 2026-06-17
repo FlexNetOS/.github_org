@@ -26,6 +26,7 @@ Branch at promotion: `feat/reconciliation-slice-tooling`
 |-----|--------|-------------------|
 | `check-user-todo-step5` | Intentionally informational — designed to surface progress, never block a PR. | No promotion planned. Remove `continue-on-error` only if consensus changes the job from "inform" to "gate". |
 | `submodules-materialize-noop` | Placeholder — the MANIFEST→.gitmodules lockfile (`materialize`) pattern is deferred (G4/G5 in `.omc/plans/open-questions.md`). | Replace the noop with a real check once `scripts/materialize-gitmodules.sh` lands, then promote after one green cycle. |
+| `trivy-secret-suppressions` | New contract test for Trivy false-positive allow-rules; report-only for first green cycle. | Promote after one green cycle on `develop`. First green run: PR #111 / run `27696067943`. |
 
 ---
 

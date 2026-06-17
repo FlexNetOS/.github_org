@@ -4,10 +4,10 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-06-16 (SESSION-2026-06-16-005 — meta-foundation confirmation; P1–P7 + policy decision landed on `docs/meta-foundation-confirmation`)
-**Branch:** `docs/meta-foundation-confirmation`
-**PR:** #108 → `develop` (auto-merge armed; waits for separate-principal approval and CI)
-**Status:** All meta-foundation phases complete; `RELEASE_TOKEN` wired; PR #108 open and auto-merge armed. Next: separate-principal approval + merge to `main`.
+**Last updated:** 2026-06-17 (SESSION-2026-06-17-007 — systematic control-plane upgrade)
+**Branch:** `feat/control-plane-upgrade`
+**PR:** (pending) → `develop`
+**Status:** Implementing the approved plan: workflow hardening, branch protection/rulesets as policy-as-code, Renovate policy, local hooks, repo settings, and doctor tests. Stale CI-failure issues #90–#110 closed.
 
 ---
 
@@ -38,11 +38,23 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"Phased
   - Gate: do not enable write-mode autofix on `main` until the tracker has run green for ≥1 cycle and the issue-noise/dedupe behaviour is confirmed sane on a feature branch.
   - First create the `ci-failure` + `needs-autofix` repo labels (the tracker assumes they can be applied; `github.rest.issues.create` will create missing labels on first use, but pre-creating them with colors/descriptions is cleaner).
 
-## `.claude/settings.json` hygiene (gated G8 trim — non-required CI red)
+## `.claude/settings.json` hygiene (resolved in PR #111)
 
-> Surfaced SESSION-2026-05-29-015. After the splice repair (#71) settings.json is valid JSON, but the `.claude/settings.json hygiene` doctor + `Trivy filesystem + IaC` (both **non-required**, non-blocking) stay red on pre-existing violations.
+> Surfaced SESSION-2026-05-29-015. Fixed in PR #111.
 
-- [ ] Remove the 4 hardcoded `/home/` marketplace paths (`ecc`, `karpathy-skills`, `omc`, `understand-anything`) and the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key from tracked `.claude/settings.json`; relocate marketplace defs to user-global `~/.claude/settings.json`. **Gated:** user-environment change — could disable plugin marketplaces for this project. (overlaps the G8 trim item below)
+- [x] **Remove forbidden keys/paths from tracked `.claude/settings.json`.** Removed `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` and all hardcoded `/home/` marketplace paths. `make claude.doctor` reports 0 violations.
+- [ ] **Relocate marketplace definitions via meta/envctl.** The removed marketplace paths must be re-injected through `meta/envctl` or portable project-level settings, never with literal `/home/<user>` paths.
+
+## Systematic control-plane upgrade (SESSION-2026-06-17-007)
+
+- [ ] Phase 0 — Refresh roadmap, promote-strict tracker, TODO; close stale CI-failure issues.
+- [ ] Phase 1 — Add concurrency/timeouts, branch-target guard, dependency-review on develop, stale ci-failure sweep.
+- [ ] Phase 2-3 — Codify branch protection + rulesets in `.github/policies/`; create `scripts/apply-github-policies.py`.
+- [ ] Phase 4 — Upgrade `renovate.json` with grouping, digest pinning, dashboard approval.
+- [ ] Phase 5 — Add `pre-commit`, `pre-push`, `post-checkout` hooks + `make install-hooks`.
+- [ ] Phase 6 — Apply `delete_branch_on_merge`, restrict merge methods, create `release` environment.
+- [ ] Phase 7 — Add policy drift checks to doctor and CI; add `scripts/tests/test-github-policies.sh`.
+- [ ] Phase 8 — Bookkeeping, commit, push, open PR to `develop`.
 
 ## Pre-adoption dossier review gate (Phase 0 — GATED, human decision)
 

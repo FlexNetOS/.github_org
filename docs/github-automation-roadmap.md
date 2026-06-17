@@ -6,16 +6,19 @@ This is the queue for turning `FlexNetOS/.github` into the org's reusable GitHub
 
 | Branch | Purpose | Base | Status |
 | --- | --- | --- | --- |
-| `docs/meta-foundation-confirmation` | Confirm/repair foundation docs and token wiring after ADR-0002 and the org audit | `develop` | open — P1–P5 landed, P6–P7 pending |
+| `feat/control-plane-upgrade` | Systematic upgrade of workflows, hooks, branch protection, rulesets, Renovate, and repo settings | `develop` | open |
 
 ## Recently landed
 
 | Surface | What it does | Location |
 | --- | --- | --- |
+| `.handoff` continuity layer | Capsule, README, migration packet for meta-conformity | `.handoff/` |
+| Trivy false-positive suppression | Allow-rule for research repomix archives + contract test | `trivy-secret.yaml`, `scripts/tests/test-trivy-secret-suppressions.sh` |
+| Claude settings hygiene | Removed forbidden env key and hardcoded `/home/` marketplace paths | `.claude/settings.json` |
 | Semantic PR/commit gate | Validates PR titles and local commits against Conventional Commits | `.github/workflows/semantic-pr-title.yml`, `.githooks/commit-msg` |
-| Renovate automation | Dependency updates grouped by ecosystem, dashboard-approved | `renovate.json5` |
+| Renovate automation | Dependency updates grouped by ecosystem, dashboard-approved | `renovate.json` |
 | Branch promotion | Perpetual `develop → main` promote PR with separate-identity auto-approval | `.github/workflows/promote-develop-to-main.yml` |
-| Release wiring | `release.yml` ready for `RELEASE_TOKEN`; currently `workflow_dispatch`-only | `.github/workflows/release.yml`, `.github/workflows/reusable-release.yml` |
+| Release wiring | `release.yml` wired to `RELEASE_TOKEN` with automatic `push: main` trigger | `.github/workflows/release.yml`, `.github/workflows/reusable-release.yml` |
 | Merged-branch cleanup | Deletes feature-branch heads after merge while preserving protected/upgrade branches | `.github/workflows/delete-merged-branch.yml` |
 | CI failure tracker | Opens `ci-failure`/`needs-autofix` issues on watched workflow failures | `.github/workflows/ci-failure-tracker.yml` |
 
@@ -29,10 +32,10 @@ The GitHub process is fully automated when a maintainer can run a local doctor, 
 - [x] GitHub App manifest template, permission matrix, private-key storage guidance, and installation-token smoke test.
 - [ ] Subrepo/submodule graph validation against `repos/MANIFEST.yaml`, `.gitmodules`, and live GitHub remotes.
 - [ ] Vaultwarden/Bitwarden secret sync and rotation docs with no committed secret values or real local mapping file.
-- [x] Branch/ruleset/CODEOWNERS/community-health audit path.
+- [x] Branch/ruleset/CODEOWNERS/community-health audit path (policy-as-code in `.github/policies/`, `scripts/apply-github-policies.py`).
 - [x] Renovate, release, and security automation checks documented and locally verifiable.
 - [x] Manual activation points are explicit for any step needing GitHub admin permissions, runner registration tokens, private keys, or host service changes.
-- [ ] Active work is represented as focused PRs with CI/check status monitored.
+- [x] Active work is represented as focused PRs with CI/check status monitored.
 
 ## Ralph phases
 
@@ -88,6 +91,9 @@ Existing surfaces include reusable lint, test, build, typecheck, security, relea
 Next deliverables:
 
 - [x] Add caller examples for normal repos, submodule repos, and secrets-aware repos.
+- [x] Add concurrency cancellation and job timeouts to caller workflows.
+- [x] Add branch-target guard for `main`.
+- [x] Run dependency review on PRs to `develop` as well as `main`.
 - [ ] Add a workflow permission matrix documenting required `permissions:` and secrets per reusable workflow.
 - [ ] Add local `act --list` guidance or a repo-local wrapper that never requires secrets by default.
 - [x] Run CI on stacked PR branches (`branches: ['**']`) so every PR layer reports checks.
@@ -156,13 +162,15 @@ Existing surfaces:
 - `secrets/github-secrets.tsv.example`
 - `secrets/README.md`
 - `.gitignore` rule for the real local mapping file
+- `.github/policies/` policy-as-code specs
+- `scripts/apply-github-policies.py` dry-run-first applier
 
 Next deliverables:
 
 - [ ] Add dry-run CI smoke test with stubbed `bw` and `gh`.
-- [ ] Add branch protection/ruleset/CODEOWNERS audit script.
+- [x] Add branch protection/ruleset/CODEOWNERS audit script.
 - [ ] Document secret rotation from Vaultwarden through GitHub repo/env/org secrets.
-- [ ] Wire `RELEASE_TOKEN` org secret and re-enable automatic `release.yml` triggers.
+- [x] Wire `RELEASE_TOKEN` repo secret and enable automatic `release.yml` triggers.
 
 Acceptance:
 
