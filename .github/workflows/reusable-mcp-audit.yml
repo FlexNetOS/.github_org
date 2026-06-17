@@ -1,0 +1,39 @@
+name: Reusable MCP Audit
+
+# Validates .mcp.json in the caller repo with scripts/mcp-doctor.py.
+#
+# Example caller:
+#   jobs:
+#     mcp:
+#       uses: FlexNetOS/.github/.github/workflows/reusable-mcp-audit.yml@main
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  mcp-audit:
+    name: MCP configuration audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out caller repo
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Check out shared scripts
+        if: github.repository != 'FlexNetOS/.github'
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: FlexNetOS/.github
+          ref: main
+          path: .github-org-actions
+
+      - name: Run MCP doctor (local)
+        if: github.repository == 'FlexNetOS/.github'
+        run: python3 scripts/mcp-doctor.py
+
+      - name: Run MCP doctor (shared)
+        if: github.repository != 'FlexNetOS/.github'
+        run: python3 .github-org-actions/scripts/mcp-doctor.py

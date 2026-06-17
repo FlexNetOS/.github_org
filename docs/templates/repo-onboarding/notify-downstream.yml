@@ -1,0 +1,19 @@
+name: Notify Downstream Repos
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    name: Notify downstream
+    uses: FlexNetOS/.github/.github/workflows/reusable-notify-downstream.yml@main
+    with:
+      downstream-repos: '["FlexNetOS/meta_cli","FlexNetOS/meta_git_cli"]'
+      check-name: 'CI'
+      event-type: 'dependency-updated'
+    secrets:
+      parent-repo-pat: ${{ secrets.PARENT_REPO_PAT }}

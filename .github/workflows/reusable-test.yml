@@ -20,6 +20,21 @@ on:
         required: false
         type: string
         default: '.'
+      sibling-repos:
+        description: 'JSON array of sibling FlexNetOS repos for meta Rust workspace mode'
+        required: false
+        type: string
+        default: '[]'
+      workspace-path:
+        description: 'Path for the current repo inside the generated meta Rust workspace'
+        required: false
+        type: string
+        default: ${{ github.event.repository.name }}
+      token:
+        description: 'GitHub token for cloning private sibling repos (pass a PAT for private repos)'
+        required: false
+        type: string
+        default: ${{ github.token }}
       coverage:
         description: 'Collect coverage and upload as an artifact'
         required: false
@@ -49,34 +64,34 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Set up Bun
         if: inputs.language == 'bun' || inputs.language == 'mixed'
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: latest
 
       - name: Set up Node
         if: inputs.language == 'node' || inputs.language == 'mixed'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: lts/*
           cache: ${{ hashFiles(format('{0}/package-lock.json', inputs.working-directory)) != '' && 'npm' || '' }}
 
       - name: Set up uv (Python)
         if: inputs.language == 'python' || inputs.language == 'mixed'
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
         with:
           enable-cache: true
 
       - name: Set up Rust
         if: inputs.language == 'rust' || inputs.language == 'mixed'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
 
       - name: Rust cache
         if: inputs.language == 'rust' || inputs.language == 'mixed'
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
 
       # --- per-language test ---
       - name: Test (bun)
@@ -113,8 +128,28 @@ jobs:
             uv run -- pytest ${{ inputs.extra-args }}
           fi
 
+      - name: Set up meta Rust workspace
+        if: (inputs.language == 'rust' || inputs.language == 'mixed') && inputs.sibling-repos != '' && inputs.sibling-repos != '[]'
+        uses: ./.github/actions/meta-rust-workspace
+        id: meta-ws
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ inputs.token }}
+
+      - name: Resolve workspace directory
+        id: final-ws
+        shell: bash
+        run: |
+          if [[ -n "${{ steps.meta-ws.outputs.workspace-dir }}" ]]; then
+            echo "dir=${{ steps.meta-ws.outputs.workspace-dir }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "dir=${{ inputs.working-directory }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Test (rust)
         if: (inputs.language == 'rust' || inputs.language == 'mixed') && hashFiles(format('{0}/Cargo.toml', inputs.working-directory)) != ''
+        working-directory: ${{ steps.final-ws.outputs.dir }}
         shell: bash
         run: |
           if cargo --list 2>/dev/null | grep -q nextest; then
@@ -126,7 +161,7 @@ jobs:
       # --- coverage artifact (best-effort, only if a coverage file shows up) ---
       - name: Upload coverage artifact
         if: inputs.coverage && always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: coverage-${{ github.run_id }}-${{ github.job }}
           path: |

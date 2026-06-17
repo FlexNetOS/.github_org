@@ -2,13 +2,14 @@
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 #
 # The last matching pattern wins.
-# Today everything is owned by @FlexNetOS. Add finer-grained ownership
-# (e.g. @sec-team for SECURITY.md, @docs-team for docs/) as the project grows.
+# Fine-grained ownership should be added as the project grows
+# (e.g. @FlexNetOS/sec-team for SECURITY.md, @FlexNetOS/docs-team for docs/).
 
-* @FlexNetOS
+* @FlexNetOS/maintainers
 
 # Security-sensitive surfaces require explicit re-confirmation by the owner.
-SECURITY.md                       @FlexNetOS
-.github/workflows/reusable-security.yml  @FlexNetOS
-secrets/                          @FlexNetOS
-runner/                           @FlexNetOS
+SECURITY.md                                    @FlexNetOS/maintainers
+.github/workflows/reusable-security.yml        @FlexNetOS/maintainers
+.github/policies/                              @FlexNetOS/maintainers
+secrets/                                       @FlexNetOS/maintainers
+runner/                                        @FlexNetOS/maintainers

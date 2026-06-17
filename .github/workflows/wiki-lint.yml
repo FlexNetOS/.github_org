@@ -5,9 +5,16 @@ name: wiki-lint
 # structural checks scriptable from CI.
 
 on:
+  pull_request:
+    paths:
+      - "wiki/**"
   schedule:
     - cron: '0 11 * * *'      # 11:00 UTC nightly
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -16,8 +23,9 @@ permissions:
 jobs:
   structural-lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: index.md exists and is non-empty
         run: |
@@ -51,7 +59,7 @@ jobs:
 
       - name: Open issue if broken links found
         if: steps.broken.outputs.broken != '0'
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             await github.rest.issues.create({

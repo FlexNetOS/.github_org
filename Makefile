@@ -25,7 +25,15 @@ bootstrap: ## Idempotent setup: tools check, submodules init, secrets unlock
 	@scripts/bootstrap.sh
 
 .PHONY: verify
-verify: verify.tool-assets verify.actionlint verify.markdown verify.manifest verify.tools verify.hermetic ## Run every local verification
+verify: verify.tool-assets verify.actionlint verify.markdown verify.manifest verify.tools verify.hermetic verify.github-policies ## Run every local verification
+
+.PHONY: verify.fast
+verify.fast: verify.actionlint verify.markdown verify.manifest verify.tools ## Fast verification (no live API calls)
+
+.PHONY: install-hooks
+install-hooks: ## Configure Git to use the local hooks in .githooks/
+	@git config core.hooksPath .githooks
+	@echo "Local hooks configured from .githooks/"
 
 .PHONY: verify.actionlint
 verify.actionlint: ## Lint .github/workflows/*.yml
@@ -51,33 +59,28 @@ verify.tools: ## Validate tools/MANIFEST.yaml structure
 verify.hermetic: ## Report non-hermetic workflow/script dependencies (advisory)
 	@python3 scripts/hermetic-audit.py .
 
-# ---------- Submodules ----------
+.PHONY: verify.github-policies
+verify.github-policies: ## Validate .github/policies/ JSON and live drift check (skipped if not authenticated)
+	@bash scripts/tests/test-github-policies.sh
+
+# ---------- Submodules (data/brain-data only) ----------
+# ADR-0002 retired repo/tool submodules in .github_org. The only remaining
+# gitlinks are the data/brain-data wiki/brain submodules.
 
 .PHONY: submodules.init
-submodules.init: ## Initialize and update every submodule (depth-1)
-	git submodule update --init --recursive --depth 1
-
-.PHONY: submodules.add
-submodules.add: ## Add any MANIFEST entry missing from .gitmodules (idempotent)
-	@scripts/submodule-add-all.sh
+submodules.init: ## Initialize and update data/brain-data submodules (full clone)
+	git submodule update --init --recursive
 
 .PHONY: submodules.bump
-submodules.bump: ## Fast-forward submodules to tracking-branch HEAD (filter: GROUP=, NAME=)
-	@args=""; \
-	if [ -n "$$GROUP" ]; then args="$$args --group $$GROUP"; fi; \
-	if [ -n "$$NAME" ];  then args="$$args --name $$NAME"; fi; \
-	scripts/submodule-bump.sh $$args
+submodules.bump: ## Fast-forward data/brain-data submodules to tracking-branch HEAD
+	@scripts/submodule-bump.sh
 
 .PHONY: submodules.sync-upstream
-submodules.sync-upstream: ## For forked/, fetch upstream and merge (filter: NAME=)
-	@if [ -n "$$NAME" ]; then \
-	    scripts/submodule-sync-upstream.sh --name $$NAME; \
-	else \
-	    scripts/submodule-sync-upstream.sh; \
-	fi
+submodules.sync-upstream: ## For forked data/brain-data submodules, fetch upstream and merge
+	@scripts/submodule-sync-upstream.sh
 
 .PHONY: submodules.status
-submodules.status: ## Report dirty / ahead-of-tracking / detached submodules
+submodules.status: ## Report dirty / ahead-of-tracking / detached data/brain-data submodules
 	@git submodule foreach --quiet 'echo "--- $$name ---"; git -C "$$toplevel/$$path" status --short --branch | head -5'
 
 # ---------- Research (Step 0 of the clone-and-research-before-fork ritual) ----------
@@ -162,6 +165,18 @@ github-app.smoke: ## Smoke-test GitHub App installation token exchange (DRY_RUN=
 	if [ "$${DRY_RUN:-0}" = "1" ]; then args="$$args --dry-run"; fi; \
 	if [ "$${JSON:-0}" = "1" ]; then args="$$args --json"; fi; \
 	python3 scripts/github-app-token-smoke.py $$args
+
+.PHONY: github.policy.dry-run
+github.policy.dry-run: ## Dry-run the GitHub policy applier
+	@python3 scripts/apply-github-policies.py --dry-run
+
+.PHONY: github.policy.apply
+github.policy.apply: ## Apply .github/policies/ to live GitHub state
+	@python3 scripts/apply-github-policies.py --apply
+
+.PHONY: github.policy.check
+github.policy.check: ## Check committed policy against live GitHub state
+	@python3 scripts/apply-github-policies.py --check
 
 # ---------- Reconciliation tooling (additive; see data/brain-data/research/my-github-reconciliation.md) ----------
 .PHONY: claude.doctor

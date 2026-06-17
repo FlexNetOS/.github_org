@@ -102,3 +102,13 @@ ai-top/
 
 # OpenSpec init AI-tooling under architecture/ (local only; fails markdown lint, not committed)
 architecture/.claude/
+
+# .handoff ledger residency (P7: ledger is local; fleet/witnessed state is the kernel's)
+.handoff/ledger.db
+.handoff/*.db
+# kernel render surface is DERIVED + local (rebuilt by `hf handoff`/`hf resume`); the
+# authoritative state is Git + the central FLEET ledger (ADR-0004). Keep committed
+# .handoff/loop/* (the file-based loop findings) and any hand-authored packets, but
+# ignore the rendered active packet and the auto-generated latest packet.
+.handoff/active.md
+.handoff/packets/latest.md

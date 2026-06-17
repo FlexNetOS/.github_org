@@ -1,15 +1,19 @@
 {
-  "_README": "REFERENCE TARGET — NOT the live settings file. This documents the trimmed canonical shape the umbrella's .claude/settings.json should converge to. The live trim is a gated, manual step tracked as a USER.TODO item; claude-settings-doctor.js only REPORTS drift, it never edits the live file. Legitimate top-level keys for the umbrella: 'permissions' (repo-relative policy), 'mcpServers' (only if umbrella-backed, with repo-relative or env-portable commands), and 'hooks' (whose commands are repo-relative, e.g. 'bash scripts/...', not '/home/<user>/...'). Hardcoded absolute user-home paths (/home/..., /Users/..., /root/..., C:\\Users\\) are never permitted in command strings; use $HOME/, ${HOME}/, ~/, or %APPDATA% and add an explicit allowlist entry when a home reference is unavoidable. The key env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS must not appear.",
-  "permissions": {
-    "_note": "Repo-relative allow/deny rules. Example shape only; the live file's real permission set is preserved during the gated trim.",
-    "allow": [],
-    "deny": []
+  "_README": "REFERENCE NOTES for .claude/settings.json under the meta/envctl env model (ADR-0006) — NOT the live file. meta/envctl IS the user-global env manager: envctl/home/ is the canonical home tree and $HOME paths are SYMLINKS into it ('real file in meta, symlink outside, never the reverse'). Consequences: (1) the 'env' block is meta-controlled and legitimate — env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is INTENTIONAL and must NEVER be dropped; (2) 'enabledPlugins'/'extraKnownMarketplaces' are meta's own Claude plugin system, NOT drift; (3) functional hooks are KEPT (never-downgrade) — repo-relative scripts/hooks/* AND the user-global ruvector/ccg/gitnexus/global hooks. The ONLY portability concern is hardcoded absolute /home/<user>/ paths inside string VALUES (statusline, plugin marketplaces, hook commands): the sanctioned fix is a TEMPLATE/SUBSTITUTION pass at link time (see envctl/home/.claude/settings.json.tmpl with ${META_ROOT}), or portable forms ($HOME/, ~/, %APPDATA%) where the consumer expands them — an UPGRADE, never a trim/drop. claude-settings-doctor.js REPORTS that residue to track the template follow-up; it never edits the live file.",
+  "env": {
+    "_note": "Meta-controlled (envctl). CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is intentional — keep it. Render machine-specific values (e.g. META_ROOT) from the envctl template, not by hand."
   },
-  "mcpServers": {
-    "_note": "Include only umbrella-backed servers whose 'command' is repo-relative or resolved via PATH/env. Drop user-specific MCPs (those live in ~/.codex/config.toml or the user's global ~/.claude)."
+  "permissions": {
+    "_note": "Repo-relative allow/deny rules — preserved as-is."
+  },
+  "enabledPlugins": {
+    "_note": "meta's Claude plugin system — legitimate, not drift. Keep."
+  },
+  "extraKnownMarketplaces": {
+    "_note": "meta plugin marketplaces. Hardcoded /home/<user>/ source.path values are portability RESIDUE → fix via the envctl template-substitution pass (ADR-0006), never drop. Claude Code reads source.path directly (no shell expansion), so portabilize only via a render step that emits the correct per-host path."
   },
   "hooks": {
-    "_note": "Hook commands must be repo-relative (e.g. 'bash scripts/foo.sh' or 'node scripts/foo.js'). Commands referencing /home/<user>/.claude/hooks/... are user-global config that does not belong in the committed umbrella settings. The PostToolUse/PreToolUse entries below are the umbrella's OWN repo-relative hooks (scripts/hooks/*.sh) and should survive the gated trim of the live settings.json; the user-global hooks in the live file (ruvector/ccg/gitnexus/global/*) are drift to be dropped.",
+    "_note": "Hooks are KEPT (never-downgrade). Repo-relative hooks (scripts/hooks/*.sh) — incl. the ICM architecture-memoir injection (icm-architecture-inject.sh on SessionStart+PreCompact) — live in the tracked file. User-global hooks (ruvector/ccg/gitnexus/global/*) reference ~/.claude/... (the envctl-symlinked home) using the portable ~/ form the shell expands. The entries below are the umbrella's OWN repo-relative hooks and are always valid.",
     "PostToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
@@ -24,6 +28,14 @@
         "hooks": [
           { "type": "command", "command": "bash scripts/hooks/protect-secrets-store.sh", "timeout": 5000 },
           { "type": "command", "command": "bash scripts/hooks/gitmodules-drift-guard.sh", "timeout": 5000 }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          { "type": "command", "command": "bash scripts/hooks/icm-architecture-inject.sh", "timeout": 12000 }
         ]
       }
     ]

@@ -4,11 +4,48 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-05-29 (SESSION-2026-05-29-015 — PR pipeline driven to finish line: develop CI repaired, network scaffolding salvaged, #66/#51 closed as superseded, develop→main promoted)
-**Branch:** `develop` (all PRs target develop)
-**Status:** All open PRs resolved; `main`↔`develop` content-in-sync; remote pruned to `main`+`develop`; `ci-failure-tracker` live on `main`. Adoption/forks still gated pending `gh auth login` (UA-005).
+**Last updated:** 2026-06-17 (SESSION-2026-06-16-006 — meta control-plane gap closure merged to `develop`)
+**Branch:** `develop`
+**PRs:** #118 (Phases 1–2), #121 (Phases 3–8), #126 (Phases 9–10) — all merged
+**Status:** Stacked meta control-plane gap closure landed. `protect-develop` ruleset restored. Next human action: unlock the envctl/secretctl USB vault and provision GitHub tokens (`PARENT_REPO_PAT`, `RELEASE_TOKEN`, `LABEL_SYNC_TOKEN`) per `data/brain-data/research/meta-envctl.md`.
 
 ---
+
+## Meta control-plane gap closure (Phases 1–9)
+
+Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"meta-gap-closure".
+
+- [x] **Phase 1** — Reusable meta Rust CI, callable semantic PR title, full-clone guard.
+- [x] **Phase 2** — Cross-repo dispatch templates (`reusable-notify-parent.yml`, `reusable-notify-downstream.yml`, `reusable-child-update-sync.yml`).
+- [x] **Phase 3** — Fleet policy-as-code (`scripts/apply-fleet-policies.py`, `.github/policies/`) + labels-as-code.
+- [x] **Phase 4** — Repo onboarding template pack (`docs/templates/repo-onboarding/`) + reusable auto-format.
+- [x] **Phase 5** — Security/hermeticity/MCP governance (`mcp-doctor.py`, reusable audit workflows, pinned MCP image).
+- [x] **Phase 6** — Handoff/P7 conformance (packet, session log, TODO/CHANGELOG sync).
+- [x] **Phase 7** — Secret/Renovate governance.
+- [x] **Phase 8** — Rust binary release reusable workflow.
+- [x] **Phase 9** — Bookkeeping + stacked PR merge coordination.
+- [x] **Phase 10** — Research meta/envctl secret/token wiring (dossier + token-name fixes).
+
+---
+
+## Meta-foundation confirmation (P1–P7)
+
+Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"Phased reconciliation".
+
+- [x] **P1** — Remove retired submodule ghost references from `CONTRIBUTING.md`, `Makefile`, and `manifest-drift.yml`.
+- [x] **P2** — Add semantic PR title gate (`.github/workflows/semantic-pr-title.yml`) + local `commit-msg` hook.
+- [x] **P3** — Replace Dependabot with Renovate (`renovate.json5`, remove `.github/dependabot.yml`).
+- [x] **P4** — Correct docs that falsely describe reusable workflows as "scaffolds" (`README.md`, `RELEASING.md`) and document the release-token operational gate.
+- [x] **P5** — Document dual use of `PROMOTE_TOKEN`/`RELEASE_TOKEN` and add `delete-merged-branch.yml` bot.
+- [x] **P6** — Refresh `docs/github-automation-roadmap.md` targets to match current state.
+- [x] **P7** — Write `.handoff` capsule summarizing confirmed vs deferred foundation work.
+- [x] **Policy infrastructure** — Docs-only additive changes still route through `develop`; branch-guard exemptions do not override branch-target policy. Documented in `AGENTS.md`, `CLAUDE.md`, `WORKFLOW.md`, and `architecture/adr/ADR-0003-dev-git-workflow-policy.md`.
+
+---
+
+## GitHub doctor hygiene (TDD loop — closed 2026-06-16)
+
+- [x] **Dependabot → Renovate check in `scripts/github-doctor.py`.** Replaced the stale `Dependabot config` check with a `Renovate config` check that accepts `renovate.json`/`renovate.json5` at repo root or under `.github/`. Added a triple-verify test at `scripts/tests/test-github-doctor.sh` (contract output, no Dependabot residue, offline `make github.doctor`) and a CI job in `manifest-drift.yml` to keep it green.
 
 ## CI-failure autofix (follow-on to `ci-failure-tracker.yml`)
 

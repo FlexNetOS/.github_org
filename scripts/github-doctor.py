@@ -97,7 +97,27 @@ def repo_checks() -> list[Check]:
             exists("docs/automation.md", "baseline", "automation docs"),
             exists("docs/github-automation-roadmap.md", "baseline", "Ralph roadmap", warning_detail("planned queue lives here")),
             exists(".github/CODEOWNERS", "policy", "CODEOWNERS"),
-            exists(".github/dependabot.yml", "policy", "Dependabot config"),
+            Check(
+                "policy",
+                "Renovate config",
+                status((ROOT / "renovate.json").exists() or (ROOT / "renovate.json5").exists() or (ROOT / ".github/renovate.json").exists() or (ROOT / ".github/renovate.json5").exists()),
+                "renovate.json or renovate.json5 (root or .github/)",
+            ),
+            exists(".github/policies/branch-protection.json", "policy", "branch-protection policy"),
+            exists(".github/policies/rulesets.json", "policy", "rulesets policy"),
+            exists(".github/policies/repo-settings.json", "policy", "repo-settings policy"),
+            exists("scripts/apply-github-policies.py", "policy", "policy applier script"),
+            Check(
+                "policy",
+                "community health files",
+                status(
+                    (ROOT / "CODE_OF_CONDUCT.md").exists()
+                    and (ROOT / "SECURITY.md").exists()
+                    and (ROOT / "CONTRIBUTING.md").exists()
+                    and (ROOT / "LICENSE").exists()
+                ),
+                "CODE_OF_CONDUCT.md, SECURITY.md, CONTRIBUTING.md, LICENSE",
+            ),
         ]
     )
 
@@ -186,6 +206,46 @@ def live_github_checks() -> list[Check]:
         checks.append(Check("github-live", "repo identity", "OK", f"{repo.get('nameWithOwner')} default={default_branch} private={repo.get('isPrivate')}"))
     else:
         checks.append(Check("github-live", "repo identity", "WARN", str(repo)))
+
+    ok, rulesets = gh_json(["api", f"/repos/{repo.get('nameWithOwner')}/rulesets"])
+    if ok and isinstance(rulesets, list):
+        checks.append(Check("github-live", "repository rulesets", status(bool(rulesets), warning=True), f"{len(rulesets)} ruleset(s)"))
+    else:
+        checks.append(Check("github-live", "repository rulesets", "WARN", str(rulesets)))
+
+    ok, bp = gh_json(["api", f"/repos/{repo.get('nameWithOwner')}/branches/{default_branch}/protection"])
+    if ok and isinstance(bp, dict):
+        checks.append(Check("github-live", "branch protection", "OK", f"present on {default_branch}"))
+    elif ok:
+        checks.append(Check("github-live", "branch protection", "WARN", f"not present or unreadable on {default_branch}"))
+    else:
+        checks.append(Check("github-live", "branch protection", "WARN", str(bp)))
+
+    owner_slug = repo.get('nameWithOwner', '').split('/')[0] if isinstance(repo, dict) else ''
+    ok, env = gh_json(["api", f"/repos/{repo.get('nameWithOwner')}/environments/release"])
+    if ok and isinstance(env, dict):
+        policy = env.get("deployment_branch_policy") or {}
+        if policy.get("protected_branches") and not policy.get("custom_branch_policies"):
+            checks.append(Check("github-live", "release environment", "OK", "protected-branches policy"))
+        else:
+            checks.append(Check("github-live", "release environment", "WARN", f"unexpected policy: {policy}"))
+    else:
+        checks.append(Check("github-live", "release environment", "WARN", str(env)))
+
+    codeowners = ROOT / ".github" / "CODEOWNERS"
+    if codeowners.exists():
+        text = codeowners.read_text(encoding="utf-8")
+        teams = {line.split()[-1] for line in text.splitlines() if line.strip() and not line.strip().startswith("#")}
+        writable_teams = [t for t in teams if not t.startswith("@FlexNetOS/") or t != "@FlexNetOS"]
+        if "@FlexNetOS" in teams and "@FlexNetOS/maintainers" not in teams:
+            checks.append(Check("github-live", "CODEOWNERS team", "WARN", "points to @FlexNetOS (not a writable team); repoint to @FlexNetOS/maintainers"))
+        elif "@FlexNetOS/maintainers" in teams:
+            ok, team = gh_json(["api", f"/orgs/{owner_slug}/teams/maintainers"])
+            checks.append(Check("github-live", "CODEOWNERS team", status(ok and isinstance(team, dict)), "@FlexNetOS/maintainers"))
+        else:
+            checks.append(Check("github-live", "CODEOWNERS team", "OK", ", ".join(teams) or "no entries"))
+    else:
+        checks.append(Check("github-live", "CODEOWNERS team", "WARN", "CODEOWNERS file missing"))
 
     return checks
 

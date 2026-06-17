@@ -67,14 +67,14 @@ jobs:
       tag-name: ${{ steps.rp.outputs.tag_name || format('v{0}', steps.sr.outputs.new_release_version) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           fetch-depth: 0   # release tooling needs full history for changelog
 
       - name: release-please
         id: rp
         if: inputs.release-type == 'release-please'
-        uses: googleapis/release-please-action@v4
+        uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4
         with:
           token: ${{ secrets.release-token || github.token }}
           target-branch: ${{ inputs.release-branch }}
@@ -104,14 +104,14 @@ jobs:
 
       - name: Set up Node (semantic-release)
         if: inputs.release-type == 'semantic-release'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: lts/*
 
       - name: semantic-release
         id: sr
         if: inputs.release-type == 'semantic-release'
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@16ca923e6ccbb50770c415a0ccd43709a8c5f7a4 # v4
         with:
           extra_plugins: ${{ inputs.semantic-release-extra-plugins }}
         env:

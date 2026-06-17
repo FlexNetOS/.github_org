@@ -36,10 +36,11 @@ jobs:
   gate:
     name: Gate upgrade PR for auto-review/merge
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Evaluate PR gate
         id: gate
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const owner = context.repo.owner;
@@ -140,7 +141,7 @@ jobs:
 
       - name: Submit upgrade gate review comment
         if: steps.gate.outputs.number != ''
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           PR_NUMBER: ${{ steps.gate.outputs.number }}
           ELIGIBLE: ${{ steps.gate.outputs.eligible }}
@@ -178,5 +179,6 @@ jobs:
           PR_NUMBER: ${{ steps.gate.outputs.number }}
         run: |
           # Do not pass --delete-branch: upgrade branches stay intact unless a
-          # maintainer deletes them separately.
+          # maintainer deletes them separately. Normal feature branches are
+          # cleaned up by `.github/workflows/delete-merged-branch.yml` instead.
           gh pr merge "$PR_NUMBER" --auto --squash

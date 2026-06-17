@@ -14,10 +14,15 @@ repository** that inherits it — i.e. any repo that does not ship its own
 
 ## Branch policy
 
-- `main` is the integration branch and is **protected**: PR with one approval, linear history, no force-push, no deletion.
-- Branch off `main` using `<type>/<short-slug>` — e.g. `feat/issue-template`, `fix/runner-label`, `docs/fork-workflow`.
-- Keep PRs focused: one logical change per PR. Split large changes into a stacked series rather than one mega-PR.
-- Rebase on `main` before requesting review; do not merge `main` into your branch.
+> **Repos that have adopted the trunk model** (`develop` present — e.g. the `.github` repo
+> itself) follow [`WORKFLOW.md`](WORKFLOW.md) / ADR-0003: `develop` is the trunk, `main` is the
+> protected mirror advanced only by automated promotion, and **PRs target `develop`, not `main`**.
+> The defaults below are the org-wide baseline for repos that have not yet adopted `develop`.
+
+- `main` is protected: PR with one approval, linear history, no force-push, no deletion.
+- Branch off the trunk (`develop` where present, else `main`) using `<type>/<short-slug>` — e.g. `feat/issue-template`, `fix/runner-label`, `docs/fork-workflow`.
+- Keep PRs focused: **one task per PR**. Split large changes into a stacked series rather than one mega-PR.
+- Rebase on the trunk before requesting review; do not merge the trunk into your branch.
 
 ## Commit messages
 
@@ -110,11 +115,13 @@ allowlist (`.claude/.doctor-allowlist`, `.codex/.doctor-allowlist`) with a one-l
 rationale. The `make claude.doctor` / `make config.doctor` targets enforce this
 read-only.
 
-## Resolving a `.gitmodules` merge conflict
+## Submodules in this repo
 
-Today `.gitmodules` is hand-maintained alongside `repos/MANIFEST.yaml`; resolve
-conflicts manually and keep the two consistent. **Forward-looking:** if the
-MANIFEST→`.gitmodules` *lockfile* (materialize) pattern is adopted (deferred —
-tracked as G4/G5 in [`.omc/plans/open-questions.md`](.omc/plans/open-questions.md)),
-`.gitmodules` becomes a generated artifact and conflicts are resolved by
-regenerating it from MANIFEST rather than editing by hand.
+> **ADR-0002 update:** `.github_org` is **no longer the submodule mount point**
+> for FlexNetOS repos. Repo organization moved to typed hubs (`tool_hub`,
+> `plugin_hub`, `vault_hub`, …) and unclassified work parks in
+> `~/Desktop/pending_relocate`. `repos/MANIFEST.yaml` is now an **offload stub**.
+>
+> The only remaining gitlinks in this repo are the `data/brain-data/*` wiki/brain
+> submodules. They are managed directly with `git submodule` commands if needed;
+> there is no hand-maintained `.gitmodules` merge workflow here.

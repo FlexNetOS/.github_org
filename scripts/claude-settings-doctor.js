@@ -6,13 +6,20 @@
  * edits the live settings file; it only scans and reports violations so the
  * canonical-shape trim can be applied later as a gated, manual UA step.
  *
- * Violations detected:
+ * Reported (this is REPORT-ONLY and tracks a portability follow-up, not a trim):
  *   (a) Hardcoded user-home paths in any string value:
  *         ^/home/...   ^/Users/...   ^/root/...   C:\Users\...
- *       These are NEVER allowed, even if listed in an allowlist.
+ *       Flagged as PORTABILITY RESIDUE. The sanctioned fix is a template/substitution
+ *       pass at link time (ADR-0006; see envctl/home/.claude/settings.json.tmpl with
+ *       ${META_ROOT}), or a portable form ($HOME/, ~/) the consumer expands — an
+ *       UPGRADE, never a drop of the underlying meta-controlled config.
  *   (b) Portable-but-gated home references ($HOME/, ~/, ${HOME}/, %APPDATA%):
  *       allowed ONLY if a matching line exists in the allowlist.
- *   (c) The key env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS being present.
+ *
+ * NOT policed: the settings `env` block and `enabledPlugins`/`extraKnownMarketplaces`
+ * are owned by the meta/envctl env manager (envctl/home/ is the canonical home tree;
+ * $HOME symlinks into it, ADR-0006). env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS and
+ * meta's plugin marketplaces are INTENTIONAL config and must never be dropped.
  *
  * Dependency-free (Node stdlib only).
  *
@@ -57,7 +64,11 @@ const GATED_PATTERNS = [
   { name: '%APPDATA% reference', re: /%APPDATA%/i },
 ];
 
-const FORBIDDEN_KEYS = ['env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS'];
+// No forbidden keys. The `env` block is owned by the meta/envctl env manager
+// (ADR-0006: envctl/home/ is the canonical home tree, $HOME symlinks into it), so
+// env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is INTENTIONAL, meta-controlled config and
+// must NEVER be dropped (owner directive 2026-06-13). It is no longer policed here.
+const FORBIDDEN_KEYS = [];
 
 function usage() {
   const src = fs.readFileSync(__filename, 'utf8');

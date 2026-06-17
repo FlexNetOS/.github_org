@@ -36,7 +36,11 @@ on:
       - promote-develop-to-main
       - dependency-review
       - submodule-bump
+      - Branch Target Guard
     types: [completed]
+  schedule:
+    - cron: '0 10 * * 1'   # Weekly Monday 10:00 UTC stale-issue sweep
+  workflow_dispatch:
 
 # Block default permissions; grant only what the issue bookkeeping needs.
 permissions:
@@ -54,10 +58,11 @@ jobs:
   track:
     name: Open / update failure issue
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: github.event.workflow_run.conclusion == 'failure'
     steps:
       - name: File or update CI-failure issue with log references
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const owner = context.repo.owner;
@@ -117,10 +122,11 @@ jobs:
   resolve:
     name: Auto-close failure issue on recovery
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Close any open issue for this workflow + branch
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const owner = context.repo.owner;
@@ -142,3 +148,50 @@ jobs:
               owner, repo, issue_number: match.number, state: 'closed', state_reason: 'completed',
             });
             core.notice(`Closed recovered CI-failure issue #${match.number}`);
+
+  sweep:
+    name: Sweep stale ci-failure issues
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Close ci-failure issues for branches that no longer exist
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const cutoffDays = 30;
+            const cutoff = new Date(Date.now() - cutoffDays * 24 * 60 * 60 * 1000).toISOString();
+
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', labels: 'ci-failure', per_page: 100,
+            });
+
+            const titleRe = /^ci-failure: .* on (.+)$/;
+            let closed = 0;
+            for (const issue of issues) {
+              const match = issue.title.match(titleRe);
+              if (!match) continue;
+              const branch = match[1];
+              if (branch === 'main' || branch === 'develop') continue;
+              if (new Date(issue.updated_at) > new Date(cutoff)) continue;
+
+              try {
+                await github.rest.repos.getBranch({ owner, repo, branch });
+                continue; // branch still exists
+              } catch (err) {
+                if (err.status !== 404) continue;
+              }
+
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: issue.number,
+                body: `Closing stale CI-failure issue: branch \`${branch}\` no longer exists and the issue has been inactive for >${cutoffDays} days.`,
+              });
+              await github.rest.issues.update({
+                owner, repo, issue_number: issue.number, state: 'closed', state_reason: 'not_planned',
+              });
+              core.notice(`Closed stale CI-failure issue #${issue.number} (branch ${branch} gone)`);
+              closed++;
+            }
+            core.notice(`Sweep complete: closed ${closed} stale ci-failure issue(s).`);
