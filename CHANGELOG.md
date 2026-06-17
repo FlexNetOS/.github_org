@@ -41,6 +41,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed (SESSION-2026-06-16-007)
 - `.github/workflows/reusable-meta-rust-ci.yml` and `.github/workflows/reusable-auto-format.yml` — updated to support both in-repo callers (local `./.github/actions/meta-rust-workspace`) and cross-repo child-repo callers (checkout `FlexNetOS/.github` into `.github-org-actions` and use its composite action). (Phase 4)
 
+### Added (SESSION-2026-06-16-008)
+- `scripts/mcp-doctor.py` — validates `.mcp.json`: required shape, no hardcoded secrets, digest-pinned Docker images, HTTPS/localhost URLs for HTTP servers, and env values that reference `${VAR}` placeholders. (Phase 5)
+- `.github/workflows/reusable-mcp-audit.yml` — reusable workflow that runs `mcp-doctor.py` against the caller repo. (Phase 5)
+- `.github/workflows/reusable-hermetic-audit.yml` — reusable workflow that runs `scripts/hermetic-audit.py` against the caller repo, with an optional `--fail` mode. (Phase 5)
+- `mcp-audit` job in `.github/workflows/ci.yml` to exercise `scripts/mcp-doctor.py` on every change. (Phase 5)
+
+### Changed (SESSION-2026-06-16-008)
+- `.mcp.json` — pinned the GitHub MCP server container image from a floating `latest` to `ghcr.io/github/github-mcp-server:v0.29.0@sha256:5049daf7f9eaa63df9f7658a84b5abab8d133f0fe494ab28a314191f315fa738`. (Phase 5)
+- `docs/github-automation-roadmap.md` — added `reusable-hermetic-audit.yml` and `reusable-mcp-audit.yml` to the permission matrix and updated Phase 6 with the new security/hermeticity/MCP surfaces. (Phase 5)
+
 ### Fixed (SESSION-2026-06-16-006)
 - `.claude/settings.json` hygiene — removed the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key and all hardcoded `/home/` `extraKnownMarketplaces` paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `scripts/claude-settings-doctor.js --check` now passes. Marketplace definitions will be re-injected via `meta/envctl` (portable, no literal user-home paths).
 - `.handoff/packets/2026-06-16-meta-conformity.md` — removed example credential-like placeholder strings that Gitleaks flagged as false positives.

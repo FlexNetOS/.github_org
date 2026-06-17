@@ -119,6 +119,8 @@ Acceptance:
 | `reusable-notify-downstream.yml` | read | — | — | — | — | — | `PARENT_REPO_PAT` (cross-repo dispatch + check wait) |
 | `reusable-child-update-sync.yml` | write | write | — | — | — | — | `PARENT_REPO_PAT` (sync PR + auto-merge) |
 | `reusable-security.yml` | read | — | — | — | read | write | none (uses GitHub-provided CodeQL/Trivy actions) |
+| `reusable-hermetic-audit.yml` | read | — | — | — | — | — | none (read-only audit) |
+| `reusable-mcp-audit.yml` | read | — | — | — | — | — | none (reads `.mcp.json` from caller repo) |
 | `sync-labels.yml` | read | write | — | — | — | — | `LABEL_SYNC_TOKEN` (org-scoped label management) |
 
 ### Fleet policy and labels-as-code
@@ -208,9 +210,15 @@ Existing surfaces:
 - `secrets/github-secrets.tsv.example`
 - `secrets/README.md`
 - `.gitignore` rule for the real local mapping file
+- `scripts/apply-fleet-policies.py` and `.github/policies/fleet.json`
+- `scripts/mcp-doctor.py` and `.github/workflows/reusable-mcp-audit.yml`
+- `.github/workflows/reusable-hermetic-audit.yml`
 
 Next deliverables:
 
+- [x] Add dry-run-first fleet policy applier (`scripts/apply-fleet-policies.py`) and registry (`.github/policies/fleet.json`).
+- [x] Add MCP configuration audit (`scripts/mcp-doctor.py`, `.github/workflows/reusable-mcp-audit.yml`) and pin the GitHub MCP server image in `.mcp.json` to a digest.
+- [x] Add reusable hermetic audit workflow (`.github/workflows/reusable-hermetic-audit.yml`) so child repos can run the same audit as the umbrella.
 - [ ] Add dry-run CI smoke test with stubbed `bw` and `gh`.
 - [ ] Add branch protection/ruleset/CODEOWNERS audit script.
 - [ ] Document secret rotation from Vaultwarden through GitHub repo/env/org secrets.
