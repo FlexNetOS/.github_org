@@ -13,6 +13,11 @@ name: delete-merged-branch
 on:
   pull_request:
     types: [closed]
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -21,6 +26,7 @@ jobs:
   delete:
     name: Delete merged feature branch
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: "github.event.pull_request.merged == true"
     steps:
       - name: Delete head branch if safe

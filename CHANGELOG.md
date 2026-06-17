@@ -114,6 +114,54 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Branch target for this work: `docs/meta-foundation-confirmation`. The session is intentionally additive/doc-only; no submodule mutations, no forks, no committed secret values, no `main` branch edits.
 - `UA-2026-06-16-001` closed: `RELEASE_TOKEN` is set as a repo secret on `FlexNetOS/.github`.
 
+### Added (SESSION-2026-06-17-007)
+- `.github/policies/{branch-protection,rulesets,repo-settings}.json` — declarative policy-as-code for `main`/`develop` branch protection, repository rulesets (`protect-main`, `protect-develop`, `protect-release-tags`), and repository settings/environments. (TODO: systematic control-plane upgrade Phases 2-3)
+- `scripts/apply-github-policies.py` — dry-run-first applier for the policy files with `--dry-run`, `--apply`, and `--check` modes. Live application succeeded: branch protections updated, three rulesets created, repo settings patched, and the `release` environment created with a protected-branches deployment policy. (TODO: systematic control-plane upgrade Phases 2-3, 6)
+- `scripts/tests/test-github-policies.sh` — triple-verify contract test: policy JSON parses, `--dry-run` emits no errors, and `--check` reports no drift (skipped if `gh` is not authenticated). Wired into `make verify.github-policies`. (TODO: systematic control-plane upgrade Phase 7)
+- `.githooks/{pre-commit,pre-push,post-checkout}` — local hooks that lint staged workflows/markdown, block direct pushes to `main`/`develop`, and guard against committing on the default branch. Install with `make install-hooks`. (TODO: systematic control-plane upgrade Phase 5)
+- `renovate.json` — explicit Renovate configuration with digest pinning, GitHub Actions grouping, dependency-dashboard approval, and research-path ignore rules. (TODO: systematic control-plane upgrade Phase 4)
+
+### Changed (SESSION-2026-06-17-007)
+- Workflow hardening across caller workflows: added `concurrency` blocks and `timeout-minutes`, created `.github/workflows/branch-target-guard.yml` to block PRs to `main` from non-`develop`/`release/*` heads, extended `dependency-review.yml` to run on `develop`, and added a stale `ci-failure` issue sweep job to `ci-failure-tracker.yml`. (TODO: systematic control-plane upgrade Phase 1)
+- `scripts/github-doctor.py` — added policy-file presence checks and live GitHub checks for repository rulesets and default-branch protection. (TODO: systematic control-plane upgrade Phase 7)
+- `Makefile` — added `verify.github-policies` target and included it in the umbrella `make verify` chain. (TODO: systematic control-plane upgrade Phase 7)
+- `.github/workflows/manifest-drift.yml` — added report-only `github-policy-drift` job that runs `scripts/apply-github-policies.py --check` on every PR. (TODO: systematic control-plane upgrade Phase 7)
+
+### Fixed (SESSION-2026-06-17-007)
+- `scripts/apply-github-policies.py` now sends repository settings as a JSON body instead of form fields, so boolean `false` values (e.g., `allow_merge_commit=false`) are applied correctly. Extended `--check` to compare repository settings and environment `deployment_branch_policy` details.
+- `.github/workflows/branch-target-guard.yml` missing `concurrency` block added.
+
+### Notes (SESSION-2026-06-17-007)
+- Branch target for this work: `feat/control-plane-upgrade` → `develop`. All changes are additive; no submodule mutations, no forks, no committed secrets, no `main` branch edits.
+- The policy applier was applied live with the operator's authenticated `gh` token; the committed policy now matches GitHub state. Report-only CI drift checks will be promoted to STRICT after one green cycle.
+- Stale `ci-failure` issues #90–#110 were closed as part of Phase 0 groundwork.
+
+### Changed (SESSION-2026-06-17-008)
+- **CODEOWNERS repointed to `@FlexNetOS/maintainers`.** Created the org-level team, gave it admin access to this repo, and updated `.github/CODEOWNERS` to use it. Enabled `require_code_owner_reviews` in branch protection and `require_code_owner_review` in rulesets for `main`/`develop`.
+- **Repository settings hardened.** Added `squash_merge_commit_title=PR_TITLE` and `squash_merge_commit_message=PR_BODY` to `.github/policies/repo-settings.json`; applied live.
+- **Rulesets hardened.** Added a `commit_message_pattern` rule enforcing Conventional Commits to `protect-main` and `protect-develop`. Added `required_signatures` to `protect-release-tags`.
+- **Branch protection aligned.** Enabled code-owner review requirement on `main` and `develop`.
+- **Workflow hardening follow-on.** Added `branch-target-guard` to `ci-failure-tracker.yml` watched list; pinned `actions/dependency-review-action` to SHA `a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0`; scoped `claude-code-review.yml` paths and permissions and filtered out draft PRs; filtered `delete-merged-branch.yml` to `main`/`develop` base branches; added PR `paths` trigger to `wiki-lint.yml`; pinned remaining unpinned `actions/setup-node@v4` references in `manifest-drift.yml` to SHA `49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0`.
+- **OIDC trust documented.** Added inline comments to `claude-code-review.yml` and a workflow permission matrix to `docs/github-automation-roadmap.md` explaining `id-token: write`, the audience, and the `sub` claim.
+- **Operational tooling.** Documented `RELEASE_TOKEN`/`PROMOTE_TOKEN` sourcing from `meta/envctl`; added CI badges to `README.md`; confirmed `ci-failure` and `needs-autofix` labels exist. The runner-availability pre-check for `secrets-rotate.yml` is deferred because the GitHub API requires `administration:read` (not a workflow `permissions` scope) and org-level runner visibility requires `admin:org`, neither available to the default `GITHUB_TOKEN`.
+- **Local git hooks upgraded.** Policy JSON syntax check in `pre-commit`; `develop` added to `pre-push` protected-ref blocklist plus branch-name style warning; new `prepare-commit-msg` hook that prepends a Conventional Commit prefix from the branch name; new `post-merge` hook that runs `make verify.fast` after merges from `origin/main` or `origin/develop`; stronger uncommitted-changes warning in `post-checkout`.
+- **Policy applier/doctor extended.** `apply-github-policies.py` now validates ruleset rule schemas, compares full ruleset payloads, branch-protection details, repo settings, and environment policies in `--check`, and supports `--json` output. `github-doctor.py` now checks the `release` environment policy and validates the `CODEOWNERS` team; also verifies community health files exist.
+
+### Added (SESSION-2026-06-17-008)
+- `.githooks/prepare-commit-msg` — auto-prefixes empty commit messages with the Conventional Commit type inferred from the branch name.
+- `.githooks/post-merge` — runs `make verify.fast` after merges from `origin/main` or `origin/develop`.
+- `Makefile` target `verify.fast` — fast local verification without live API calls.
+- `Makefile` targets `github.policy.dry-run`, `github.policy.apply`, `github.policy.check` — convenience wrappers for the policy applier.
+
+### Fixed (SESSION-2026-06-17-008)
+- `.github/workflows/manifest-drift.yml` `github-policy-drift` job now requests `administration: read` and exports `GH_TOKEN` so the default `GITHUB_TOKEN` can read branch protection and rulesets during the report-only first cycle.
+
+### Notes (SESSION-2026-06-17-008)
+- Branch target for this work: `feat/control-plane-upgrade` → `develop`. All changes are additive; no submodule mutations, no forks, no committed secrets, no `main` branch edits.
+- The policy changes were applied live via `python3 scripts/apply-github-policies.py --apply`. `python3 scripts/apply-github-policies.py --check` reports no drift.
+- Bypass actors for rulesets are deferred until the release bot/app actor ID is known/available.
+- `github-policy-drift` remains `continue-on-error: true` until it runs green in CI for one PR cycle.
+
 ### Changed (SESSION-2026-05-29-015)
 - **PR pipeline driven to finish line.** Repaired `develop` CI and resolved all open PRs: (PR #71) fixed `reusable-typecheck.yml` duplicate `run:` key + losslessly repaired the spliced `.claude/settings.json` (valid JSON; kept the complete copy — 8 hook events / 16 plugins / 5 marketplaces / 28 commands; discarded 335-line duplicate had 0 unique commands); (PR #74) salvaged the unique `network/` slim control-plane scaffolding (8 files absent from develop); (PR #67) squash-promoted develop→main. `main` and `develop` are now content-identical. (SESSION-2026-05-29-015)
 - `TODO.md` — de-duplicated the triplicated "CI-failure autofix" section and collapsed the 8-deep stacked `**Last updated:**`/`**Branch:**` header to a single current line (merge-accumulation cruft from concurrent-session merges). (SESSION-2026-05-29-015)

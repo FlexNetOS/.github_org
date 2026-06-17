@@ -1,0 +1,40 @@
+name: Branch Target Guard
+
+# Enforce the docs-only branch-target policy: pull requests to `main` must
+# originate from `develop` or a release branch. The perpetual
+# `promote-develop-to-main` PR is allowed because its head is `develop`.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  guard:
+    name: Guard main branch target
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify PR to main originates from develop or release/*
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          case "$HEAD_REF" in
+            develop|release/*)
+              echo "OK: PR to main originates from '$HEAD_REF'."
+              ;;
+            *)
+              echo "ERROR: Pull requests to main must originate from 'develop' or a 'release/*' branch." >&2
+              echo "Head ref was: '$HEAD_REF'" >&2
+              exit 1
+              ;;
+          esac

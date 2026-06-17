@@ -25,7 +25,15 @@ bootstrap: ## Idempotent setup: tools check, submodules init, secrets unlock
 	@scripts/bootstrap.sh
 
 .PHONY: verify
-verify: verify.tool-assets verify.actionlint verify.markdown verify.manifest verify.tools verify.hermetic ## Run every local verification
+verify: verify.tool-assets verify.actionlint verify.markdown verify.manifest verify.tools verify.hermetic verify.github-policies ## Run every local verification
+
+.PHONY: verify.fast
+verify.fast: verify.actionlint verify.markdown verify.manifest verify.tools ## Fast verification (no live API calls)
+
+.PHONY: install-hooks
+install-hooks: ## Configure Git to use the local hooks in .githooks/
+	@git config core.hooksPath .githooks
+	@echo "Local hooks configured from .githooks/"
 
 .PHONY: verify.actionlint
 verify.actionlint: ## Lint .github/workflows/*.yml
@@ -50,6 +58,10 @@ verify.tools: ## Validate tools/MANIFEST.yaml structure
 .PHONY: verify.hermetic
 verify.hermetic: ## Report non-hermetic workflow/script dependencies (advisory)
 	@python3 scripts/hermetic-audit.py .
+
+.PHONY: verify.github-policies
+verify.github-policies: ## Validate .github/policies/ JSON and live drift check (skipped if not authenticated)
+	@bash scripts/tests/test-github-policies.sh
 
 # ---------- Submodules (data/brain-data only) ----------
 # ADR-0002 retired repo/tool submodules in .github_org. The only remaining
@@ -153,6 +165,18 @@ github-app.smoke: ## Smoke-test GitHub App installation token exchange (DRY_RUN=
 	if [ "$${DRY_RUN:-0}" = "1" ]; then args="$$args --dry-run"; fi; \
 	if [ "$${JSON:-0}" = "1" ]; then args="$$args --json"; fi; \
 	python3 scripts/github-app-token-smoke.py $$args
+
+.PHONY: github.policy.dry-run
+github.policy.dry-run: ## Dry-run the GitHub policy applier
+	@python3 scripts/apply-github-policies.py --dry-run
+
+.PHONY: github.policy.apply
+github.policy.apply: ## Apply .github/policies/ to live GitHub state
+	@python3 scripts/apply-github-policies.py --apply
+
+.PHONY: github.policy.check
+github.policy.check: ## Check committed policy against live GitHub state
+	@python3 scripts/apply-github-policies.py --check
 
 # ---------- Reconciliation tooling (additive; see data/brain-data/research/my-github-reconciliation.md) ----------
 .PHONY: claude.doctor
