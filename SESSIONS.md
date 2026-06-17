@@ -8,14 +8,89 @@
 
 ---
 
+## SESSION-2026-06-16-006 — meta-conformity / `.handoff` / develop-CI unblock
+
+- **ID:** `SESSION-2026-06-16-006`
+- **Date:** 2026-06-16
+- **Branch:** `feat/handoff-meta-conformity`
+- **HEAD at end:** `TBD`
+- **Mode:** manual + TDD triple-verify
+- **Outcome:** `.handoff` continuity layer created and configured; `.github_org` registration in meta `.meta.yaml` confirmed; stale `docs/meta-foundation-confirmation` loop state migrated into `.handoff/packets/2026-06-16-meta-conformity.md`; `develop` CI Trivy false positives suppressed via `trivy-secret.yaml` + contract test; `.claude/settings.json` hygiene fixed by removing the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key and hardcoded `/home/` marketplace paths; example credential-like strings removed from the handoff packet so Gitleaks stays green.
+- **User-action gates surfaced:** none.
+
+### What the user asked
+> Continue the `.github_org` transformation to conform to meta and fix `.handoff`.
+
+### What the answer is
+- **`.handoff` foundation** — created `context/capsule.json`, `README.md`, and the
+  handoff packet `.handoff/packets/2026-06-16-meta-conformity.md`.
+- **`.gitignore` fix** — `.handoff/packets/` is no longer ignored; only the
+  derived `latest.md`, `active.md`, and `*.db` files stay ignored.
+- **Meta registry** — `github_org` already present in `/home/drdave/Desktop/meta/.meta.yaml`
+  (P1.2 satisfied).
+- **Legacy loop-state migration** — refreshed `TODO.md` header and added the
+  meta-conformity section; this entry closes the stale
+  `docs/meta-foundation-confirmation` loop.
+- **Develop CI unblock** — Trivy filesystem scan was failing on 3 CRITICAL
+  `stripe-secret-token` findings in `data/brain-data/research/n8n-mcp/repomix-pack.xml`
+  (upstream test fixtures). Added `trivy-secret.yaml` allow-rule,
+  `scripts/tests/test-trivy-secret-suppressions.sh` triple-verify contract test,
+  and wired the config into `.github/workflows/reusable-security.yml` and
+  `.github/workflows/manifest-drift.yml`.
+
+### What was actually done this session
+1. Confirmed `github_org` is registered in meta `.meta.yaml`.
+2. Created `.handoff/context/capsule.json` and `.handoff/README.md`.
+3. Updated `.gitignore` for correct `.handoff/packets/` handling.
+4. Created `.handoff/packets/2026-06-16-meta-conformity.md`.
+5. Refreshed `TODO.md` and `SESSIONS.md` to close the stale loop.
+6. Reproduced the Trivy failure locally.
+7. Wrote the failing contract test, then created `trivy-secret.yaml` to make it pass.
+8. Updated `reusable-security.yml` to pass `--secret-config trivy-secret.yaml`.
+9. Added a report-only `trivy-secret-suppressions` job to `manifest-drift.yml`.
+10. Validated workflows with `tools/bin/actionlint`.
+11. Re-checked PR #111 CI after the initial push; fixed the two failures:
+    - Gitleaks flagged example credential-like placeholder strings in the handoff packet — redacted them.
+    - `.claude/settings.json hygiene` failed on pre-existing hardcoded `/home/` marketplace paths and the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key — removed them from the tracked file; marketplace definitions to be re-injected via `meta/envctl`.
+
+### Reservations / risks
+- The new `manifest-drift.yml` job is report-only for one green cycle; promote it
+  to STRICT after validation.
+- `trivy-secret.yaml` path regex must be updated if research archive layout changes.
+- No submodule mutations, no host installs, no committed secrets.
+
+### What's next
+- Run `make verify`, push `feat/handoff-meta-conformity`, and open PR to `develop`.
+- After merge, confirm `security / Trivy filesystem + IaC` is green on `develop`
+  and `promote-develop-to-main.yml` opens the promotion PR.
+
+### Files created/modified this session
+
+| Path | What |
+|---|---|
+| `.handoff/context/capsule.json` | Handoff context capsule |
+| `.handoff/README.md` | `.handoff` directory guide |
+| `.handoff/packets/2026-06-16-meta-conformity.md` | Handoff packet with loop-state migration |
+| `.gitignore` | Allow `.handoff/packets/`; ignore only `latest.md` / `active.md` / `*.db` |
+| `trivy-secret.yaml` | Trivy secret-scan allow-rule for research repomix archives |
+| `scripts/tests/test-trivy-secret-suppressions.sh` | Triple-verify contract test |
+| `.github/workflows/reusable-security.yml` | Explicit `--secret-config trivy-secret.yaml` |
+| `.github/workflows/manifest-drift.yml` | New `trivy-secret-suppressions` job |
+| `.claude/settings.json` | Removed forbidden env key + hardcoded `/home/` marketplace paths |
+| `TODO.md` | Refreshed header + meta-conformity section + G8 trim status |
+| `CHANGELOG.md` | Added Unreleased entries for this session |
+| `SESSIONS.md` | This entry |
+
+---
+
 ## SESSION-2026-06-16-005 — meta-foundation confirmation (P1–P7)
 
 - **ID:** `SESSION-2026-06-16-005`
 - **Date:** 2026-06-16
 - **Branch:** `docs/meta-foundation-confirmation`
-- **HEAD at end:** `TBD`
+- **HEAD at end:** `62a7876` (squash-merged to `develop` via PR #108)
 - **Mode:** manual research + targeted edits
-- **Outcome:** P1–P7 of the `my-github-reconciliation.md` phased plan landed; docs now accurately describe reusable-workflow maturity; Dependabot retired; semantic PR/commit gates added; `RELEASE_TOKEN` wired in `release.yml` and the automatic `push: branches: [main]` trigger enabled; `delete-merged-branch.yml` added; roadmap refreshed; docs-only branch-target policy confirmed.
+- **Outcome:** P1–P7 of the `my-github-reconciliation.md` phased plan landed; docs now accurately describe reusable-workflow maturity; Dependabot retired; semantic PR/commit gates added; `RELEASE_TOKEN` wired in `release.yml` and the automatic `push: branches: [main]` trigger enabled; `delete-merged-branch.yml` added; roadmap refreshed; docs-only branch-target policy confirmed. PR #108 merged to `develop`.
 - **User-action gates surfaced:** none — `UA-2026-06-16-001` closed in-session.
 - **Cost:** N/A
 

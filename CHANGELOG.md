@@ -20,6 +20,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added (SESSION-2026-06-16-006)
+- `.handoff/context/capsule.json`, `.handoff/README.md`, and `.handoff/packets/2026-06-16-meta-conformity.md` — handoff continuity layer for the `.github` umbrella. (P7 / meta-conformity)
+- `trivy-secret.yaml` — Trivy secret-scanning allow-rule that suppresses false-positive `stripe-secret-token` findings in `data/brain-data/research/*/repomix-pack*.xml` research archives. (CI unblock)
+- `scripts/tests/test-trivy-secret-suppressions.sh` — triple-verify contract test that `trivy-secret.yaml` is loaded, no `stripe-secret-token` CRITICAL findings remain, and no CRITICAL findings remain in research repomix archives. (CI unblock)
+
+### Changed (SESSION-2026-06-16-006)
+- `.gitignore` — `.handoff/packets/` is no longer ignored; only the rendered `.handoff/active.md`, auto-generated `.handoff/packets/latest.md`, and local `.handoff/*.db` files stay ignored. (P7 / meta-conformity)
+- `.github/workflows/reusable-security.yml` — passes `--secret-config trivy-secret.yaml` explicitly to the `trivy fs` invocation so the allow-rule is always applied. (CI unblock)
+- `.github/workflows/manifest-drift.yml` — added a `trivy-secret-suppressions` job that runs the contract test (report-only for its first green cycle, then promote to STRICT). (CI unblock)
+
+### Fixed (SESSION-2026-06-16-006)
+- `.claude/settings.json` hygiene — removed the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key and all hardcoded `/home/` `extraKnownMarketplaces` paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `scripts/claude-settings-doctor.js --check` now passes. Marketplace definitions will be re-injected via `meta/envctl` (portable, no literal user-home paths).
+- `.handoff/packets/2026-06-16-meta-conformity.md` — removed example credential-like placeholder strings that Gitleaks flagged as false positives.
+
+### Notes (SESSION-2026-06-16-006)
+- Confirmed `github_org` is already registered in `/home/drdave/Desktop/meta/.meta.yaml` (lines 111–114); P1.2 meta-registry requirement is satisfied.
+- Migrated stale `docs/meta-foundation-confirmation` loop state into `.handoff/packets/2026-06-16-meta-conformity.md` and refreshed `TODO.md` / `SESSIONS.md`.
+
 ### Changed (SESSION-2026-06-16-005)
 - **Docs accuracy: reusable workflows are no longer "scaffolds".** Updated `README.md` and `RELEASING.md` to reflect that `.github/workflows/reusable-*.yml` contain real bodies and are consumed by the umbrella's own `ci.yml`. `RELEASING.md` now documents the operational gate blocking automatic releases (`release.yml` is `workflow_dispatch`-only until the org-level release token is wired). (P4)
 

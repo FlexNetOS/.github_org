@@ -108,6 +108,7 @@ architecture/.claude/
 .handoff/*.db
 # kernel render surface is DERIVED + local (rebuilt by `hf handoff`/`hf resume`); the
 # authoritative state is Git + the central FLEET ledger (ADR-0004). Keep committed
-# .handoff/loop/* (the file-based loop findings) but not the rendered kernel packets.
+# .handoff/loop/* (the file-based loop findings) and any hand-authored packets, but
+# ignore the rendered active packet and the auto-generated latest packet.
 .handoff/active.md
-.handoff/packets/
+.handoff/packets/latest.md
