@@ -1,0 +1,6 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>FlexNetOS/.github//.github/renovate-presets/meta-rust"
+  ]
+}

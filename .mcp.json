@@ -6,7 +6,7 @@
       "args": [
         "run", "-i", "--rm",
         "-e", "GITHUB_PERSONAL_ACCESS_TOKEN",
-        "ghcr.io/github/github-mcp-server"
+        "ghcr.io/github/github-mcp-server:v0.29.0@sha256:5049daf7f9eaa63df9f7658a84b5abab8d133f0fe494ab28a314191f315fa738"
       ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"

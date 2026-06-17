@@ -4,10 +4,27 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-06-17 (SESSION-2026-06-17-008 — control-plane upgrade follow-on)
-**Branch:** `feat/control-plane-upgrade`
-**PR:** #116 → `develop`
-**Status:** Follow-on upgrades from `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md` are implemented, applied live, and verified. Policy drift check remains report-only in CI pending one green PR cycle.
+**Last updated:** 2026-06-17 (SESSION-2026-06-16-006 — meta control-plane gap closure merged to `develop`)
+**Branch:** `develop`
+**PRs:** #118 (Phases 1–2), #121 (Phases 3–8), #126 (Phases 9–10) — all merged
+**Status:** Stacked meta control-plane gap closure landed. `protect-develop` ruleset restored. Next human action: unlock the envctl/secretctl USB vault and provision GitHub tokens (`PARENT_REPO_PAT`, `RELEASE_TOKEN`, `LABEL_SYNC_TOKEN`) per `data/brain-data/research/meta-envctl.md`.
+
+---
+
+## Meta control-plane gap closure (Phases 1–9)
+
+Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"meta-gap-closure".
+
+- [x] **Phase 1** — Reusable meta Rust CI, callable semantic PR title, full-clone guard.
+- [x] **Phase 2** — Cross-repo dispatch templates (`reusable-notify-parent.yml`, `reusable-notify-downstream.yml`, `reusable-child-update-sync.yml`).
+- [x] **Phase 3** — Fleet policy-as-code (`scripts/apply-fleet-policies.py`, `.github/policies/`) + labels-as-code.
+- [x] **Phase 4** — Repo onboarding template pack (`docs/templates/repo-onboarding/`) + reusable auto-format.
+- [x] **Phase 5** — Security/hermeticity/MCP governance (`mcp-doctor.py`, reusable audit workflows, pinned MCP image).
+- [x] **Phase 6** — Handoff/P7 conformance (packet, session log, TODO/CHANGELOG sync).
+- [x] **Phase 7** — Secret/Renovate governance.
+- [x] **Phase 8** — Rust binary release reusable workflow.
+- [x] **Phase 9** — Bookkeeping + stacked PR merge coordination.
+- [x] **Phase 10** — Research meta/envctl secret/token wiring (dossier + token-name fixes).
 
 ---
 
@@ -26,19 +43,6 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"Phased
 
 ---
 
-## Meta-conformity / `.handoff` / develop-CI unblock (SESSION-2026-06-16-006)
-
-Handoff packet: `.handoff/packets/2026-06-16-meta-conformity.md`.
-
-- [x] Create `.handoff/context/capsule.json` + `.handoff/README.md`.
-- [x] Fix `.gitignore` so `.handoff/packets/` are committed (only `latest.md` / `active.md` / `*.db` ignored).
-- [x] Confirm `.github_org` is registered in meta workspace `.meta.yaml` (already present; P1.2 satisfied).
-- [x] Migrate stale `docs/meta-foundation-confirmation` loop state into handoff packet and refresh `TODO.md` / `SESSIONS.md`.
-- [x] Unblock `develop` CI — suppress Trivy false-positive `stripe-secret-token` findings in research repomix archives via `trivy-secret.yaml` + triple-verify contract test.
-- [ ] Push `feat/handoff-meta-conformity`, open PR to `develop`, and promote after green CI.
-
----
-
 ## GitHub doctor hygiene (TDD loop — closed 2026-06-16)
 
 - [x] **Dependabot → Renovate check in `scripts/github-doctor.py`.** Replaced the stale `Dependabot config` check with a `Renovate config` check that accepts `renovate.json`/`renovate.json5` at repo root or under `.github/`. Added a triple-verify test at `scripts/tests/test-github-doctor.sh` (contract output, no Dependabot residue, offline `make github.doctor`) and a CI job in `manifest-drift.yml` to keep it green.
@@ -51,36 +55,11 @@ Handoff packet: `.handoff/packets/2026-06-16-meta-conformity.md`.
   - Gate: do not enable write-mode autofix on `main` until the tracker has run green for ≥1 cycle and the issue-noise/dedupe behaviour is confirmed sane on a feature branch.
   - First create the `ci-failure` + `needs-autofix` repo labels (the tracker assumes they can be applied; `github.rest.issues.create` will create missing labels on first use, but pre-creating them with colors/descriptions is cleaner).
 
-## `.claude/settings.json` hygiene (G8 trim — resolved in PR #111)
+## `.claude/settings.json` hygiene (gated G8 trim — non-required CI red)
 
-> Surfaced SESSION-2026-05-29-015. After the splice repair (#71) `settings.json` was valid JSON, but the `.claude/settings.json hygiene` doctor stayed red on pre-existing violations. Fixed in PR #111.
+> Surfaced SESSION-2026-05-29-015. After the splice repair (#71) settings.json is valid JSON, but the `.claude/settings.json hygiene` doctor + `Trivy filesystem + IaC` (both **non-required**, non-blocking) stay red on pre-existing violations.
 
-- [x] **Remove forbidden keys/paths from tracked `.claude/settings.json`.** Removed `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` and all hardcoded `/home/` marketplace paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `make claude.doctor` now reports 0 violations.
-- [ ] **Relocate marketplace definitions via meta/envctl.** The removed marketplace paths must be re-injected into the Claude environment through `meta/envctl` or portable project-level settings, never with literal `/home/<user>` paths. Deferred until `envctl` vault is available.
-
-## Systematic control-plane upgrade (SESSION-2026-06-17-007)
-
-- [x] Phase 0 — Refresh roadmap, promote-strict tracker, TODO; close stale CI-failure issues.
-- [x] Phase 1 — Add concurrency/timeouts, branch-target guard, dependency-review on develop, stale ci-failure sweep.
-- [x] Phase 2-3 — Codify branch protection + rulesets in `.github/policies/`; create `scripts/apply-github-policies.py`.
-- [x] Phase 4 — Upgrade `renovate.json` with grouping, digest pinning, dashboard approval.
-- [x] Phase 5 — Add `pre-commit`, `pre-push`, `post-checkout` hooks + `make install-hooks`.
-- [x] Phase 6 — Apply `delete_branch_on_merge`, restrict merge methods, create `release` environment.
-- [x] Phase 7 — Add policy drift checks to doctor and CI; add `scripts/tests/test-github-policies.sh`.
-- [x] Phase 8 — Bookkeeping, commit, push, open PR to `develop`.
-
-## Control-plane upgrade follow-on (SESSION-2026-06-17-008)
-
-Companion plan: `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`.
-
-- [x] Phase 1 — Workflow hardening: branch-target guard tracked, dependency-review pinned, `claude-code-review.yml` scoped/draft-filtered, delete-merged-branch filtered, wiki-lint PR path trigger.
-- [x] Phase 2 — Git hooks: policy JSON validation in `pre-commit`, block `develop` in `pre-push`, branch-name style check, new `prepare-commit-msg` and `post-merge` hooks, stronger `post-checkout` uncommitted-changes warning.
-- [x] Phase 3 — Rules/policies: squash-merge commit controls, Conventional Commit `commit_message_pattern` rules, signed release tags, `CODEOWNERS` repointed to `@FlexNetOS/maintainers`, code-owner review enabled, bypass actors deferred.
-- [x] Phase 4 — Applier/doctor/test upgrades: schema validation, full ruleset/branch/settings/env drift comparison, `--json` output, Makefile policy targets, release-env + CODEOWNERS doctor checks.
-- [x] Phase 5 — Operational/security: pin remaining unpinned actions, document OIDC trust policy, add workflow permission matrix, CI badges, confirm `ci-failure`/`needs-autofix` labels, `meta/envctl` secret sourcing comments, community-health file doctor check.
-- [ ] Phase 5 follow-up — Runner availability check in `secrets-rotate.yml` is deferred: the GitHub API for self-hosted runner status requires `administration:read` (not a workflow `permissions` scope) and org-level runner visibility requires `admin:org`, neither of which the default `GITHUB_TOKEN` can obtain.
-- [x] Phase 6 — Bookkeeping: `TODO.md`, `CHANGELOG.md`, `SESSIONS.md`, PR #116 updated.
-- [ ] Phase 1 follow-up — Promote `github-policy-drift` to STRICT after one green CI cycle (may need `POLICY_DRIFT_TOKEN` from `meta/envctl`).
+- [ ] Remove the 4 hardcoded `/home/` marketplace paths (`ecc`, `karpathy-skills`, `omc`, `understand-anything`) and the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key from tracked `.claude/settings.json`; relocate marketplace defs to user-global `~/.claude/settings.json`. **Gated:** user-environment change — could disable plugin marketplaces for this project. (overlaps the G8 trim item below)
 
 ## Pre-adoption dossier review gate (Phase 0 — GATED, human decision)
 

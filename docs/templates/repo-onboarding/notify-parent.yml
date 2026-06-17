@@ -1,0 +1,17 @@
+name: Notify Parent Repo
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  notify:
+    name: Notify parent
+    uses: FlexNetOS/.github/.github/workflows/reusable-notify-parent.yml@main
+    with:
+      parent-repo: 'FlexNetOS/meta'
+      event-type: 'child-repo-updated'
+    secrets:
+      parent-repo-pat: ${{ secrets.PARENT_REPO_PAT }}
