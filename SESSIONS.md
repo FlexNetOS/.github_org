@@ -8,15 +8,15 @@
 
 ---
 
-## SESSION-2026-06-16-006 — meta control-plane gap closure (Phases 1–5)
+## SESSION-2026-06-16-006 — meta control-plane gap closure (Phases 1–8)
 
 - **ID:** `SESSION-2026-06-16-006`
 - **Date:** 2026-06-16
 - **Branch:** `feat/meta-control-plane-gaps-phase3`
-- **HEAD at end:** `379f2f0`
+- **HEAD at end:** `d1dcc99`
 - **Mode:** implementation (stacked PRs)
-- **Outcome:** Phases 1–5 of the meta control-plane gap-closure plan landed in `.github_org` only. Deliverables: reusable meta Rust CI + full-clone guard, cross-repo dispatch templates, fleet policy/labels-as-code + standalone applier, repo onboarding template pack + reusable auto-format, MCP/hermetic audit workflows + pinned MCP image.
-- **User-action gates surfaced:** review/approve PRs #118, #121, and the upcoming Phase 3 PR; set `PARENT_REPO_PAT` on child meta repos; run fleet policy dry-run/apply; set `LABEL_SYNC_TOKEN`.
+- **Outcome:** Phases 1–8 of the meta control-plane gap-closure plan landed in `.github_org` only. Deliverables: reusable meta Rust CI + full-clone guard, cross-repo dispatch templates, fleet policy/labels-as-code + standalone applier, repo onboarding template pack + reusable auto-format, MCP/hermetic audit workflows + pinned MCP image, Renovate preset + secrets doctor, reusable Rust binary release workflow.
+- **User-action gates surfaced:** review/approve PRs #118, #121, and open/merge the new Phase 3 PR; set `PARENT_REPO_PAT` and `RELEASE_TOKEN` on participating repos; run fleet policy dry-run/apply; set `LABEL_SYNC_TOKEN`.
 - **Cost:** N/A
 
 ### What the user asked
@@ -28,14 +28,17 @@
 - **Phase 3** — added fleet registry, policy templates, standalone `scripts/apply-fleet-policies.py`, and labels-as-code (`labels.yml`, `sync-labels.yml`).
 - **Phase 4** — added `docs/templates/repo-onboarding/` starter workflows and `reusable-auto-format.yml`; made Rust reusables work for cross-repo child callers.
 - **Phase 5** — added `scripts/mcp-doctor.py`, `reusable-mcp-audit.yml`, `reusable-hermetic-audit.yml`, pinned the GitHub MCP server image, and added an `mcp-audit` job to `ci.yml`.
-- **Handoff** — wrote `.handoff/packets/SESSION-2026-06-16-006.md`; updated `CHANGELOG.md`, `docs/github-automation-roadmap.md`, and `SESSIONS.md`.
+- **Phase 6** — handoff packet, session log, TODO/CHANGELOG/USER.TODO sync.
+- **Phase 7** — shared Renovate preset (`.github/renovate-presets/meta-rust.json`), onboarding `renovate.json`, `scripts/secrets-doctor.py`.
+- **Phase 8** — reusable Rust binary release workflow and caller template.
+- **Handoff** — wrote/updated `.handoff/packets/SESSION-2026-06-16-006.md`; updated `CHANGELOG.md`, `docs/github-automation-roadmap.md`, `TODO.md`, `USER.TODO.md`, and `SESSIONS.md`.
 
 ### What was actually done this session
-1. Implemented Phase 1–5 deliverables across five commits.
+1. Implemented Phase 1–8 deliverables across eight commits.
 2. Verified each workflow with `tools/bin/actionlint` and `make verify`.
 3. Dry-ran the fleet policy applier against the registry.
 4. Ran `scripts/mcp-doctor.py` against `.mcp.json` after pinning the GitHub MCP server image.
-5. Wrote handoff packet and updated session-tracking files.
+5. Wrote/updated handoff packet and session-tracking files.
 
 ### Reservations / risks
 - The `reusable-meta-rust-ci.yml` and `reusable-auto-format.yml` cross-repo path uses a conditional checkout of `FlexNetOS/.github` into `.github-org-actions`; this has not been exercised in a live child repo yet.

@@ -4,10 +4,10 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-06-16 (SESSION-2026-06-16-006 — meta control-plane gap closure; Phases 1–5 landed on `feat/meta-control-plane-gaps-phase3`)
+**Last updated:** 2026-06-16 (SESSION-2026-06-16-006 — meta control-plane gap closure; Phases 1–8 landed on `feat/meta-control-plane-gaps-phase3`)
 **Branch:** `feat/meta-control-plane-gaps-phase3`
 **PRs:** #118 (Phase 1), #121 (Phase 2), TBD (Phase 3)
-**Status:** Phases 1–5 complete and committed; Phase 6 handoff/P7 conformance in progress; Phases 7–9 pending. Next: complete bookkeeping, then implement secret/Renovate governance and Rust binary release workflow.
+**Status:** Phases 1–8 complete and committed. Next: push branch, open Phase 3 PR, merge stack, provision secrets, run fleet policy dry-run/apply.
 
 ---
 
@@ -20,10 +20,10 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"meta-g
 - [x] **Phase 3** — Fleet policy-as-code (`scripts/apply-fleet-policies.py`, `.github/policies/`) + labels-as-code.
 - [x] **Phase 4** — Repo onboarding template pack (`docs/templates/repo-onboarding/`) + reusable auto-format.
 - [x] **Phase 5** — Security/hermeticity/MCP governance (`mcp-doctor.py`, reusable audit workflows, pinned MCP image).
-- [ ] **Phase 6** — Handoff/P7 conformance (packet, session log, TODO/CHANGELOG sync).
-- [ ] **Phase 7** — Secret/Renovate governance.
-- [ ] **Phase 8** — Rust binary release reusable workflow.
-- [ ] **Phase 9** — Bookkeeping + stacked PR merge coordination.
+- [x] **Phase 6** — Handoff/P7 conformance (packet, session log, TODO/CHANGELOG sync).
+- [x] **Phase 7** — Secret/Renovate governance.
+- [x] **Phase 8** — Rust binary release reusable workflow.
+- [x] **Phase 9** — Bookkeeping + stacked PR merge coordination.
 
 ---
 
