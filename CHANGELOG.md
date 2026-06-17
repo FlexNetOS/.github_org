@@ -75,6 +75,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `secrets/github-secrets.tsv.example` — renamed `REPO_WRITE_PACKAGES_PAT` to `RELEASE_TOKEN` to match workflow contracts and added `LABEL_SYNC_TOKEN`. (Phase 10)
 - `docs/github-automation-roadmap.md` — added Phase 10 (envctl secret authority), updated the `sync-labels.yml` permission note, and documented the remaining secret-provisioning next steps. (Phase 10)
 
+### Changed (SESSION-2026-06-17-007)
+- `docs/github-automation-roadmap.md` — replaced the fleet-policy applier section with the canonical `scripts/apply-github-policies.py` + `.github/policies/*.json` model and clarified that fleet-wide child-repo policies are out of scope for this repo.
+- `README.md` — fixed CI badge URLs to point to the renamed repository (`FlexNetOS/.github_org`).
+- `.github/workflows/claude-code-review.yml` — pinned `actions/checkout` and `anthropics/claude-code-action` to SHA digests.
+- `.github/workflows/secrets-rotate.yml` — added a `runner-availability` job that fails loudly when no self-hosted runner with the required labels is available.
+
+### Removed (SESSION-2026-06-17-007)
+- `scripts/apply-fleet-policies.py`, `.github/policies/fleet.json`, and `.github/policies/templates/` — removed the duplicative fleet-policy applier in favor of the canonical `scripts/apply-github-policies.py` introduced in PR #116.
+
 ### Fixed (SESSION-2026-06-16-006)
 - `.claude/settings.json` hygiene — removed the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key and all hardcoded `/home/` `extraKnownMarketplaces` paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `scripts/claude-settings-doctor.js --check` now passes. Marketplace definitions will be re-injected via `meta/envctl` (portable, no literal user-home paths).
 - `.handoff/packets/2026-06-16-meta-conformity.md` — removed example credential-like placeholder strings that Gitleaks flagged as false positives.

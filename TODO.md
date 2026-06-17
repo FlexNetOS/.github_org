@@ -4,10 +4,10 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-06-17 (SESSION-2026-06-16-006 — meta control-plane gap closure merged to `develop`)
-**Branch:** `develop`
-**PRs:** #118 (Phases 1–2), #121 (Phases 3–8), #126 (Phases 9–10) — all merged
-**Status:** Stacked meta control-plane gap closure landed. `protect-develop` ruleset restored. Next human action: unlock the envctl/secretctl USB vault and provision GitHub tokens (`PARENT_REPO_PAT`, `RELEASE_TOKEN`, `LABEL_SYNC_TOKEN`) per `data/brain-data/research/meta-envctl.md`.
+**Last updated:** 2026-06-17 (SESSION-2026-06-17-007 — control-plane upgrades continuation on `feat/control-plane-upgrades-continuation`)
+**Branch:** `feat/control-plane-upgrades-continuation`
+**PR target:** `feat/control-plane-upgrade` → `develop`
+**Status:** Implementing follow-up phases from `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`. Duplicative fleet-policy applier removed; canonical `scripts/apply-github-policies.py` retained.
 
 ---
 
@@ -17,7 +17,7 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"meta-g
 
 - [x] **Phase 1** — Reusable meta Rust CI, callable semantic PR title, full-clone guard.
 - [x] **Phase 2** — Cross-repo dispatch templates (`reusable-notify-parent.yml`, `reusable-notify-downstream.yml`, `reusable-child-update-sync.yml`).
-- [x] **Phase 3** — Fleet policy-as-code (`scripts/apply-fleet-policies.py`, `.github/policies/`) + labels-as-code.
+- [x] **Phase 3** — Policy-as-code for this repo (`scripts/apply-github-policies.py`, `.github/policies/*.json`) + labels-as-code (`.github/labels.yml`, `sync-labels.yml`).
 - [x] **Phase 4** — Repo onboarding template pack (`docs/templates/repo-onboarding/`) + reusable auto-format.
 - [x] **Phase 5** — Security/hermeticity/MCP governance (`mcp-doctor.py`, reusable audit workflows, pinned MCP image).
 - [x] **Phase 6** — Handoff/P7 conformance (packet, session log, TODO/CHANGELOG sync).
@@ -25,6 +25,19 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"meta-g
 - [x] **Phase 8** — Rust binary release reusable workflow.
 - [x] **Phase 9** — Bookkeeping + stacked PR merge coordination.
 - [x] **Phase 10** — Research meta/envctl secret/token wiring (dossier + token-name fixes).
+
+---
+
+## Control-plane upgrade follow-up phases
+
+Companion plan: `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`.
+
+- [x] **Phase 1** — Workflow hardening and consistency (timeouts, dependency-review pin, branch-target guard tracking, wiki-lint PR trigger).
+- [x] **Phase 2** — Git hooks upgrades (pre-commit JSON check, pre-push protected-ref block, branch-name style, prepare-commit-msg, post-merge, post-checkout warning).
+- [x] **Phase 3** — Rules/policies upgrades (squash-merge message controls, commit-message pattern ruleset, CODEOWNERS team, bypass actors, signed tags).
+- [x] **Phase 4** — Applier/doctor/test upgrades (schema validation, full ruleset/branch-protection `--check`, `--json` output, Makefile targets, release-env/CODEOWNERS checks).
+- [x] **Phase 5** — Operational/security upgrades (pin remaining actions, CI badges, label pre-creation, runner-availability check in `secrets-rotate.yml`).
+- [ ] **Phase 6** — Bookkeeping + open continuation PR.
 
 ---
 

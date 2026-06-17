@@ -8,6 +8,45 @@
 
 ---
 
+## SESSION-2026-06-17-009 — Verification and cleanup of merged control-plane work
+
+- **ID:** `SESSION-2026-06-17-009`
+- **Date:** 2026-06-17
+- **Branch:** `feat/control-plane-upgrades-continuation`
+- **PR target:** `feat/control-plane-upgrade` → `develop`
+- **Mode:** verification + corrective implementation
+- **Outcome:** Verified the merged meta control-plane changes against `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`. Found and fixed: duplicate fleet-policy applier, unpinned actions in `claude-code-review.yml`, stale `.github` badge URLs, missing runner-availability guard in `secrets-rotate.yml`. `make verify`, actionlint, and markdown lint all pass.
+- **User-action gates surfaced:** review/merge the continuation PR into PR #116, then merge PR #116 to `develop`.
+- **Cost:** N/A
+
+### What the user asked
+> Verify all your work and code changes, find the original plan, and proceed with the phase implementation.
+
+### What the answer is
+- The original follow-on plan is `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md` in PR #116.
+- PR #116 already implements Phases 0–8 of the systematic control-plane upgrade and the plan's Phases 1–6.
+- The merged stacked PRs (#118/#121/#126) introduced a duplicate fleet-policy applier (`scripts/apply-fleet-policies.py`, `.github/policies/fleet.json`, templates) that conflicts with the canonical `scripts/apply-github-policies.py` in PR #116; removed it.
+- Phase 5 gaps addressed: pinned `actions/checkout` and `anthropics/claude-code-action` in `claude-code-review.yml`; fixed README CI badges for the renamed repo; added `runner-availability` check to `secrets-rotate.yml`.
+
+### What was actually done this session
+1. Compared `origin/develop` against PR #116 to identify duplicative and missing pieces.
+2. Removed `scripts/apply-fleet-policies.py`, `.github/policies/fleet.json`, and `.github/policies/templates/`.
+3. Updated `docs/github-automation-roadmap.md` to document the canonical `apply-github-policies.py` model.
+4. Pinned remaining unpinned actions in `.github/workflows/claude-code-review.yml`.
+5. Fixed README CI badge URLs from `FlexNetOS/.github` to `FlexNetOS/.github_org`.
+6. Added a `runner-availability` job to `.github/workflows/secrets-rotate.yml`.
+7. Updated `TODO.md`, `CHANGELOG.md`, and `SESSIONS.md`.
+8. Ran `make verify`, `tools/bin/actionlint .github/workflows/*.yml`, and `python3 scripts/verify-markdown.py .` until clean.
+
+### Reservations / risks
+- The `runner-availability` check queries repo-level runners with the default `GITHUB_TOKEN`; if the self-hosted runner is registered at org level, the check may report none available even though one exists. In that case it should be extended to query org-level runners (requires `admin:org` scope or a dedicated token).
+- `github-policy-drift` remains report-only until it runs green with a token that has `administration: read`.
+
+### What's next
+- Open PR from `feat/control-plane-upgrades-continuation` to `feat/control-plane-upgrade`, merge it, then merge PR #116 to `develop`.
+
+---
+
 ## SESSION-2026-06-17-008 — GitHub control-plane upgrade follow-on
 
 - **ID:** `SESSION-2026-06-17-008`
