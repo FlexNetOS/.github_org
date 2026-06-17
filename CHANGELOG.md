@@ -27,6 +27,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed (SESSION-2026-06-17-010)
 - `github-policy-drift` in `.github/workflows/manifest-drift.yml` returned to REPORT_ONLY (`continue-on-error: true`). The strict run failed because the default `GITHUB_TOKEN` lacks permission to read branch protection, rulesets, and repository settings. Promotion back to STRICT is gated on provisioning `POLICY_DRIFT_TOKEN` from `meta/envctl`. Updated `.github/workflows/promote-strict.md` accordingly.
 
+### Fixed (SESSION-2026-06-17-010)
+- `scripts/apply-github-policies.py`: made `_rule_params_match` symmetric (catches surplus/removed live parameters) and updated `.github/policies/rulesets.json` to include API-injected defaults (`required_reviewers`, `do_not_enforce_on_create`) so live `--check` reports no drift.
+- `scripts/mcp-doctor.py`: added AWS access-key ID patterns (`AKIA…`, `ASIA…`) to `SECRET_RE`; 40-hex git SHAs remain excluded to avoid false positives on pinned action refs.
+
 ### Fixed (SESSION-2026-06-17-009)
 - `claude-review` failed on every develop-line PR with `401 Workflow validation failed`. Root cause was not the `CLAUDE_CODE_OAUTH_TOKEN` secret (it exists and OIDC succeeds) but the Claude GitHub App anti-tampering rule: the invoking `claude-code-review.yml` must be byte-identical to the copy on the default branch (`main`), which had drifted from `develop`. Promoted develop's version to `main` verbatim so the app-token exchange authenticates. (PR #130)
 - Sole-admin merge unblock: `protect-develop`/`protect-main` rulesets had empty `bypass_actors`, so `gh pr merge --admin` was rejected ("At least 1 approving review is required") even with `enforce_admins` off — rulesets are independent of branch protection. Added the `RepositoryRole` admin bypass actor (`bypass_mode: always`) to both, matching the existing `enforce_admins=off` posture, so the sole admin can self-merge. (review-gate fix)

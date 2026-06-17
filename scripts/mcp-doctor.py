@@ -26,6 +26,8 @@ SECRET_RE = re.compile(
     r"|github_pat_[A-Za-z0-9_]{82}"        # fine-grained GitHub PAT
     r"|glpat-[A-Za-z0-9_-]{20}"            # GitLab personal access token
     r"|sk-[A-Za-z0-9]{48}"                 # OpenAI-style secret key
+    r"|AKIA[0-9A-Z]{16}"                   # AWS access key id
+    r"|ASIA[0-9A-Z]{16}"                   # AWS session access key id
     r")\b"
 )
 DIGEST_RE = re.compile(r"@sha256:[a-fA-F0-9]{64}$")

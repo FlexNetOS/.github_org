@@ -46,11 +46,11 @@ Companion plan: `architecture/plan/2026-06-17-github-control-plane-upgrades-plan
 - [x] **github-policy-drift strict promotion reverted to REPORT_ONLY** — the default `GITHUB_TOKEN` cannot read branch protection, rulesets, or repo settings. Re-promote after provisioning `POLICY_DRIFT_TOKEN` from `meta/envctl` and confirming one green strict run.
 
 ### Deep-review upgrade follow-ups (`architecture/plan/2026-06-17-deep-review-upgrade-plan.md`)
-- [ ] **2.1** — Make `apply-github-policies.py` `_rule_params_match` symmetric so surplus/removed live rule parameters are detected.
+- [x] **2.1** — Make `apply-github-policies.py` `_rule_params_match` symmetric so surplus/removed live rule parameters are detected. Also added the API-injected defaults (`required_reviewers`, `required_review_thread_resolution`, `do_not_enforce_on_create`) to `rulesets.json` and applied live so `--check` is green.
 - [ ] **2.3** — Reconcile fleet policy templates: ensure `rust-canon/rulesets.json` is the canonical fleet ruleset source and remove any duplicate/loose template files.
 - [ ] **2.4** — Deduplicate `apply-fleet-policies.py`/`apply-github-policies.py` by extracting a shared module (or fleet wrapper around the canonical applier).
 - [ ] **4.5** — Defend reusable workflows against script injection: move interpolated `inputs.*` / `github.*` values into `env:` and quote `"$VAR"` in `run:` shells.
-- [ ] **4.8** — Tighten `mcp-doctor.py` `SECRET_RE` to catch `github_pat_…`/`glpat-`/AWS keys and avoid 40-hex SHA false positives.
+- [x] **4.8** — Tighten `mcp-doctor.py` `SECRET_RE` to catch AWS access-key IDs (`AKIA…`/`ASIA…`) in addition to GitHub/GitLab/OpenAI tokens; 40-hex SHA false positives remain excluded.
 - [ ] **4.9** — Paginate GitHub reads in `apply-*-policies.py` (`list_rulesets`, `check_environments`).
 
 ---
