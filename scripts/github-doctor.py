@@ -103,6 +103,10 @@ def repo_checks() -> list[Check]:
                 status((ROOT / "renovate.json").exists() or (ROOT / "renovate.json5").exists() or (ROOT / ".github/renovate.json").exists() or (ROOT / ".github/renovate.json5").exists()),
                 "renovate.json or renovate.json5 (root or .github/)",
             ),
+            exists(".github/policies/branch-protection.json", "policy", "branch-protection policy"),
+            exists(".github/policies/rulesets.json", "policy", "rulesets policy"),
+            exists(".github/policies/repo-settings.json", "policy", "repo-settings policy"),
+            exists("scripts/apply-github-policies.py", "policy", "policy applier script"),
         ]
     )
 
@@ -191,6 +195,20 @@ def live_github_checks() -> list[Check]:
         checks.append(Check("github-live", "repo identity", "OK", f"{repo.get('nameWithOwner')} default={default_branch} private={repo.get('isPrivate')}"))
     else:
         checks.append(Check("github-live", "repo identity", "WARN", str(repo)))
+
+    ok, rulesets = gh_json(["api", f"/repos/{repo.get('nameWithOwner')}/rulesets"])
+    if ok and isinstance(rulesets, list):
+        checks.append(Check("github-live", "repository rulesets", status(bool(rulesets), warning=True), f"{len(rulesets)} ruleset(s)"))
+    else:
+        checks.append(Check("github-live", "repository rulesets", "WARN", str(rulesets)))
+
+    ok, bp = gh_json(["api", f"/repos/{repo.get('nameWithOwner')}/branches/{default_branch}/protection"])
+    if ok and isinstance(bp, dict):
+        checks.append(Check("github-live", "branch protection", "OK", f"present on {default_branch}"))
+    elif ok:
+        checks.append(Check("github-live", "branch protection", "WARN", f"not present or unreadable on {default_branch}"))
+    else:
+        checks.append(Check("github-live", "branch protection", "WARN", str(bp)))
 
     return checks
 

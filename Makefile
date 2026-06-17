@@ -25,7 +25,7 @@ bootstrap: ## Idempotent setup: tools check, submodules init, secrets unlock
 	@scripts/bootstrap.sh
 
 .PHONY: verify
-verify: verify.tool-assets verify.actionlint verify.markdown verify.manifest verify.tools verify.hermetic ## Run every local verification
+verify: verify.tool-assets verify.actionlint verify.markdown verify.manifest verify.tools verify.hermetic verify.github-policies ## Run every local verification
 
 .PHONY: install-hooks
 install-hooks: ## Configure Git to use the local hooks in .githooks/
@@ -55,6 +55,10 @@ verify.tools: ## Validate tools/MANIFEST.yaml structure
 .PHONY: verify.hermetic
 verify.hermetic: ## Report non-hermetic workflow/script dependencies (advisory)
 	@python3 scripts/hermetic-audit.py .
+
+.PHONY: verify.github-policies
+verify.github-policies: ## Validate .github/policies/ JSON and live drift check (skipped if not authenticated)
+	@bash scripts/tests/test-github-policies.sh
 
 # ---------- Submodules (data/brain-data only) ----------
 # ADR-0002 retired repo/tool submodules in .github_org. The only remaining

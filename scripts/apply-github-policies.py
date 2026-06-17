@@ -46,7 +46,7 @@ def normalize_branch_protection(spec: dict) -> dict:
         "required_status_checks": spec.get("required_status_checks") or None,
         "enforce_admins": spec.get("enforce_admins", False),
         "required_pull_request_reviews": spec.get("required_pull_request_reviews") or None,
-        "restrictions": spec.get("restrictions"),
+        "restrictions": spec.get("restrictions") if spec.get("restrictions") is not None else None,
         "required_linear_history": spec.get("required_linear_history", False),
         "allow_force_pushes": spec.get("allow_force_pushes", False),
         "allow_deletions": spec.get("allow_deletions", False),
@@ -56,8 +56,13 @@ def normalize_branch_protection(spec: dict) -> dict:
         "allow_fork_syncing": spec.get("allow_fork_syncing", False),
         "lock_branch": spec.get("lock_branch", False),
     }
-    # Drop None values so the API doesn't complain.
-    return {k: v for k, v in payload.items() if v is not None}
+    # The branch-protection API requires the key "restrictions" even if null,
+    # but rejects null for the review/checks objects, so drop only those.
+    if payload["required_status_checks"] is None:
+        del payload["required_status_checks"]
+    if payload["required_pull_request_reviews"] is None:
+        del payload["required_pull_request_reviews"]
+    return payload
 
 
 def apply_branch_protection(owner: str, repo: str, branch: str, spec: dict, *, dry_run: bool) -> bool:
@@ -81,16 +86,16 @@ def apply_branch_protection(owner: str, repo: str, branch: str, spec: dict, *, d
 
 
 def list_rulesets(owner: str, repo: str) -> dict[str, int]:
-    code, out, err = run(["gh", "api", f"/repos/{owner}/{repo}/rulesets", "--jq", r".[] | \"\(.name)\t\(.id)\""])
+    code, out, err = run(["gh", "api", f"/repos/{owner}/{repo}/rulesets"])
     if code != 0:
         print(f"WARNING: could not list rulesets: {err}", file=sys.stderr)
         return {}
-    result: dict[str, int] = {}
-    for line in out.strip().splitlines():
-        if "\t" in line:
-            name, rid = line.split("\t", 1)
-            result[name] = int(rid)
-    return result
+    try:
+        data = json.loads(out)
+        return {r["name"]: r["id"] for r in data if "name" in r and "id" in r}
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
+        print(f"WARNING: could not parse rulesets: {exc}", file=sys.stderr)
+        return {}
 
 
 def apply_rulesets(owner: str, repo: str, spec: list[dict], *, dry_run: bool) -> bool:
@@ -98,7 +103,7 @@ def apply_rulesets(owner: str, repo: str, spec: list[dict], *, dry_run: bool) ->
     ok = True
     for ruleset in spec:
         name = ruleset["name"]
-        payload = {k: v for k, v in ruleset.items() if k != "name"}
+        payload = dict(ruleset)  # include name; API requires it
         if dry_run:
             print(f"[dry-run] CREATE/UPDATE ruleset '{name}':")
             print(json.dumps(payload, indent=2))

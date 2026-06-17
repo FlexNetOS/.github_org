@@ -21,8 +21,10 @@
           "parameters": {
             "required_approving_review_count": 1,
             "dismiss_stale_reviews_on_push": true,
-            "require_code_owner_review": true,
-            "require_last_push_approval": false
+            "require_code_owner_review": false,
+            "require_last_push_approval": false,
+            "allowed_merge_methods": ["squash", "rebase"],
+            "required_review_thread_resolution": false
           }
         },
         {
@@ -30,19 +32,19 @@
           "parameters": {
             "strict_required_status_checks_policy": true,
             "required_status_checks": [
-              { "context": "lint / Lint (mixed)" },
-              { "context": "actionlint .github/workflows" },
-              { "context": "markdownlint" },
-              { "context": "Validate manifests" },
-              { "context": "Hermetic dependency audit" },
-              { "context": "security / Gitleaks secret scan" },
-              { "context": "security / Trivy filesystem + IaC" },
-              { "context": "security / CodeQL SAST (actions)" },
-              { "context": ".claude/settings.json hygiene" },
-              { "context": "GitHub doctor — Renovate/Dependabot check" },
-              { "context": "open-questions.md schema" },
-              { "context": "No PascalCase Claude/ directories" },
-              { "context": "Guard main branch target" }
+              { "context": "lint / Lint (mixed)", "integration_id": 15368 },
+              { "context": "actionlint .github/workflows", "integration_id": 15368 },
+              { "context": "markdownlint", "integration_id": 15368 },
+              { "context": "Validate manifests", "integration_id": 15368 },
+              { "context": "Hermetic dependency audit", "integration_id": 15368 },
+              { "context": "security / Gitleaks secret scan", "integration_id": 15368 },
+              { "context": "security / Trivy filesystem + IaC", "integration_id": 15368 },
+              { "context": "security / CodeQL SAST (actions)", "integration_id": 15368 },
+              { "context": ".claude/settings.json hygiene", "integration_id": 15368 },
+              { "context": "GitHub doctor — Renovate/Dependabot check", "integration_id": 15368 },
+              { "context": "open-questions.md schema", "integration_id": 15368 },
+              { "context": "No PascalCase Claude/ directories", "integration_id": 15368 },
+              { "context": "Guard main branch target", "integration_id": 15368 }
             ]
           }
         }
@@ -67,7 +69,9 @@
             "required_approving_review_count": 1,
             "dismiss_stale_reviews_on_push": true,
             "require_code_owner_review": false,
-            "require_last_push_approval": false
+            "require_last_push_approval": false,
+            "allowed_merge_methods": ["squash", "rebase"],
+            "required_review_thread_resolution": false
           }
         },
         {
@@ -75,18 +79,18 @@
           "parameters": {
             "strict_required_status_checks_policy": true,
             "required_status_checks": [
-              { "context": "lint / Lint (mixed)" },
-              { "context": "actionlint .github/workflows" },
-              { "context": "markdownlint" },
-              { "context": "Validate manifests" },
-              { "context": "Hermetic dependency audit" },
-              { "context": "security / Gitleaks secret scan" },
-              { "context": "security / Trivy filesystem + IaC" },
-              { "context": "security / CodeQL SAST (actions)" },
-              { "context": ".claude/settings.json hygiene" },
-              { "context": "GitHub doctor — Renovate/Dependabot check" },
-              { "context": "open-questions.md schema" },
-              { "context": "No PascalCase Claude/ directories" }
+              { "context": "lint / Lint (mixed)", "integration_id": 15368 },
+              { "context": "actionlint .github/workflows", "integration_id": 15368 },
+              { "context": "markdownlint", "integration_id": 15368 },
+              { "context": "Validate manifests", "integration_id": 15368 },
+              { "context": "Hermetic dependency audit", "integration_id": 15368 },
+              { "context": "security / Gitleaks secret scan", "integration_id": 15368 },
+              { "context": "security / Trivy filesystem + IaC", "integration_id": 15368 },
+              { "context": "security / CodeQL SAST (actions)", "integration_id": 15368 },
+              { "context": ".claude/settings.json hygiene", "integration_id": 15368 },
+              { "context": "GitHub doctor — Renovate/Dependabot check", "integration_id": 15368 },
+              { "context": "open-questions.md schema", "integration_id": 15368 },
+              { "context": "No PascalCase Claude/ directories", "integration_id": 15368 }
             ]
           }
         }
@@ -105,13 +109,6 @@
       "rules": [
         { "type": "deletion" },
         { "type": "non_fast_forward" }
-      ],
-      "bypass_actors": [
-        {
-          "actor_id": 5,
-          "actor_type": "RepositoryRole",
-          "bypass_mode": "always"
-        }
       ]
     }
   ]

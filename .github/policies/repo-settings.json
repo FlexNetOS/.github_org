@@ -13,9 +13,7 @@
     {
       "name": "release",
       "wait_timer": 0,
-      "protection_rules": [
-        { "type": "required_reviewers", "reviewers": [{ "type": "Team", "id": 0 }] }
-      ],
+      "reviewers": [],
       "deployment_branch_policy": {
         "protected_branches": true,
         "custom_branch_policies": false

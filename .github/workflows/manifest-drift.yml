@@ -123,6 +123,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     continue-on-error: true   # REPORT_ONLY for first green cycle
+    # NOTE: GITHUB_TOKEN does not expose an `administration` workflow permission.
+    # This job runs read-only checks; if the token cannot read branch protection
+    # or rulesets it reports the limitation and continues (report-only).
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
