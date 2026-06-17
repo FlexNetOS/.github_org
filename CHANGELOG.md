@@ -67,6 +67,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `docs/github-automation-roadmap.md` — added `reusable-rust-release.yml` to the workflow permission matrix and Phase 3 deliverables; added `release.yml` to the onboarding template pack table. (Phase 8)
 - `docs/templates/repo-onboarding/README.md` — added `release.yml` and `RELEASE_TOKEN` to the required-secrets list. (Phase 8)
 
+### Added (SESSION-2026-06-17-001)
+- `data/brain-data/research/meta-envctl.md` — research dossier on the FlexNetOS `envctl` secrets authority, covering vault model, relay/broker injection, GitHub token wiring, and the gaps blocking fully automated secret provisioning. (Phase 10)
+
+### Changed (SESSION-2026-06-17-001)
+- `.github/workflows/sync-labels.yml` — now uses `secrets.LABEL_SYNC_TOKEN` with a fallback to `secrets.GITHUB_TOKEN`. (Phase 10)
+- `secrets/github-secrets.tsv.example` — renamed `REPO_WRITE_PACKAGES_PAT` to `RELEASE_TOKEN` to match workflow contracts and added `LABEL_SYNC_TOKEN`. (Phase 10)
+- `docs/github-automation-roadmap.md` — added Phase 10 (envctl secret authority), updated the `sync-labels.yml` permission note, and documented the remaining secret-provisioning next steps. (Phase 10)
+
 ### Fixed (SESSION-2026-06-16-006)
 - `.claude/settings.json` hygiene — removed the forbidden `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` key and all hardcoded `/home/` `extraKnownMarketplaces` paths (`claude-stack-local`, `ecc`, `karpathy-skills`, `omc`, `understand-anything`). `scripts/claude-settings-doctor.js --check` now passes. Marketplace definitions will be re-injected via `meta/envctl` (portable, no literal user-home paths).
 - `.handoff/packets/2026-06-16-meta-conformity.md` — removed example credential-like placeholder strings that Gitleaks flagged as false positives.

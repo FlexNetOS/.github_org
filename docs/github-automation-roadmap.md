@@ -123,7 +123,7 @@ Acceptance:
 | `reusable-hermetic-audit.yml` | read | — | — | — | — | — | none (read-only audit) |
 | `reusable-mcp-audit.yml` | read | — | — | — | — | — | none (reads `.mcp.json` from caller repo) |
 | `reusable-rust-release.yml` | write | — | — | — | — | — | `RELEASE_TOKEN` (uploads release assets) |
-| `sync-labels.yml` | read | write | — | — | — | — | `LABEL_SYNC_TOKEN` (org-scoped label management) |
+| `sync-labels.yml` | read | write | — | — | — | — | `LABEL_SYNC_TOKEN` (org-scoped label management; falls back to `GITHUB_TOKEN`) |
 
 ### Fleet policy and labels-as-code
 
@@ -248,3 +248,29 @@ Acceptance:
 
 - A maintainer can identify the next safe action from one local command.
 - Non-dry-run actions require explicit flags and state exactly what they will change.
+
+### Phase 10 — Envctl secret authority (research)
+
+Status: **in progress**.
+
+Research dossier: `data/brain-data/research/meta-envctl.md`.
+
+Findings:
+
+- `envctl` is the intended long-term secrets authority (AEAD vault, relay broker, auto-injection), but it has no native GitHub Actions secret-sync command yet.
+- The practical wiring path today is `envctl`/`secretctl` holding the real credential + `secretctl run --relay ... -- gh secret set ...` to push to GitHub without exposing the plaintext to the parent shell.
+- Secret-name ambiguities resolved in this phase:
+  - `sync-labels.yml` now uses `secrets.LABEL_SYNC_TOKEN || secrets.GITHUB_TOKEN`.
+  - `secrets/github-secrets.tsv.example` renamed `REPO_WRITE_PACKAGES_PAT` to `RELEASE_TOKEN` and added `LABEL_SYNC_TOKEN`.
+
+Next deliverables:
+
+- [ ] Provision `PARENT_REPO_PAT`, `RELEASE_TOKEN`, and `LABEL_SYNC_TOKEN` on GitHub.
+- [ ] Decide whether `REPO_WRITE_PACKAGES_PAT` and `RELEASE_TOKEN` are the same credential or separate.
+- [ ] Migrate the legacy `pass` store into `envctl` per ADR-0007.
+- [ ] Update `reusable-secrets.yml` to read from `envctl` once CI-native injection is available.
+
+Acceptance:
+
+- Every reusable workflow that needs a cross-repo token can resolve it from GitHub Actions secrets.
+- The canonical secret values live in `envctl`, not in shell history, logs, or git.

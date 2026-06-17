@@ -4,10 +4,10 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-06-16 (SESSION-2026-06-16-006 — meta control-plane gap closure; Phases 1–8 landed on `feat/meta-control-plane-gaps-phase3`)
+**Last updated:** 2026-06-17 (SESSION-2026-06-16-006 — meta control-plane gap closure + Phase 10 envctl research on `feat/meta-control-plane-gaps-phase3`)
 **Branch:** `feat/meta-control-plane-gaps-phase3`
 **PRs:** #118 (Phase 1), #121 (Phase 2), TBD (Phase 3)
-**Status:** Phases 1–8 complete and committed. Next: push branch, open Phase 3 PR, merge stack, provision secrets, run fleet policy dry-run/apply.
+**Status:** Phases 1–8 complete and committed; Phase 10 envctl research dossier written. Next: provision tokens via envctl/secretctl + gh secret set, then push/open Phase 3 PR.
 
 ---
 
@@ -24,6 +24,7 @@ Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"meta-g
 - [x] **Phase 7** — Secret/Renovate governance.
 - [x] **Phase 8** — Rust binary release reusable workflow.
 - [x] **Phase 9** — Bookkeeping + stacked PR merge coordination.
+- [x] **Phase 10** — Research meta/envctl secret/token wiring (dossier + token-name fixes).
 
 ---
 
