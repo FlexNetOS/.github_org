@@ -1,8 +1,8 @@
 # `.github` — FlexNetOS umbrella
 
-[![CI](https://github.com/FlexNetOS/.github/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/FlexNetOS/.github/actions/workflows/ci.yml)
-[![manifest-drift](https://github.com/FlexNetOS/.github/actions/workflows/manifest-drift.yml/badge.svg?branch=develop)](https://github.com/FlexNetOS/.github/actions/workflows/manifest-drift.yml)
-[![promote-develop-to-main](https://github.com/FlexNetOS/.github/actions/workflows/promote-develop-to-main.yml/badge.svg?branch=main)](https://github.com/FlexNetOS/.github/actions/workflows/promote-develop-to-main.yml)
+[![CI](https://github.com/FlexNetOS/.github_org/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/FlexNetOS/.github_org/actions/workflows/ci.yml)
+[![manifest-drift](https://github.com/FlexNetOS/.github_org/actions/workflows/manifest-drift.yml/badge.svg?branch=develop)](https://github.com/FlexNetOS/.github_org/actions/workflows/manifest-drift.yml)
+[![promote-develop-to-main](https://github.com/FlexNetOS/.github_org/actions/workflows/promote-develop-to-main.yml/badge.svg?branch=main)](https://github.com/FlexNetOS/.github_org/actions/workflows/promote-develop-to-main.yml)
 
 This repository is the org's **`.github` repo + a small operational hub**, playing
 five roles. [`VISION.md`](VISION.md) is the canonical overview; the table below is
