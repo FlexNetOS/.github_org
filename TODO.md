@@ -37,7 +37,7 @@ Companion plan: `architecture/plan/2026-06-17-github-control-plane-upgrades-plan
 - [x] **Phase 3** — Rules/policies upgrades (squash-merge message controls, commit-message pattern ruleset, CODEOWNERS team, bypass actors, signed tags).
 - [x] **Phase 4** — Applier/doctor/test upgrades (schema validation, full ruleset/branch-protection `--check`, `--json` output, Makefile targets, release-env/CODEOWNERS checks).
 - [x] **Phase 5** — Operational/security upgrades (pin remaining actions, CI badges, label pre-creation, runner-availability check in `secrets-rotate.yml`).
-- [ ] **Phase 6** — Bookkeeping + open continuation PR.
+- [x] **Phase 6** — Bookkeeping + open continuation PR (#135).
 
 ---
 
