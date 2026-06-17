@@ -11,7 +11,11 @@
 
 set -euo pipefail
 
-STORE="${PASSWORD_STORE_DIR:-./secrets/store}"
+# Resolve the default store relative to the repo root, not the CWD — otherwise
+# running this from elsewhere mirrors the wrong (likely empty) store. An explicit
+# PASSWORD_STORE_DIR still wins.
+_repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+STORE="${PASSWORD_STORE_DIR:-${_repo_root:-.}/secrets/store}"
 PROJECT_ID=""
 FILTER=""
 DRY_RUN=0
@@ -60,7 +64,13 @@ while IFS= read -r -d '' f; do
     rel="${rel%.gpg}"
     [[ -n "$FILTER" && "$rel" != "$FILTER"* ]] && continue
 
-    val=$(pass show "$rel")
+    # Fail closed: a decrypt failure (or an empty entry) must never be silently
+    # mirrored as an EMPTY secret into BWS, which would clobber the downstream value.
+    val=$(pass show "$rel") || { echo "ERROR: decrypt failed for $rel" >&2; exit 1; }
+    if [[ -z "$val" ]]; then
+        echo "ERROR: refusing to mirror empty secret for $rel" >&2
+        exit 1
+    fi
     name="$rel"
 
     if [[ "$DRY_RUN" -eq 1 ]]; then

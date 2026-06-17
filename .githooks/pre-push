@@ -2,7 +2,7 @@
 # Pre-push hook: guard direct pushes to protected branches and run fast checks.
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
 REMOTE="$1"
