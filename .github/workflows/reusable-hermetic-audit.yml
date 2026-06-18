@@ -44,8 +44,12 @@ jobs:
 
       - name: Run hermetic audit (local)
         if: (github.repository == 'FlexNetOS/.github' || github.repository == 'FlexNetOS/.github_org')
-        run: python3 scripts/hermetic-audit.py . ${{ inputs.fail && '--fail' || '' }}
+        env:
+          FAIL_FLAG: ${{ inputs.fail && '--fail' || '' }}
+        run: python3 scripts/hermetic-audit.py . "$FAIL_FLAG"
 
       - name: Run hermetic audit (shared)
         if: (github.repository != 'FlexNetOS/.github' && github.repository != 'FlexNetOS/.github_org')
-        run: python3 .github-org-actions/scripts/hermetic-audit.py . ${{ inputs.fail && '--fail' || '' }}
+        env:
+          FAIL_FLAG: ${{ inputs.fail && '--fail' || '' }}
+        run: python3 .github-org-actions/scripts/hermetic-audit.py . "$FAIL_FLAG"

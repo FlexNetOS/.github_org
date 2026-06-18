@@ -109,8 +109,10 @@ jobs:
       - name: Build (rust)
         if: (inputs.language == 'rust' || inputs.language == 'mixed') && hashFiles(format('{0}/Cargo.toml', inputs.working-directory)) != ''
         shell: bash
+        env:
+          PROFILE: ${{ inputs.profile }}
         run: |
-          if [[ "${{ inputs.profile }}" == "debug" ]]; then
+          if [[ "$PROFILE" == "debug" ]]; then
             cargo build --all-features
           else
             cargo build --release --all-features

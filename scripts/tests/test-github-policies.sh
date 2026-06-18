@@ -74,26 +74,46 @@ fi
 echo "PASS"
 
 echo ""
-echo "=== Stage 3: Live drift check (skipped if GH CLI cannot access repo) ==="
-if ! command -v gh >/dev/null 2>&1; then
-  echo "SKIP: gh CLI not installed"
-  exit 0
-fi
-if ! gh auth status >/dev/null 2>&1; then
-  echo "SKIP: gh CLI not authenticated"
-  exit 0
-fi
-if ! gh repo view >/dev/null 2>&1; then
-  echo "SKIP: current gh token cannot read this repo"
-  exit 0
-fi
-check_output=$(python3 scripts/apply-github-policies.py --check 2>&1)
-if ! printf '%s\n' "$check_output" | grep -q 'No drift detected'; then
-  echo "FAIL: policy drift check did not report 'No drift detected'"
-  printf '%s\n' "$check_output"
+echo "=== Stage 3: Fleet applier registry/templates are valid and --fleet --dry-run emits no ERROR ==="
+python3 - <<'PY'
+import json, sys
+
+with open(".github/policies/fleet.json") as f:
+    fleet = json.load(f)
+
+for entry in fleet.get("repos", []):
+    assert "owner" in entry and "repo" in entry, f"fleet entry missing owner/repo: {entry}"
+    assert "templates" in entry and isinstance(entry["templates"], list), f"fleet entry missing templates list: {entry}"
+    for t in entry["templates"]:
+        p = f".github/policies/templates/{t}"
+        import os
+        assert os.path.isdir(p), f"template directory missing: {p}"
+PY
+fleet_dry_run_output=$(python3 scripts/apply-fleet-policies.py --fleet --dry-run 2>&1)
+if printf '%s\n' "$fleet_dry_run_output" | grep -qE '^ERROR'; then
+  echo "FAIL: fleet dry-run emitted ERROR lines"
+  printf '%s\n' "$fleet_dry_run_output"
   exit 1
 fi
 echo "PASS"
+
+echo ""
+echo "=== Stage 4: Live drift check (skipped if GH CLI cannot access repo) ==="
+if ! command -v gh >/dev/null 2>&1; then
+  echo "SKIP: gh CLI not installed"
+elif ! gh auth status >/dev/null 2>&1; then
+  echo "SKIP: gh CLI not authenticated"
+elif ! gh repo view >/dev/null 2>&1; then
+  echo "SKIP: current gh token cannot read this repo"
+else
+  check_output=$(python3 scripts/apply-github-policies.py --check 2>&1)
+  if ! printf '%s\n' "$check_output" | grep -q 'No drift detected'; then
+    echo "FAIL: policy drift check did not report 'No drift detected'"
+    printf '%s\n' "$check_output"
+    exit 1
+  fi
+  echo "PASS"
+fi
 
 echo ""
 echo "All triple-verify stages passed."

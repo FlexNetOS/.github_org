@@ -82,8 +82,10 @@ jobs:
 
       - name: Clippy
         working-directory: meta-rust-workspace
+        env:
+          FAIL_ON_WARNING: ${{ inputs.fail-on-warning }}
         run: |
-          if [[ "${{ inputs.fail-on-warning }}" == "true" ]]; then
+          if [[ "$FAIL_ON_WARNING" == "true" ]]; then
             cargo clippy --all-targets --all-features -- -D warnings
           else
             cargo clippy --all-targets --all-features

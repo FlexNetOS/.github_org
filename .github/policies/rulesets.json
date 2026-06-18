@@ -33,16 +33,18 @@
           "parameters": {
             "required_approving_review_count": 1,
             "dismiss_stale_reviews_on_push": true,
+            "required_reviewers": [],
             "require_code_owner_review": true,
             "require_last_push_approval": false,
-            "allowed_merge_methods": ["squash", "rebase"],
-            "required_review_thread_resolution": false
+            "required_review_thread_resolution": false,
+            "allowed_merge_methods": ["squash", "rebase"]
           }
         },
         {
           "type": "required_status_checks",
           "parameters": {
             "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
             "required_status_checks": [
               { "context": "lint / Lint (mixed)", "integration_id": 15368 },
               { "context": "actionlint .github/workflows", "integration_id": 15368 },
@@ -92,16 +94,18 @@
           "parameters": {
             "required_approving_review_count": 1,
             "dismiss_stale_reviews_on_push": true,
+            "required_reviewers": [],
             "require_code_owner_review": true,
             "require_last_push_approval": false,
-            "allowed_merge_methods": ["squash", "rebase"],
-            "required_review_thread_resolution": false
+            "required_review_thread_resolution": false,
+            "allowed_merge_methods": ["squash", "rebase"]
           }
         },
         {
           "type": "required_status_checks",
           "parameters": {
             "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
             "required_status_checks": [
               { "context": "lint / Lint (mixed)", "integration_id": 15368 },
               { "context": "actionlint .github/workflows", "integration_id": 15368 },
