@@ -59,6 +59,8 @@ jobs:
           EVENT_TYPE: ${{ inputs.event-type }}
           REPO: ${{ github.repository }}
           SHA: ${{ github.sha }}
+          REF: ${{ github.ref }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           set -euo pipefail
           repos="$DOWNSTREAM_REPOS"
@@ -74,6 +76,6 @@ jobs:
               -f "event_type=$event_type" \
               -f "client_payload[repo]=$REPO" \
               -f "client_payload[sha]=$SHA" \
-              -f "client_payload[ref]=${{ github.ref }}" \
-              -f "client_payload[run_id]=${{ github.run_id }}"
+              -f "client_payload[ref]=$REF" \
+              -f "client_payload[run_id]=$RUN_ID"
           done < <(printf '%s' "$repos" | jq -r '.[]')
