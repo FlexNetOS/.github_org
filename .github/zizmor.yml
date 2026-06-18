@@ -1,15 +1,16 @@
 # zizmor configuration — https://docs.zizmor.sh/configuration/
 #
 # Scope: this file documents the INTENTIONAL, accepted findings for this repo's
-# own workflows. Every entry is rule- and file-scoped with a rationale — this is
-# NOT a blanket suppression. The zizmor CI gate (.github/workflows/zizmor.yml)
-# runs at `--min-severity high`; the entries below cover the High findings that
-# are deliberate design choices on this org control-plane repo.
+# own workflows. Every entry is rule- and file/line-scoped with a rationale —
+# this is NOT a blanket suppression. The zizmor CI gate
+# (.github/workflows/zizmor.yml) runs at `--min-severity medium`; the entries
+# below cover the Medium-and-above findings that are deliberate design choices
+# on this org control-plane repo.
 #
-# Lower-severity findings (the `artipacked` set — persist-credentials on
-# actions/checkout) are NOT ignored here; they are tracked as a follow-up and
-# will be addressed in a dedicated PR (see PR body). Raising the gate's
-# `--min-severity` to medium is the planned end-state once that backlog clears.
+# The `artipacked` Medium backlog (persist-credentials on actions/checkout) was
+# cleared in the Wave 2 hardening sweep: `persist-credentials: false` was added
+# to every read-only checkout. The single remaining artipacked entry below is a
+# checkout that MUST keep its git credential because a later step pushes with it.
 
 rules:
   # `pull_request_target` and `workflow_run` are flagged as "fundamentally
@@ -32,6 +33,17 @@ rules:
       # develop -> main promotion — workflow_run on completed CI on develop;
       # the core promotion automation for this repo.
       - promote-develop-to-main.yml
+
+  # `artipacked` — credential persistence on actions/checkout. Every read-only
+  # checkout in this repo sets `persist-credentials: false` (Wave 2 sweep). The
+  # one exception is the release job's checkout: a later step force-pushes the
+  # moving major tag (`git tag -f "v$major"; git push -f origin "v$major"`),
+  # which relies on the credential persisted by this checkout. Setting
+  # persist-credentials: false there would break tag promotion. Line-scoped to
+  # that single checkout so any NEW unhardened checkout still fails the gate.
+  artipacked:
+    ignore:
+      - reusable-release.yml:69
 
   # release-please job enables setup-node's default cache. Low-confidence:
   # the release job publishes via release-please, not from cached node_modules,
