@@ -60,6 +60,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Install Rust toolchain
@@ -69,7 +70,9 @@ jobs:
 
       - name: Build release binary
         working-directory: ${{ inputs.workspace-path }}
-        run: cargo build --release --target ${{ matrix.target }}
+        env:
+          TARGET: ${{ matrix.target }}
+        run: cargo build --release --target "$TARGET"
 
       - name: Package binary
         working-directory: ${{ inputs.workspace-path }}

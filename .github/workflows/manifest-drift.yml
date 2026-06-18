@@ -26,6 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           submodules: false
       - name: Assert only lowercase .claude/ exists
         run: |
@@ -46,6 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           submodules: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -66,6 +68,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           submodules: false
       - name: List untagged FlexNetOS-fork MANIFEST entries
         run: |
@@ -83,6 +86,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           submodules: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -102,6 +106,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           submodules: false
       - name: Triple-verify Renovate config and no Dependabot residue
         run: bash scripts/tests/test-github-doctor.sh
@@ -114,6 +119,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           submodules: false
       - name: Triple-verify research repomix archives do not fail Trivy
         run: bash scripts/tests/test-trivy-secret-suppressions.sh
@@ -132,6 +138,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           submodules: false
       - name: Check committed policy matches live GitHub state
         env:
@@ -145,6 +152,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           submodules: false
       - name: Check for non-hermetic patterns
         # Advisory enforcement until the repo is clean of pre-existing findings.

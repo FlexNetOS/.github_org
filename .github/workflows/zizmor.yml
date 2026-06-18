@@ -7,10 +7,11 @@ name: zizmor
 # the existing required-check job names wired into the rulesets stay untouched.
 #
 # Findings are uploaded to the repo's Security tab as SARIF (via the official
-# action's built-in upload). The gate currently fails only on High-severity
-# findings (--min-severity high); the documented-intentional High findings are
-# allowlisted with rationale in .github/zizmor.yml. The Medium `artipacked`
-# backlog is tracked as a follow-up before lowering the floor to medium.
+# action's built-in upload). The gate fails on Medium-and-above findings
+# (--min-severity medium); the documented-intentional findings are allowlisted
+# with rationale in .github/zizmor.yml. The Medium `artipacked` backlog was
+# cleared in the Wave 2 hardening sweep (persist-credentials: false on every
+# read-only checkout), so the floor is now medium.
 
 on:
   pull_request:
@@ -49,9 +50,10 @@ jobs:
           inputs: .github/workflows/
           # Pin the analyzer for reproducibility (repo convention: pin everything).
           version: 1.25.2
-          # Fail the job on High findings; intentional Highs are allowlisted in
-          # the config. Medium/Low findings still surface in the Security tab.
-          min-severity: high
+          # Fail the job on Medium-and-above findings; intentional findings are
+          # allowlisted in the config. Low findings still surface in the
+          # Security tab.
+          min-severity: medium
           config: .github/zizmor.yml
           # Upload SARIF to the Security tab (uses codeql-action/upload-sarif).
           advanced-security: true
