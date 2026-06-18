@@ -1,0 +1,90 @@
+# cargo-deny configuration — FlexNetOS Rust supply-chain advisory gate
+# ---------------------------------------------------------------------------
+# This is the org-wide policy for `cargo deny check` (advisories, bans,
+# sources, licenses). It is consumed by the reusable supply-chain workflow
+# (.github/workflows/reusable-cargo-supplychain.yml) and is safe to copy into
+# any FlexNetOS Rust repo's root as a starting point.
+#
+# Schema: written for the CURRENT cargo-deny schema (0.19.x / config v2). The
+# deprecated top-level keys removed by newer cargo-deny are intentionally NOT
+# used here:
+#   * [advisories] vulnerability / unmaintained / unsound / yanked  (removed —
+#     vulnerabilities now always error; non-vuln advisories are governed by the
+#     RustSec database + the `ignore` list below)
+#   * [licenses] unlicensed / copyleft / allow-osi-fsf-free / default  (removed —
+#     licensing is now an explicit allow-list via `allow`)
+#
+# Documented exceptions go in the per-section lists with a rationale comment:
+#   * advisory exceptions   -> [advisories] ignore  (RUSTSEC-id + reason)
+#   * license exceptions    -> [licenses] exceptions (crate + license + reason)
+#   * dependency-ban allows -> [bans] allow          (crate + reason)
+# ---------------------------------------------------------------------------
+
+[graph]
+# Evaluate all targets/features so the gate sees the full dependency surface.
+all-features = true
+
+[advisories]
+# RustSec advisory database. Security vulnerabilities ERROR by default in this
+# schema (no key needed). `unmaintained` advisories surface as warnings.
+# Yanked-crate detection stays at its default ("warn") so a yanked dep is
+# visible without hard-failing every build.
+unmaintained = "workspace"
+# Documented advisory exceptions ONLY. Each entry MUST carry a rationale:
+#   ignore = [
+#     { id = "RUSTSEC-0000-0000", reason = "not reachable from our code; tracked in #123" },
+#   ]
+ignore = []
+
+[licenses]
+# Standard permissive allow-list for the FlexNetOS fleet. A dependency whose
+# license is not on this list fails the gate; legitimate one-offs go in
+# `exceptions` below with a reason — never by widening this list silently.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-DFS-2016",
+    "Unicode-3.0",
+    "Zlib",
+    "MPL-2.0",
+    "CC0-1.0",
+]
+# Minimum confidence (0.0-1.0) for the license-text matcher. 0.8 is the
+# cargo-deny default and rejects ambiguous/garbled license texts.
+confidence-threshold = 0.8
+# Per-crate license exceptions. Each entry MUST carry a rationale:
+#   exceptions = [
+#     { allow = ["OpenSSL"], crate = "ring", reason = "vendored BoringSSL; reviewed" },
+#   ]
+exceptions = []
+
+[bans]
+# Duplicate versions of the same crate are a warning (common and often
+# unavoidable in a large workspace), not a hard failure.
+multiple-versions = "warn"
+# Wildcard ("*") version requirements are denied — they make builds
+# non-reproducible and let an upstream silently pull in anything.
+wildcards = "deny"
+highlight = "all"
+# Explicitly allowed crates (rarely needed). Each entry MUST carry a reason:
+#   allow = [
+#     { crate = "some-crate", reason = "why this is acceptable" },
+#   ]
+allow = []
+# Explicitly banned crates go here with a reason:
+#   deny = [
+#     { crate = "openssl", reason = "use rustls; no system OpenSSL in the fleet" },
+#   ]
+deny = []
+
+[sources]
+# Only crates.io (and explicitly allow-listed git/registries) are permitted.
+# Anything from an unknown registry or git source fails the gate.
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

@@ -1,0 +1,70 @@
+name: Reusable Cargo Supply-Chain
+
+# Rust supply-chain advisory gate for the FlexNetOS fleet.
+#
+# Closes the Rust-specific gap in our security posture: Trivy / Gitleaks /
+# CodeQL cover SAST, secrets, and filesystem/IaC, but nothing enforces the
+# RustSec advisory database, the org license allow-list, or dependency bans.
+# This workflow does both, using the org `deny.toml` policy:
+#
+#   * cargo-deny  -> advisories + bans + sources + licenses (per deny.toml)
+#   * cargo-audit -> RustSec advisory cross-check (defense in depth; audit-check
+#                    surfaces vulnerabilities as a PR/workflow annotation)
+#
+# Purely additive — no existing gate is relaxed. Calling repos should pin to
+# @v1 once cut. See RELEASING.md.
+#
+# Example caller (see docs/templates/repo-onboarding/cargo-supplychain.yml):
+#   jobs:
+#     supply-chain:
+#       uses: FlexNetOS/.github/.github/workflows/reusable-cargo-supplychain.yml@main
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: 'Directory containing Cargo.toml / deny.toml'
+        required: false
+        type: string
+        default: '.'
+      cargo-deny-checks:
+        description: 'Space-separated cargo-deny checks to run'
+        required: false
+        type: string
+        default: 'advisories bans sources licenses'
+      token:
+        description: 'GitHub token (used by cargo-audit/cargo-deny for advisory-db fetch and to raise the API rate limit)'
+        required: false
+        type: string
+        default: ${{ github.token }}
+
+permissions:
+  contents: read
+
+jobs:
+  supply-chain:
+    name: Cargo supply-chain
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      # cargo-deny: advisories + bans + sources + licenses, governed by deny.toml.
+      - name: cargo-deny
+        uses: EmbarkStudios/cargo-deny-action@bb137d7af7e4fb67e5f82a49c4fce4fad40782fe # v2.0.20
+        with:
+          command: check ${{ inputs.cargo-deny-checks }}
+          arguments: --all-features
+          manifest-path: ${{ inputs.working-directory }}/Cargo.toml
+
+      # cargo-audit: independent RustSec cross-check. Annotates the run with any
+      # vulnerable dependency; defense-in-depth alongside cargo-deny advisories.
+      - name: cargo-audit
+        uses: rustsec/audit-check@69366f33c96575abad1ee0dba8212993eecbe998 # v2.0.0
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          token: ${{ inputs.token }}
