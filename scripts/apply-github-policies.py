@@ -372,12 +372,16 @@ def _bypass_actors_key(actors: list[dict] | None) -> list[tuple]:
 
 
 def _rule_params_match(current_rule: dict, desired_rule: dict) -> bool:
-    """Compare rule parameters, ignoring API-injected defaults not in desired."""
+    """Compare rule parameters symmetrically.
+
+    Both missing desired keys and surplus live keys are treated as drift, so
+    partial API updates or manually injected defaults are detected.
+    """
     desired_params = desired_rule.get("parameters", {})
     current_params = current_rule.get("parameters", {})
+    if set(current_params.keys()) != set(desired_params.keys()):
+        return False
     for key, desired_value in desired_params.items():
-        if key not in current_params:
-            return False
         current_value = current_params[key]
         # Compare by stable JSON representation.
         if json.dumps(_ordered(current_value), sort_keys=True) != json.dumps(_ordered(desired_value), sort_keys=True):
