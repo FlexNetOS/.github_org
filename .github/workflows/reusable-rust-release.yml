@@ -98,6 +98,12 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # contents: write — upload release assets (inherited intent, declared explicitly)
+    # id-token: write + attestations: write — sign build-provenance attestations
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422d0ef3 # v4
@@ -105,6 +111,11 @@ jobs:
           path: dist
           pattern: rust-release-*
           merge-multiple: true
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
+        with:
+          subject-path: 'dist/*.tar.gz'
 
       - name: Upload to GitHub Release
         env:
