@@ -13,8 +13,8 @@
 - **ID:** `SESSION-2026-06-17-010`
 - **Date:** 2026-06-17
 - **Branch:** `feat/workflow-script-injection-hardening` (final branch; earlier work on `feat/control-plane-follow-up`)
-- **PR:** #135 → `develop` (merged); #155 → `develop` (merged); #158 → `develop` (merged)
-- **Mode:** merge resolution + corrective bookkeeping + deep-review follow-ups
+- **PR:** #135 → `develop` (merged); #155 → `develop` (merged); #158 → `develop` (merged); #162 → `develop` (merged)
+- **Mode:** merge resolution + corrective bookkeeping + deep-review follow-ups + fleet-capability restore
 - **Outcome:** Reconciled the continuation branch with the latest `develop` (fleet-policy refactor), pushed the resolved branch, and merged PR #135 with an admin override because the sole maintainer cannot self-approve. Discovered that the strict `github-policy-drift` job fails in CI because the default `GITHUB_TOKEN` lacks read access to branch protection/rulesets/repo settings; demoted it back to REPORT_ONLY and documented the unblock condition (`POLICY_DRIFT_TOKEN` from `meta/envctl`). Continued deep-review follow-ups on a new branch: made `_rule_params_match` symmetric and synced ruleset defaults, tightened `mcp-doctor.py` to catch AWS keys, and hardened nine reusable workflows against script injection by moving workflow expressions out of `run:` shells into `env:`. Opened and merged PR #155. Updated `TODO.md`, `CHANGELOG.md`, and `SESSIONS.md`.
 - **User-action gates surfaced:** unlock `meta/envctl` to provision `POLICY_DRIFT_TOKEN`, `RELEASE_TOKEN`, and `PROMOTE_TOKEN`; decide final repo name (`.github` vs `.github_org`) before touching the rename-reference cluster.
 - **Cost:** N/A
@@ -40,7 +40,8 @@
 7. Made `apply-github-policies.py` `_rule_params_match` symmetric and updated `rulesets.json` with API-injected defaults; applied live so `--check` passes.
 8. Added AWS access-key ID detection to `mcp-doctor.py`.
 9. Hardened nine reusable workflows against script injection (PR #158).
-10. Updated `TODO.md`, `CHANGELOG.md`, and `SESSIONS.md`.
+10. Restored `scripts/apply-fleet-policies.py` as a thin wrapper around `scripts/apply-github-policies.py` after discovering it had been dropped in commit a5e4104; merged PR #162.
+11. Updated `TODO.md`, `CHANGELOG.md`, and `SESSIONS.md`.
 
 ### Reservations / risks
 - Admin-override merge bypassed the required-review ruleset. The change set is the same one already verified locally (`make verify`, `apply-github-policies.py --check`), so the risk is low, but future PRs should have a second maintainer or a provisioned bypass actor.

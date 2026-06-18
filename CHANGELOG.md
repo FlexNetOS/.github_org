@@ -34,6 +34,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed (SESSION-2026-06-17-010, PR #158)
 - Hardened nine reusable workflows against script injection by moving `${{ inputs.* }}` and `${{ github.* }}` interpolations out of `run:` shells into `env:` variables and referencing them as quoted `"$VAR"`s. Affected workflows: `reusable-meta-rust-ci.yml`, `reusable-test.yml`, `reusable-notify-downstream.yml`, `reusable-security.yml`, `reusable-hermetic-audit.yml`, `reusable-submodule-bump.yml`, `reusable-build.yml`, `reusable-rust-release.yml`, `reusable-lint.yml`.
 
+### Fixed (SESSION-2026-06-17-010, PR #162)
+- Restored `scripts/apply-fleet-policies.py` as a thin wrapper around `scripts/apply-github-policies.py`. It imports the core applier functions and iterates over `.github/policies/fleet.json` so the FlexNetOS/meta fleet can be dry-run/applied from a single command. Updated `fleet.json` description and added a fleet-dry-run stage to `scripts/tests/test-github-policies.sh`.
+
 ### Fixed (SESSION-2026-06-17-009)
 - `claude-review` failed on every develop-line PR with `401 Workflow validation failed`. Root cause was not the `CLAUDE_CODE_OAUTH_TOKEN` secret (it exists and OIDC succeeds) but the Claude GitHub App anti-tampering rule: the invoking `claude-code-review.yml` must be byte-identical to the copy on the default branch (`main`), which had drifted from `develop`. Promoted develop's version to `main` verbatim so the app-token exchange authenticates. (PR #130)
 - Sole-admin merge unblock: `protect-develop`/`protect-main` rulesets had empty `bypass_actors`, so `gh pr merge --admin` was rejected ("At least 1 approving review is required") even with `enforce_admins` off — rulesets are independent of branch protection. Added the `RepositoryRole` admin bypass actor (`bypass_mode: always`) to both, matching the existing `enforce_admins=off` posture, so the sole admin can self-merge. (review-gate fix)
