@@ -99,9 +99,10 @@ jobs:
         shell: bash
         env:
           EXTRA_ARGS: ${{ inputs.extra-args }}
+          COVERAGE: ${{ inputs.coverage }}
         run: |
           bun install --frozen-lockfile
-          if [[ "${{ inputs.coverage }}" == "true" ]]; then
+          if [[ "$COVERAGE" == "true" ]]; then
             # shellcheck disable=SC2086
             bun test --coverage $EXTRA_ARGS
           else
@@ -124,17 +125,19 @@ jobs:
         shell: bash
         env:
           EXTRA_ARGS: ${{ inputs.extra-args }}
+          COVERAGE: ${{ inputs.coverage }}
+          COVERAGE_THRESHOLD: ${{ inputs.coverage-threshold }}
         run: |
           # shellcheck disable=SC2086
           if [[ -f pyproject.toml ]]; then
             uv sync --all-extras --dev || uv sync || true
           fi
-          if [[ "${{ inputs.coverage }}" == "true" ]]; then
+          if [[ "$COVERAGE" == "true" ]]; then
             uv tool install coverage
             # shellcheck disable=SC2086
             uv run -- coverage run -m pytest $EXTRA_ARGS
             uv run -- coverage xml -o coverage.xml
-            uv run -- coverage report --fail-under=${{ inputs.coverage-threshold }}
+            uv run -- coverage report --fail-under="$COVERAGE_THRESHOLD"
           else
             # shellcheck disable=SC2086
             uv run -- pytest $EXTRA_ARGS
@@ -152,11 +155,14 @@ jobs:
       - name: Resolve workspace directory
         id: final-ws
         shell: bash
+        env:
+          WORKSPACE_DIR: ${{ steps.meta-ws.outputs.workspace-dir }}
+          WORKING_DIRECTORY: ${{ inputs.working-directory }}
         run: |
-          if [[ -n "${{ steps.meta-ws.outputs.workspace-dir }}" ]]; then
-            echo "dir=${{ steps.meta-ws.outputs.workspace-dir }}" >> "$GITHUB_OUTPUT"
+          if [[ -n "$WORKSPACE_DIR" ]]; then
+            echo "dir=$WORKSPACE_DIR" >> "$GITHUB_OUTPUT"
           else
-            echo "dir=${{ inputs.working-directory }}" >> "$GITHUB_OUTPUT"
+            echo "dir=$WORKING_DIRECTORY" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Test (rust)

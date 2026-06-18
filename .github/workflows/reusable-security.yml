@@ -94,9 +94,12 @@ jobs:
 
       - name: Run Trivy filesystem scan
         shell: bash
+        env:
+          FAIL_ON_SEVERITY: ${{ inputs.fail-on-severity }}
+          TARGET: ${{ inputs.working-directory }}
         run: |
           set -euo pipefail
-          severity="$(printf '%s' "${{ inputs.fail-on-severity }}" | tr '[:lower:]' '[:upper:]')"
+          severity="$(printf '%s' "$FAIL_ON_SEVERITY" | tr '[:lower:]' '[:upper:]')"
           tools/bin/trivy fs \
             --format sarif \
             --output trivy-fs.sarif \
@@ -106,20 +109,23 @@ jobs:
             --exit-code 1 \
             --skip-files "data/brain-data/research/**/repomix-pack*.xml" \
             --skip-files ".claude/plugins/cache/**" \
-            "${{ inputs.working-directory }}"
+            "$TARGET"
 
       - name: Run Trivy IaC scan
         if: always()
         shell: bash
+        env:
+          FAIL_ON_SEVERITY: ${{ inputs.fail-on-severity }}
+          TARGET: ${{ inputs.working-directory }}
         run: |
           set -euo pipefail
-          severity="$(printf '%s' "${{ inputs.fail-on-severity }}" | tr '[:lower:]' '[:upper:]')"
+          severity="$(printf '%s' "$FAIL_ON_SEVERITY" | tr '[:lower:]' '[:upper:]')"
           tools/bin/trivy config \
             --format sarif \
             --output trivy-config.sarif \
             --severity "$severity,CRITICAL" \
             --exit-code 0 \
-            "${{ inputs.working-directory }}"
+            "$TARGET"
 
       - name: Upload Trivy filesystem SARIF
         if: always() && hashFiles('trivy-fs.sarif') != ''
