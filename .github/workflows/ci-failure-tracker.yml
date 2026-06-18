@@ -42,11 +42,9 @@ on:
     - cron: '0 10 * * 1'   # Weekly Monday 10:00 UTC stale-issue sweep
   workflow_dispatch:
 
-# Block default permissions; grant only what the issue bookkeeping needs.
-permissions:
-  contents: read
-  issues: write
-  actions: read
+# Block default permissions at the workflow level; each job re-grants only the
+# scopes it actually needs (zizmor excessive-permissions: keep grants job-scoped).
+permissions: {}
 
 concurrency:
   # One tracker action per (workflow, branch) at a time so the dedupe lookup
@@ -60,6 +58,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: github.event.workflow_run.conclusion == 'failure'
+    permissions:
+      contents: read
+      issues: write
+      actions: read
     steps:
       - name: File or update CI-failure issue with log references
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
@@ -124,6 +126,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: read
+      issues: write
     steps:
       - name: Close any open issue for this workflow + branch
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
@@ -154,6 +159,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      issues: write
     steps:
       - name: Close ci-failure issues for branches that no longer exist
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9

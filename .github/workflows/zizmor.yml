@@ -1,0 +1,60 @@
+name: zizmor
+
+# Static analysis of this repo's GitHub Actions workflows with zizmor
+# (https://docs.zizmor.sh) — catches template-injection, excessive-permissions,
+# unpinned-uses, cache-poisoning, and dangerous-trigger issues. Complements the
+# actionlint + hermetic-audit jobs in ci.yml; this is a NEW, additive check so
+# the existing required-check job names wired into the rulesets stay untouched.
+#
+# Findings are uploaded to the repo's Security tab as SARIF (via the official
+# action's built-in upload). The gate fails on Medium-and-above findings
+# (--min-severity medium); the documented-intentional findings are allowlisted
+# with rationale in .github/zizmor.yml. The Medium `artipacked` backlog was
+# cleared in the Wave 2 hardening sweep (persist-credentials: false on every
+# read-only checkout), so the floor is now medium.
+
+on:
+  pull_request:
+    branches: ['**']
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Block default permissions; the job re-grants only what SARIF upload needs.
+permissions:
+  contents: read
+
+jobs:
+  zizmor:
+    name: zizmor .github/workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # Required so the action can upload its SARIF results to the Security tab.
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d # v0.5.6
+        with:
+          # Audit only this repo's workflow definitions.
+          inputs: .github/workflows/
+          # Pin the analyzer for reproducibility (repo convention: pin everything).
+          version: 1.25.2
+          # Fail the job on Medium-and-above findings; intentional findings are
+          # allowlisted in the config. Low findings still surface in the
+          # Security tab.
+          min-severity: medium
+          config: .github/zizmor.yml
+          # Upload SARIF to the Security tab (uses codeql-action/upload-sarif).
+          advanced-security: true
+          token: ${{ github.token }}

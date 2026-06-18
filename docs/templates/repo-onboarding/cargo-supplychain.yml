@@ -1,0 +1,22 @@
+name: Cargo Supply-Chain
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: ['**']
+
+permissions:
+  contents: read
+
+jobs:
+  supply-chain:
+    name: Supply-chain
+    uses: FlexNetOS/.github/.github/workflows/reusable-cargo-supplychain.yml@main
+    # with:
+    #   working-directory: '.'
+    #   cargo-deny-checks: 'advisories bans sources licenses'
+    # The default GITHUB_TOKEN is sufficient (advisory-db is public). Override
+    # only for a private advisory-db mirror:
+    # secrets:
+    #   token: ${{ secrets.PARENT_REPO_PAT }}
