@@ -27,11 +27,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed (SESSION-2026-06-17-010)
 - `github-policy-drift` in `.github/workflows/manifest-drift.yml` returned to REPORT_ONLY (`continue-on-error: true`). The strict run failed because the default `GITHUB_TOKEN` lacks permission to read branch protection, rulesets, and repository settings. Promotion back to STRICT is gated on provisioning `POLICY_DRIFT_TOKEN` from `meta/envctl`. Updated `.github/workflows/promote-strict.md` accordingly.
 
-### Fixed (SESSION-2026-06-17-010)
+### Fixed (SESSION-2026-06-17-010, PR #155)
 - `scripts/apply-github-policies.py`: made `_rule_params_match` symmetric (catches surplus/removed live parameters) and updated `.github/policies/rulesets.json` to include API-injected defaults (`required_reviewers`, `do_not_enforce_on_create`) so live `--check` reports no drift.
 - `scripts/mcp-doctor.py`: added AWS access-key ID patterns (`AKIA…`, `ASIA…`) to `SECRET_RE`; 40-hex git SHAs remain excluded to avoid false positives on pinned action refs.
 
-### Changed (SESSION-2026-06-17-010)
+### Changed (SESSION-2026-06-17-010, PR #158)
 - Hardened nine reusable workflows against script injection by moving `${{ inputs.* }}` and `${{ github.* }}` interpolations out of `run:` shells into `env:` variables and referencing them as quoted `"$VAR"`s. Affected workflows: `reusable-meta-rust-ci.yml`, `reusable-test.yml`, `reusable-notify-downstream.yml`, `reusable-security.yml`, `reusable-hermetic-audit.yml`, `reusable-submodule-bump.yml`, `reusable-build.yml`, `reusable-rust-release.yml`, `reusable-lint.yml`.
 
 ### Fixed (SESSION-2026-06-17-009)
