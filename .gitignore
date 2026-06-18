@@ -15,6 +15,10 @@
 .claude/plugins/cache/
 .claude/plugins/marketplaces/
 .claude/plugins/data/
+# OMC `wiki` skill scratch under .claude/ — per-project, agent-generated memory
+# (NOT umbrella content; see wiki/README.md). The repo's own wiki lives in wiki/.
+# Root .omc/ state IS tracked; only the .claude/ copy is leaked plugin scratch.
+.claude/.omc/
 # ruflo / claude-flow runtime SQLite database — transient, regenerated on demand.
 ruvector.db
 ruvector.db-shm
