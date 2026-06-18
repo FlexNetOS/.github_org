@@ -1,0 +1,25 @@
+name: Rust Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: ['**']
+
+permissions:
+  contents: read
+
+jobs:
+  rust-quality:
+    name: Rust quality
+    uses: FlexNetOS/.github/.github/workflows/reusable-rust-quality.yml@main
+    with:
+      workspace-path: 'REPO_NAME_HERE'
+      # sibling-repos: '["meta_core","meta_plugin_protocol"]'
+      # Each gate is opt-in (default true); disable any single one:
+      # semver-checks: true   # public-API breakage gate
+      # typos: true           # crate-ci/typos spell-check
+      # nextest: true         # cargo nextest test runner
+      # msrv: true            # cargo check on Cargo.toml rust-version (no-ops if absent)
+    secrets:
+      token: ${{ secrets.PARENT_REPO_PAT }}

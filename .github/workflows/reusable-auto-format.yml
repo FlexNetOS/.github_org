@@ -73,6 +73,7 @@ jobs:
         if: (github.repository != 'FlexNetOS/.github' && github.repository != 'FlexNetOS/.github_org')
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           # Umbrella repo; name-agnostic. Set org var UMBRELLA_REPO at the future restore to '.github'. Interim fallback = current name.
           repository: ${{ vars.UMBRELLA_REPO || 'FlexNetOS/.github_org' }}
           ref: main

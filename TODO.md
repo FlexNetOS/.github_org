@@ -47,12 +47,11 @@ Companion plan: `architecture/plan/2026-06-17-github-control-plane-upgrades-plan
 
 ### Deep-review upgrade follow-ups (`architecture/plan/2026-06-17-deep-review-upgrade-plan.md`)
 - [x] **2.1** — Make `apply-github-policies.py` `_rule_params_match` symmetric so surplus/removed live rule parameters are detected. Also added the API-injected defaults (`required_reviewers`, `required_review_thread_resolution`, `do_not_enforce_on_create`) to `rulesets.json` and applied live so `--check` is green.
-- [ ] **2.3** — Reconcile fleet policy templates: ensure `rust-canon/rulesets.json` is the canonical fleet ruleset source and remove any duplicate/loose template files.
-- [ ] **2.4** — Deduplicate `apply-fleet-policies.py`/`apply-github-policies.py` by extracting a shared module (or fleet wrapper around the canonical applier).
-- [ ] **4.5** — Defend reusable workflows against script injection: move interpolated `inputs.*` / `github.*` values into `env:` and quote `"$VAR"` in `run:` shells.
+- [x] **2.3** — Reconcile fleet policy templates: verified only the 4 canonical files remain (`rust-canon/{branch-protection,repo-settings,rulesets}.json` + `branch-target-develop/rulesets.json`); `rust-canon/rulesets.json` is the canonical fleet ruleset source, no loose duplicates.
+- [x] **2.4** — Deduplicate `apply-fleet-policies.py`/`apply-github-policies.py` — satisfied by the thin fleet wrapper (#162) importing the core applier functions from the canonical `apply-github-policies.py`.
 - [x] **4.5** — Defend reusable workflows against script injection: move interpolated `inputs.*` / `github.*` values into `env:` and quote `"$VAR"` in `run:` shells (PR #155).
 - [x] **4.8** — Tighten `mcp-doctor.py` `SECRET_RE` to catch AWS access-key IDs (`AKIA…`/`ASIA…`) in addition to GitHub/GitLab/OpenAI tokens; 40-hex SHA false positives remain excluded.
-- [ ] **4.9** — Paginate GitHub reads in `apply-*-policies.py` (`list_rulesets`, `check_environments`).
+- [ ] **4.9** — Paginate GitHub reads in `apply-*-policies.py` (`list_rulesets`, `check_environments`). **Deferred to token provisioning** — live verification needs `POLICY_DRIFT_TOKEN` (default `GITHUB_TOKEN` cannot read rulesets/environments). See `architecture/plan/2026-06-17-pre-rename-finish-plan.md` Phase 2.
 
 ---
 
