@@ -50,6 +50,7 @@ Companion plan: `architecture/plan/2026-06-17-github-control-plane-upgrades-plan
 - [ ] **2.3** — Reconcile fleet policy templates: ensure `rust-canon/rulesets.json` is the canonical fleet ruleset source and remove any duplicate/loose template files.
 - [ ] **2.4** — Deduplicate `apply-fleet-policies.py`/`apply-github-policies.py` by extracting a shared module (or fleet wrapper around the canonical applier).
 - [ ] **4.5** — Defend reusable workflows against script injection: move interpolated `inputs.*` / `github.*` values into `env:` and quote `"$VAR"` in `run:` shells.
+- [x] **4.5** — Defend reusable workflows against script injection: move interpolated `inputs.*` / `github.*` values into `env:` and quote `"$VAR"` in `run:` shells (PR #155).
 - [x] **4.8** — Tighten `mcp-doctor.py` `SECRET_RE` to catch AWS access-key IDs (`AKIA…`/`ASIA…`) in addition to GitHub/GitLab/OpenAI tokens; 40-hex SHA false positives remain excluded.
 - [ ] **4.9** — Paginate GitHub reads in `apply-*-policies.py` (`list_rulesets`, `check_environments`).
 
