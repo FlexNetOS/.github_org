@@ -64,10 +64,11 @@ jobs:
         id: bump
         env:
           MANIFEST: ${{ inputs.manifest }}
+          GROUP: ${{ inputs.group }}
         run: |
           chmod +x scripts/submodule-bump.sh
-          if [[ -n "${{ inputs.group }}" ]]; then
-            scripts/submodule-bump.sh --group "${{ inputs.group }}" || true
+          if [[ -n "$GROUP" ]]; then
+            scripts/submodule-bump.sh --group "$GROUP" || true
           else
             scripts/submodule-bump.sh || true
           fi

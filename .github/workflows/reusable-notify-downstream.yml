@@ -57,6 +57,8 @@ jobs:
           GH_TOKEN: ${{ secrets.parent-repo-pat || secrets.GITHUB_TOKEN }}
           DOWNSTREAM_REPOS: ${{ inputs.downstream-repos }}
           EVENT_TYPE: ${{ inputs.event-type }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           repos="$DOWNSTREAM_REPOS"
@@ -70,8 +72,8 @@ jobs:
             gh api "repos/$repo/dispatches" \
               --method POST \
               -f "event_type=$event_type" \
-              -f "client_payload[repo]=${{ github.repository }}" \
-              -f "client_payload[sha]=${{ github.sha }}" \
+              -f "client_payload[repo]=$REPO" \
+              -f "client_payload[sha]=$SHA" \
               -f "client_payload[ref]=${{ github.ref }}" \
               -f "client_payload[run_id]=${{ github.run_id }}"
           done < <(printf '%s' "$repos" | jq -r '.[]')

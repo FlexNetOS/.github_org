@@ -109,6 +109,8 @@ jobs:
       - name: Upload to GitHub Release
         env:
           GH_TOKEN: ${{ secrets.token || github.token }}
+          TAG: ${{ inputs.tag }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          gh release upload "${{ inputs.tag }}" dist/* --clobber --repo "${{ github.repository }}"
+          gh release upload "$TAG" dist/* --clobber --repo "$REPO"
