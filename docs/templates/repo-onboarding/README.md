@@ -11,6 +11,7 @@ consumes reusable workflows from `FlexNetOS/.github`.
 | File | Purpose |
 | --- | --- |
 | `ci.yml` | Call the full-clone reusable Rust/meta CI |
+| `cargo-supplychain.yml` | Run the Rust supply-chain gate (cargo-deny advisories/bans/sources/licenses + cargo-audit). Requires a `deny.toml` at the repo root — copy the one in `FlexNetOS/.github` |
 | `auto-format.yml` | Auto-format Rust code on PR/push and push fixes back |
 | `notify-parent.yml` | Tell `FlexNetOS/meta` when this repo's `main` changes |
 | `notify-downstream.yml` | Wait for CI, then notify downstream consumers |
@@ -30,3 +31,6 @@ consumes reusable workflows from `FlexNetOS/.github`.
   which performs full clones (no `--depth 1`) per ADR-0002.
 - Replace `workspace-path` with the current repo's directory name in the
   synthetic workspace (usually the repo name).
+- `cargo-supplychain.yml` requires a `deny.toml` at the repo root. Copy the
+  org policy from `FlexNetOS/.github`'s root `deny.toml` and add documented
+  exceptions to its `ignore` / `exceptions` / `allow` lists as needed.
