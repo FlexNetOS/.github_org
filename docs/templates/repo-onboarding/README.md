@@ -12,6 +12,7 @@ consumes reusable workflows from `FlexNetOS/.github`.
 | --- | --- |
 | `ci.yml` | Call the full-clone reusable Rust/meta CI |
 | `cargo-supplychain.yml` | Run the Rust supply-chain gate (cargo-deny advisories/bans/sources/licenses + cargo-audit). Requires a `deny.toml` at the repo root — copy the one in `FlexNetOS/.github` |
+| `rust-quality.yml` | Run the Rust quality gates (cargo-semver-checks, typos, cargo-nextest, MSRV check). Each gate is opt-in via a boolean input (default true) |
 | `auto-format.yml` | Auto-format Rust code on PR/push and push fixes back |
 | `notify-parent.yml` | Tell `FlexNetOS/meta` when this repo's `main` changes |
 | `notify-downstream.yml` | Wait for CI, then notify downstream consumers |
