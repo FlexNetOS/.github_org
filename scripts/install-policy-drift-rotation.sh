@@ -49,13 +49,18 @@ EOF
 timer_body() {
   cat <<'EOF'
 [Unit]
-Description=Daily POLICY_DRIFT_TOKEN rotation (envctl relay, virtual-credit-card model)
+Description=POLICY_DRIFT_TOKEN rotation (envctl relay, virtual-credit-card model)
 
 [Timer]
-# Every 24h. Persistent=true catches up a missed window after the box was off/asleep.
-OnCalendar=daily
+# GitHub caps the installation token at ~60 min, so re-mint every 45 min to keep a
+# VALID token present continuously (15-min margin). OnBootSec primes it shortly after
+# login; OnUnitActiveSec spaces subsequent runs evenly. Persistent=true catches up a
+# missed window after the box was off/asleep (the expiry pre-check then drops a stale
+# token cleanly if the gap exceeded the token lifetime).
+OnBootSec=2min
+OnUnitActiveSec=45min
 Persistent=true
-RandomizedDelaySec=300
+RandomizedDelaySec=120
 
 [Install]
 WantedBy=timers.target
@@ -65,7 +70,7 @@ EOF
 if [ "${APPLY}" -eq 0 ]; then
   echo "DRY-RUN (no --apply). Would write:"
   echo "  ${SERVICE}  (ExecStart -> ${SCRIPT})"
-  echo "  ${TIMER}    (OnCalendar=daily, Persistent=true)"
+  echo "  ${TIMER}    (OnUnitActiveSec=45min, Persistent=true)"
   echo "  then: systemctl --user daemon-reload && systemctl --user enable --now policy-drift-token-rotate.timer"
   echo "Re-run with --apply to install (add --run-now to rotate once immediately)."
   exit 0
