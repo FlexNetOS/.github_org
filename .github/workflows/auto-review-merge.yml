@@ -1,12 +1,27 @@
 name: auto-review-merge
 
-# Upgrade-only merge helper.
+# Autonomous approve + merge helper for the full-auto pipeline.
+#
+# This is the feature→develop counterpart of promote-develop-to-main.yml. The
+# canon (ADR-0003; QUESTIONS_LESSONS C-F3 / §G "the separate principal is an
+# AGENT, not a human") dissolves the 1-required-approval gate on develop NOT by
+# a human reviewer but by an automated *separate principal* supplying the
+# approval — never the PR author, never the agent's own identity. This workflow
+# is that principal for feature→develop: it approves as the flexnetos-github-app
+# (AUTOMERGE_APPROVE_TOKEN, envctl-provisioned, ADR-0006) and arms auto-merge so
+# the PR lands on green with no human in the loop.
 #
 # Safety model:
 # - Never checks out or executes PR code.
-# - Same-repo upgrade PRs only; forks are always blocked.
-# - Requires either an upgrade label or an upgrade-style branch prefix.
-# - Requires existing non-failing checks; "no checks" is not mergeable.
+# - Same-repo PRs only; forks are always blocked.
+# - Eligible: same-repo non-draft PRs targeting `develop`, plus upgrade PRs
+#   (automerge-upgrade label or upgrade-style branch prefix) to any base.
+# - Requires existing non-failing, non-pending checks; "no checks" is not mergeable.
+# - Branch-protection's 6 required checks still gate the actual merge: approval
+#   only satisfies the 1-review requirement; auto-merge waits for green.
+# - Degrades safely: if AUTOMERGE_APPROVE_TOKEN is unset (App automation not yet
+#   provisioned, Phase 6), the approve step no-ops and the PR waits — exactly the
+#   promote-develop-to-main.yml fallback. No human is forced once the token exists.
 # - Leaves branch deletion disabled.
 
 on:
@@ -92,14 +107,19 @@ jobs:
             const upgradeLabels = new Set(['automerge-upgrade', 'dependencies', 'dependency', 'upgrade', 'tools', 'submodule']);
             const hasUpgradeLabel = labels.some((label) => upgradeLabels.has(label));
             const headRef = pr.head.ref || '';
+            const baseRef = pr.base.ref || '';
             const upgradeBranch = /^(dependabot|renovate|submodule-bump|upgrade|updates|tools)\//.test(headRef);
             const sameRepo = pr.head.repo && pr.base.repo && pr.head.repo.full_name === pr.base.repo.full_name;
+            // Full-auto pipeline: any same-repo feature PR targeting the develop trunk is
+            // eligible (the separate-principal approval is what dissolves the review gate,
+            // per ADR-0003 C-F3). Upgrade PRs (label/branch) remain eligible to any base.
+            const targetsDevelop = baseRef === 'develop';
 
             const reasons = [];
             if (pr.draft) reasons.push('PR is still draft.');
-            if (!sameRepo) reasons.push('PR is from a fork; upgrade automerge is same-repo only.');
-            if (!hasUpgradeLabel && !upgradeBranch) {
-              reasons.push('PR is not marked as an upgrade. Add label `automerge-upgrade` or use an upgrade branch prefix.');
+            if (!sameRepo) reasons.push('PR is from a fork; autonomous approve/merge is same-repo only.');
+            if (!hasUpgradeLabel && !upgradeBranch && !targetsDevelop) {
+              reasons.push('PR neither targets develop nor is marked as an upgrade. Target base `develop`, or add label `automerge-upgrade` / use an upgrade branch prefix.');
             }
 
             const { data: freshPr } = await github.rest.pulls.get({ owner, repo, pull_number: pr.number });
@@ -172,13 +192,35 @@ jobs:
               body,
             });
 
+      - name: Auto-approve as the separate principal (App via envctl)
+        if: steps.gate.outputs.eligible == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.AUTOMERGE_APPROVE_TOKEN }}
+          PR_NUMBER: ${{ steps.gate.outputs.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          # ADR-0003 C-F3: the 1-review requirement on develop is satisfied by an
+          # automated SEPARATE PRINCIPAL (the flexnetos-github-app via envctl), never
+          # the PR author or the agent's own identity. AUTOMERGE_APPROVE_TOKEN is that
+          # principal's credential (envctl-provisioned, ADR-0006), distinct from
+          # PROMOTE_TOKEN (which approves develop→main).
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "::notice title=Manual approval required::AUTOMERGE_APPROVE_TOKEN is not set." \
+              "Provision the envctl flexnetos-github-app token (ADR-0003/ADR-0006) so feature→develop" \
+              "PRs auto-approve. Until then this PR waits for the separate-principal approval — no" \
+              "agent or human self-approval."
+            exit 0
+          fi
+          gh pr review "$PR_NUMBER" --approve --repo "$REPOSITORY" \
+            --body "Auto-approved by the separate principal (flexnetos-github-app via envctl) per ADR-0003: feature→develop approval is supplied by an automated principal, never the PR author. Branch protection's required checks still gate the merge."
+
       - name: Enable GitHub auto-merge
         if: steps.gate.outputs.eligible == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.gate.outputs.number }}
         run: |
-          # Do not pass --delete-branch: upgrade branches stay intact unless a
-          # maintainer deletes them separately. Normal feature branches are
-          # cleaned up by `.github/workflows/delete-merged-branch.yml` instead.
+          # Do not pass --delete-branch here: feature branches are cleaned up by
+          # `.github/workflows/delete-merged-branch.yml` after merge; upgrade
+          # branches stay intact unless a maintainer deletes them separately.
           gh pr merge "$PR_NUMBER" --auto --squash
