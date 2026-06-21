@@ -66,8 +66,13 @@ For the next `todo` item `T`:
      and move to the next item (never merge a red change, never fake a pass).
    - **PASS / PASS WITH WARNINGS** → continue.
 5. **PR.** Push the branch; `gh pr create --base develop` with a body built from the architect plan +
-   guardian evidence (include warnings). Arm auto-merge: `gh pr merge <n> --auto --squash`. It will
-   sit `BLOCKED` on the required approval — that is correct; the loop never self-approves (ADR-0003).
+   guardian evidence (include warnings). Arm auto-merge: `gh pr merge <n> --auto --squash`. That is the
+   loop's **last** action on the PR. An **automated separate principal** approves it — the
+   flexnetos-github-app via envctl / `auto-review-merge.yml` — never the loop, never the owner; the
+   agent must not self-approve (ADR-0003 C-F3 §G). The PR then merges on green with no human. If it
+   shows `BLOCKED`, that means the App-approval token (`AUTOMERGE_APPROVE_TOKEN`) is not provisioned yet
+   — a one-time envctl/Phase-6 ops gate recorded once as `needs-owner` in `backlog.md`, **not** a signal
+   to ask the owner to approve this PR. Never tell the owner to approve or merge a PR.
 6. **Record.** Mark T `done (PR #n)` in `backlog.md`. Append a one-line entry to `CHANGELOG.md`
    `[Unreleased]` (guard the CHANGELOG collision: if another open loop PR already edits the same
    anchor, note it in the PR body instead and reconcile at merge).
@@ -84,12 +89,18 @@ For the next `todo` item `T`:
   `_workspace/loop-checkpoint.md` (state + pointers, not narrative): backlog status, open PR numbers,
   the next undone item, and any `blocked` reasons. A fresh session resumes from that file (Phase 0).
 - Never block waiting on a PR to merge — auto-merge is armed; the loop's job is to *open* green PRs,
-  not to babysit the merge queue. Owner approval + green checks close them.
+  not to babysit the merge queue. The automated principal (App via envctl / `auto-review-merge.yml`)
+  approves and merges them on green — the owner is never the approver. Never frame a PR as "awaiting
+  owner approval"; a missing approval is a one-time token-provisioning ops gate, not a per-PR ask.
 
 ## Guardrails (the loop must never)
 
-- ...merge its own PR, or open a PR against `main`. PRs target `develop`; approval is a separate
-  principal's (ADR-0003).
+- ...merge its own PR, self-approve, or open a PR against `main`. PRs target `develop`; approval is
+  supplied by an **automated** separate principal (App via envctl / `auto-review-merge.yml`), never the
+  PR author and never the human owner (ADR-0003 C-F3 §G).
+- ...tell the owner to approve or merge a PR, or stack PRs "awaiting owner approval". The pipeline is
+  full-auto on green. A missing automated approval is a one-time envctl token gate (`needs-owner` in
+  `backlog.md`), surfaced once — not a recurring human-in-the-loop step.
 - ...introduce a downgrade (stub / dropped branch / weakened guard) to make a target "pass". A target
   that can only be met by downgrading is `blocked`, not done.
 - ...edit `secrets/store/**`, print a token, run a host install, or clone a repo not already on disk.
