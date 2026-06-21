@@ -20,6 +20,9 @@
         "protected_branches": true,
         "custom_branch_policies": false
       }
+    },
+    {
+      "name": "copilot"
     }
   ]
 }
