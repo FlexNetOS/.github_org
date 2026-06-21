@@ -21,5 +21,9 @@
         "custom_branch_policies": false
       }
     }
-  ]
+  ],
+  "external_environments": [
+    "copilot"
+  ],
+  "_external_environments_note": "Environments created and managed outside this IaC — the drift check treats them as expected (neither applied nor flagged as unexpected). 'copilot' is provisioned by the GitHub Copilot coding agent, not by apply-github-policies.py."
 }

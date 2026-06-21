@@ -99,6 +99,8 @@ def validate_policy(spec: dict, kind: str) -> list[str]:
             errors.append("repo-settings.json: missing 'settings' key")
         if "environments" in spec and not isinstance(spec["environments"], list):
             errors.append("repo-settings.json: 'environments' must be a list")
+        if "external_environments" in spec and not isinstance(spec["external_environments"], list):
+            errors.append("repo-settings.json: 'external_environments' must be a list")
     return errors
 
 
@@ -228,27 +230,83 @@ def apply_environments(owner: str, repo: str, spec: list[dict], *, dry_run: bool
     return ok
 
 
-def check_repo_settings(owner: str, repo: str, desired: dict) -> list[str]:
+def _looks_like_permission_error(blob: str) -> bool:
+    """True when a gh-api failure is an authz/scope problem, not a real 'absent'.
+
+    Branch protection and several repo-admin reads require a token with
+    `administration:read`. The default Actions GITHUB_TOKEN does not have it,
+    so those reads come back 403 / "Resource not accessible". That is an
+    *instrument failure* (cannot verify), categorically different from a 404
+    "not protected" (a genuine, verifiable difference).
+    """
+    b = blob.lower()
+    return any(
+        marker in b
+        for marker in (
+            "403",
+            "resource not accessible",
+            "must have admin",
+            "administration permission",
+            "not accessible by integration",
+            "requires authentication",
+            "bad credentials",
+        )
+    )
+
+
+def detect_admin_scope(owner: str, repo: str, probe_branch: str) -> bool:
+    """Probe whether the active token can read admin-only state.
+
+    Reading a branch's protection requires `administration:read`. A 0 exit
+    (readable) or a clear 404 "not protected" both prove the token *can* see
+    admin state; a 403/permission error proves it cannot. We fail closed
+    (treat unknown errors as 'no admin scope') so we never emit false DRIFT
+    for state we could not actually read.
+    """
+    code, out, err = run(["gh", "api", f"/repos/{owner}/{repo}/branches/{probe_branch}/protection"])
+    if code == 0:
+        return True
+    blob = (err or "") + (out or "")
+    if _looks_like_permission_error(blob):
+        return False
+    low = blob.lower()
+    if "not found" in low or "branch not protected" in low or "404" in low:
+        # Readable, just not protected — the token has the scope to see it.
+        return True
+    return False
+
+
+def check_repo_settings(owner: str, repo: str, desired: dict) -> tuple[list[str], list[str]]:
     drift: list[str] = []
+    unverifiable: list[str] = []
     code, out, err = run(["gh", "api", f"/repos/{owner}/{repo}"])
     if code != 0:
-        return [f"DRIFT: could not read repository settings: {err}"]
+        return [], [f"UNVERIFIED: repository settings unreadable ({err.strip() or 'gh api failed'})"]
     current = json.loads(out)
     for key, value in desired.items():
-        if current.get(key) != value:
-            drift.append(f"DRIFT repo setting: {key} is {current.get(key)!r}, expected {value!r}")
-    return drift
+        if key not in current:
+            # Admin-only fields (merge flags, delete_branch_on_merge, …) are
+            # omitted from the repo object for tokens without admin read —
+            # absent means "could not read", NOT "differs".
+            unverifiable.append(
+                f"UNVERIFIED repo setting: {key} (not returned; token lacks administration:read)"
+            )
+        elif current[key] != value:
+            drift.append(f"DRIFT repo setting: {key} is {current[key]!r}, expected {value!r}")
+    return drift, unverifiable
 
 
-def check_environments(owner: str, repo: str, desired: list[dict]) -> list[str]:
+def check_environments(
+    owner: str, repo: str, desired: list[dict], external: list[str]
+) -> tuple[list[str], list[str]]:
     drift: list[str] = []
+    unverifiable: list[str] = []
     desired_by_name = {e["name"]: e for e in desired}
+    external_set = set(external)
     code, out, err = run(["gh", "api", f"/repos/{owner}/{repo}/environments"])
-    existing_names = set()
-    if code == 0:
-        existing_names = {e["name"] for e in json.loads(out).get("environments", [])}
-    else:
-        return [f"DRIFT: could not list environments: {err}"]
+    if code != 0:
+        return [], [f"UNVERIFIED: environments unreadable ({err.strip() or 'gh api failed'})"]
+    existing_names = {e["name"] for e in json.loads(out).get("environments", [])}
 
     for name in desired_by_name:
         if name not in existing_names:
@@ -256,7 +314,7 @@ def check_environments(owner: str, repo: str, desired: list[dict]) -> list[str]:
             continue
         ecode, eout, eerr = run(["gh", "api", f"/repos/{owner}/{repo}/environments/{name}"])
         if ecode != 0:
-            drift.append(f"DRIFT: could not read environment '{name}': {eerr}")
+            unverifiable.append(f"UNVERIFIED: environment '{name}' detail unreadable ({eerr.strip()})")
             continue
         current = json.loads(eout)
         desired_policy = desired_by_name[name].get("deployment_branch_policy")
@@ -268,16 +326,27 @@ def check_environments(owner: str, repo: str, desired: list[dict]) -> list[str]:
             )
 
     for name in existing_names:
-        if name not in desired_by_name:
+        if name not in desired_by_name and name not in external_set:
             drift.append(f"DRIFT: unexpected environment '{name}' exists")
-    return drift
+    return drift, unverifiable
 
 
-def check_branch_protection(owner: str, repo: str, branch: str, desired: dict) -> list[str]:
+def check_branch_protection(
+    owner: str, repo: str, branch: str, desired: dict, *, admin_scope: bool
+) -> tuple[list[str], list[str]]:
+    if not admin_scope:
+        return [], [
+            f"UNVERIFIED: branch protection for {branch} "
+            f"(token lacks administration:read — set POLICY_DRIFT_TOKEN)"
+        ]
     drift: list[str] = []
     code, out, err = run(["gh", "api", f"/repos/{owner}/{repo}/branches/{branch}/protection"])
     if code != 0:
-        return [f"DRIFT: branch protection for {branch} is missing or unreadable"]
+        blob = ((err or "") + (out or "")).lower()
+        if "not found" in blob or "branch not protected" in blob or "404" in blob:
+            # Admin scope confirmed by preflight, so a 404 is real: protection is off.
+            return [f"DRIFT: branch protection for {branch} is not enabled"], []
+        return [], [f"UNVERIFIED: branch protection for {branch} unreadable ({err.strip()})"]
     current = json.loads(out)
 
     current_rsc = current.get("required_status_checks", {}) or {}
@@ -326,7 +395,7 @@ def check_branch_protection(owner: str, repo: str, branch: str, desired: dict) -
         if bool(current_val) != bool(desired_val):
             drift.append(f"DRIFT {branch}: {key} is {current_val!r}, expected {desired_val!r}")
 
-    return drift
+    return drift, []
 
 
 def fetch_ruleset(owner: str, repo: str, ruleset_id: int) -> dict | None:
@@ -389,8 +458,11 @@ def _rule_params_match(current_rule: dict, desired_rule: dict) -> bool:
     return True
 
 
-def check_rulesets(owner: str, repo: str, desired_rulesets: list[dict]) -> list[str]:
+def check_rulesets(
+    owner: str, repo: str, desired_rulesets: list[dict], *, admin_scope: bool
+) -> tuple[list[str], list[str]]:
     drift: list[str] = []
+    unverifiable: list[str] = []
     desired_by_name = {rs["name"]: rs for rs in desired_rulesets}
     existing = list_rulesets(owner, repo)
 
@@ -400,7 +472,7 @@ def check_rulesets(owner: str, repo: str, desired_rulesets: list[dict]) -> list[
             continue
         current = fetch_ruleset(owner, repo, existing[name])
         if current is None:
-            drift.append(f"DRIFT: could not fetch ruleset '{name}'")
+            unverifiable.append(f"UNVERIFIED: ruleset '{name}' detail unreadable")
             continue
         desired = desired_by_name[name]
 
@@ -411,8 +483,16 @@ def check_rulesets(owner: str, repo: str, desired_rulesets: list[dict]) -> list[
         if json.dumps(_ordered(current.get("conditions")), sort_keys=True) != json.dumps(_ordered(desired.get("conditions")), sort_keys=True):
             drift.append(f"DRIFT: ruleset '{name}' conditions do not match")
 
+        # bypass_actors are only exposed to tokens with administration:read; for
+        # a read-scoped token they come back empty, so a mismatch there is
+        # "couldn't read", not real drift.
         if _bypass_actors_key(desired.get("bypass_actors", [])) != _bypass_actors_key(current.get("bypass_actors", [])):
-            drift.append(f"DRIFT: ruleset '{name}' bypass_actors do not match")
+            if admin_scope:
+                drift.append(f"DRIFT: ruleset '{name}' bypass_actors do not match")
+            else:
+                unverifiable.append(
+                    f"UNVERIFIED: ruleset '{name}' bypass_actors (token lacks administration:read)"
+                )
 
         desired_rules = desired.get("rules", [])
         current_rules = current.get("rules", [])
@@ -434,22 +514,42 @@ def check_rulesets(owner: str, repo: str, desired_rulesets: list[dict]) -> list[
         if name not in desired_by_name:
             drift.append(f"DRIFT: unexpected ruleset '{name}' exists")
 
-    return drift
+    return drift, unverifiable
 
 
-def check_drift(owner: str, repo: str) -> list[str]:
-    """Return a list of drift messages; empty list means no drift."""
+def check_drift(owner: str, repo: str) -> tuple[list[str], list[str]]:
+    """Return (drift, unverifiable).
+
+    drift        — verified differences between committed policy and live state.
+    unverifiable — state that could not be read with the active token's scope;
+                   reported but never treated as drift, so the check never
+                   cries wolf on data it could not actually inspect.
+    """
     bp_spec = load_json("branch-protection.json")
     rs_spec = load_json("rulesets.json")
     settings_spec = load_json("repo-settings.json")
 
+    branches = bp_spec.get("branches", {})
+    probe_branch = next(iter(branches), "main")
+    admin_scope = detect_admin_scope(owner, repo, probe_branch)
+
     drift: list[str] = []
-    for branch, desired in bp_spec.get("branches", {}).items():
-        drift.extend(check_branch_protection(owner, repo, branch, desired))
-    drift.extend(check_rulesets(owner, repo, rs_spec.get("rulesets", [])))
-    drift.extend(check_repo_settings(owner, repo, settings_spec.get("settings", {})))
-    drift.extend(check_environments(owner, repo, settings_spec.get("environments", [])))
-    return drift
+    unverifiable: list[str] = []
+
+    def collect(result: tuple[list[str], list[str]]) -> None:
+        drift.extend(result[0])
+        unverifiable.extend(result[1])
+
+    for branch, desired in branches.items():
+        collect(check_branch_protection(owner, repo, branch, desired, admin_scope=admin_scope))
+    collect(check_rulesets(owner, repo, rs_spec.get("rulesets", []), admin_scope=admin_scope))
+    collect(check_repo_settings(owner, repo, settings_spec.get("settings", {})))
+    collect(check_environments(
+        owner, repo,
+        settings_spec.get("environments", []),
+        settings_spec.get("external_environments", []),
+    ))
+    return drift, unverifiable
 
 
 class _Tee:
@@ -503,14 +603,38 @@ def main() -> int:
         return 2
 
     if args.check:
-        drift = check_drift(owner, repo)
+        drift, unverifiable = check_drift(owner, repo)
         if args.json:
-            print(json.dumps({"ok": not drift, "drift": drift}, indent=2))
+            print(json.dumps(
+                {
+                    "ok": not drift,
+                    "fully_verified": not unverifiable,
+                    "drift": drift,
+                    "unverifiable": unverifiable,
+                },
+                indent=2,
+            ))
         else:
             for msg in drift:
                 print(msg)
-            if not drift:
+            for msg in unverifiable:
+                print(msg)
+            if not drift and not unverifiable:
                 print("No drift detected between committed policy and live GitHub state.")
+            elif not drift:
+                print(
+                    f"No drift detected in verifiable state; {len(unverifiable)} item(s) "
+                    "could not be verified with the active token's scope. "
+                    "Provision POLICY_DRIFT_TOKEN with administration:read to enable "
+                    "full branch-protection / ruleset-bypass / repo-admin verification."
+                )
+            else:
+                print(
+                    f"\n{len(drift)} drift item(s) detected"
+                    + (f"; {len(unverifiable)} item(s) unverifiable." if unverifiable else ".")
+                )
+        # Unverifiable state is an instrument limitation, not policy drift — only
+        # genuine, verified drift fails the check.
         return 0 if not drift else 1
 
     dry_run = not args.apply
