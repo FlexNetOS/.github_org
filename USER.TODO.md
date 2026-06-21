@@ -812,3 +812,57 @@ feature branch but should not be merged to `main` without picking one of the abo
   The workflow already prefers `secrets.POLICY_DRIFT_TOKEN || secrets.GITHUB_TOKEN` — no workflow change needed; the check upgrades to full verification automatically.
 - **How to verify done:** re-run the `github-policy-drift` job; its log shows `No drift detected between committed policy and live GitHub state.` (the full-verification message) with **zero** `UNVERIFIED:` lines, instead of `No drift detected in verifiable state; N item(s) could not be verified`.
 - **Status:** `open`
+
+---
+
+### UA-2026-06-21-001 — Approve + merge PR #198 then PR #194 into `develop`
+
+- **Surfaced by:** `SESSION-2026-06-21-001` (always-on rules + orphaned-gitlink CI fix)
+- **Blocks:** Both PRs auto-merging. #198 unblocks all `develop` CI (orphaned-gitlink checkout break); #194 then lands the always-on agent rules. Per ADR-0003 an agent never approves/admin-merges its own PR — a **separate principal** (the GitHub App via envctl, or the owner) must supply the 1 required approval. Auto-merge (squash) is already armed on both.
+- **Why:** This session opened two PRs to `develop`, both green on all required checks with auto-merge armed, each `BLOCKED` solely on `reviewDecision: REVIEW_REQUIRED`:
+  - **#198** `fix/orphaned-brain-data-gitlinks` — removes 5 orphaned `data/brain-data` gitlinks that broke `actions/checkout` on every `develop` job (root cause: never registered in `.gitmodules`; latent until #173's `persist-credentials: false` triggered `git submodule foreach`). 12/12 required checks pass; the lone failing check (`GitHub policy drift (dry-run)`) is advisory/report-only and flags only the intentional `copilot` env.
+  - **#194** `docs/always-on-agent-rules` — embeds the always-on rules block into all 5 agent surfaces. Its CI cannot fully pass until #198 lands on `develop` (its branch still carries the orphaned gitlinks at merge-base).
+- **What to do:**
+
+  ```bash
+  # 1. Approve + let auto-merge land the CI fix first
+  gh pr review 198 --approve        # as the separate principal (App/owner)
+  # 2. After #198 merges to develop, refresh #194 so its CI re-runs clean
+  gh pr merge 194 --auto --squash   # already armed; just needs approval
+  gh pr review 194 --approve
+  # (if #194 CI doesn't auto-rerun: `gh pr update-branch 194` to pull in develop)
+  ```
+
+- **How to verify done:** `gh pr view 198 --json state,mergedAt` and `gh pr view 194 --json state,mergedAt` both report `state: MERGED`; `git ls-tree -r origin/develop | awk '$2=="commit"'` shows no `data/brain-data` gitlinks; `develop` CI is green.
+- **Status:** `superseded by UA-2026-06-21-003` — restructured this session: #203 is now the comprehensive base (orphaned-gitlink **and** policy-drift fixes); #194/#199 rebased onto it. See UA-2026-06-21-003 for the corrected approve-merge order.
+
+---
+
+### UA-2026-06-21-003 — Approve the 5 stacked PRs in order so they auto-merge into a clean `develop`
+
+- **Surfaced by:** `SESSION-2026-06-21-002` (PR restructure: all five PRs green on every check, stacked on #203, auto-merge armed; #198 closed as superseded)
+- **Blocks:** All five PRs landing on `develop`. Each is `MERGEABLE` with squash auto-merge **already armed**, blocked **solely** on `reviewDecision: REVIEW_REQUIRED`. Per ADR-0003 / the `protect-develop` ruleset (1 required review) an agent **never** approves its own PR — and all five are authored by `drdave-flexnetos`, so GitHub also structurally blocks self-approval. A **separate principal** (the GitHub App via envctl, or the owner signed in as a different identity) must supply the approval.
+- **Why:** This session made every PR green on **all** checks (not just the 12 required) and removed redundancy so each PR carries only its own change:
+  - **#203** `fix/policy-drift-scope-aware` — the comprehensive **base**: orphaned-gitlink removal + scope-aware policy-drift fix + `POLICY_DRIFT_TOKEN` USER.TODO. Fully green.
+  - **#194** `docs/always-on-agent-rules` — rebased onto #203; now just the always-on agent rules. Green.
+  - **#199** `chore/wrap-up-2026-06-21` — rebased onto #203; now just SESSION-001 wrap-up. Green.
+  - **#176** `docs/adr-0004-cross-platform-ci-strategy` — rebased onto #203; now just ADR-0004. Green.
+  - **#180** `chore/claude-config-path-audit` — rebased onto #203; now just the `.claude` config purge. Green.
+  - **#185** `research/repo-state-vs-meta-arch` — fixed **in place** (merged #203/develop in, upgrade-only conflict resolution, all unique research/ICM artifacts preserved, Trivy + PR title fixed). Green.
+  - **#198** `fix/orphaned-brain-data-gitlinks` — the original gitlink-only fix, **fully subsumed by #203**. **Closed** as superseded (SESSION-2026-06-21-002); its change reaches `develop` via #203.
+- **What to do** (approve #203 FIRST so its squash lands the base; the rest then squash cleanly):
+
+  ```bash
+  # Base FIRST — delivers the clean develop (gitlink + policy fixes)
+  gh pr review 203 --approve        # as the separate principal (App/owner)
+  # Then the content PRs (all rebased/merged on #203 → no redundant commits)
+  gh pr review 194 --approve
+  gh pr review 199 --approve
+  gh pr review 176 --approve
+  gh pr review 180 --approve
+  gh pr review 185 --approve
+  ```
+
+  Auto-merge (squash) is armed on all five, so each merges the moment its approval lands and checks are green — no manual `gh pr merge` needed. #198 is already closed.
+- **How to verify done:** `gh pr view 203 --json state` → `MERGED`, likewise #194/#199/#176/#180/#185; #198 `CLOSED`; `git ls-tree -r origin/develop | awk '$2=="160000"'` shows no `data/brain-data` gitlinks; `develop` CI green; `python3 scripts/apply-github-policies.py --check` on `develop` exits 0.
+- **Status:** `open`

@@ -20,6 +20,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added (SESSION-2026-06-21-001)
+- Always-on rules block embedded into all five agent-instruction surfaces (`AGENTS.md`, `CLAUDE.md`, `.github/AGENTS.md`, `.claude/AGENTS.md`, `.codex/AGENTS.md`) — one identical block with a sync marker, sourced from `meta/.kb/AGENTS.md` (FlexNetOS Agent Guide) + owner rule 2026-06-21. Rules: finish surfaced/stale/orphaned work + never-downgrade, document-before-implement, verify-before-done, trace-to-a-human. (PR #194 → `develop`, auto-merge armed)
+
+### Fixed (SESSION-2026-06-21-001)
+- Removed 5 orphaned `data/brain-data` gitlinks (`DeepTutor`, `deepwiki-rs`, `obsidian-mind`, `my-wiki-knowledge/.claude/obsidian-second-brain`, `.../obsidian-skills`) that broke `actions/checkout` on **every** `develop` CI job. Root cause: committed as bare gitlinks (mode 160000) but never registered in `.gitmodules` (no historical commit ever contained them); latent until #173's `persist-credentials: false` made checkout run `git submodule foreach` (exit 128). Removal loses no materialized content (dirs were empty). (PR #198 → `develop`, auto-merge armed)
+- Set live repo `allow_merge_commit=false` (was `true`) via targeted `gh api PATCH`, bringing it into compliance with policy / ADR-0003 (no merge commits). Squash + rebase preserved. The full `apply-github-policies.py --apply` was intentionally avoided (scope-escalation over shared org settings).
+
+### Removed (SESSION-2026-06-21-001)
+- Closed 8 misdirected Copilot SWE-agent PRs (#186–#193) that all targeted `main` (wrong base per ADR-0003) for the orphaned-gitlink break; superseded by #198 on `develop`.
+
+### Decisions recorded (2026-06-21)
+- The `meta/.kb` process-discipline rules apply in `.github_org` sessions, not only at the meta root; they are now mirrored into every agent entrypoint here (not just `.claude`).
+- The `copilot` GitHub environment is **intentional** (Copilot coding-agent env) and is left in place; the `GitHub policy drift (dry-run)` check flagging it is advisory/report-only (not a required check on `develop`).
+
+### Notes (SESSION-2026-06-21-001)
+- Both PRs (#194, #198) are green on all required checks with squash auto-merge armed, blocked only on `REVIEW_REQUIRED` — a separate principal must approve (see `USER.TODO.md` UA-2026-06-21-001). No PR was self-approved or admin-merged.
+
 ### Fixed (SESSION-2026-06-17-010)
 - Resolved merge conflicts between `feat/control-plane-upgrades-continuation` and the refactored fleet-policy layout on latest `develop`; pushed the reconciled branch and merged PR #135 to `develop` via admin override (sole maintainer, no external reviewer available).
 - Fixed `secrets-rotate.yml` runner-availability check to pass `actionlint`/shellcheck by adding a `shellcheck disable=SC2016` comment for jq variables inside single quotes.

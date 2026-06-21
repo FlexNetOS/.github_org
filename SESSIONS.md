@@ -8,6 +8,59 @@
 
 ---
 
+## SESSION-2026-06-21-001 — Always-on agent rules across all surfaces + orphaned-gitlink CI fix
+
+- **ID:** `SESSION-2026-06-21-001`
+- **Date:** 2026-06-21
+- **Branch:** `chore/wrap-up-2026-06-21` (bookkeeping); session work on `docs/always-on-agent-rules` (#194) and `fix/orphaned-brain-data-gitlinks` (#198)
+- **HEAD at end:** `8d3c174` (wrap-up branch base; PR commits live on their own branches)
+- **Mode:** `manual` → `/wrap-up`
+- **Outcome:** Rules enshrined across 5 agent surfaces (PR #194); systemic develop CI break root-caused + fixed (PR #198); 8 misdirected Copilot PRs closed; merge_commit policy drift fixed. Both PRs armed + green-on-required, awaiting separate-principal approval.
+- **User-action gates surfaced:** `UA-2026-06-21-001`
+
+### What the user asked
+> "start by updating your rules | 1st: unfinished work is often identified as stale or orphaned when it not finished. Never overlook or pass off issues when identified. Alwasys finish and fix any issue when surfaced. Always upgrade. Never downgrade. | the rules from meta/.kb are not present here. Search all files and extract all rules from meta/.kb (e.g., AGENTS.md)"
+
+Follow-ups, verbatim:
+> "they must be more than just .claude rules. they must also be github, agent, and anything else we missed. these are simple rules that must always be used. The rules from .kb are explicite in what they target"
+> "yes, flag the approvals and run /wrap-up | USER>TODO should be done. you need to verify"
+
+### What the answer is
+- `meta/.kb/AGENTS.md` is the sole rules file in `meta/.kb` (rest is KB data). Its rules + the owner's finish/never-downgrade rule are now an **Always-on rules** block in all 5 agent entrypoints. (PR #194)
+- Running `make verify` surfaced a **pre-existing systemic CI break**: 5 orphaned `data/brain-data` gitlinks (never in `.gitmodules`) fail `actions/checkout` since #173's `persist-credentials: false`. Fixed by removing them. (PR #198)
+- Owner-confirmed decisions executed: close the 8 Copilot PRs, set `allow_merge_commit=false`, leave the intentional `copilot` env.
+
+### What was actually done this session
+1. Stored owner rule + extracted `meta/.kb` discipline to file-memory (`finish-stale-orphaned-work.md`, `flexnetos-kb-agent-discipline.md`, `MEMORY.md`) and ICM (`preferences`, critical).
+2. Embedded the always-on rules block into `AGENTS.md`, `CLAUDE.md`, `.github/AGENTS.md`, `.claude/AGENTS.md`, `.codex/AGENTS.md` → PR #194 → `develop`, auto-merge armed; `make verify` green.
+3. Root-caused the develop-wide CI failure (orphaned gitlinks + `persist-credentials: false` → `git submodule foreach` exit 128); removed 5 gitlinks → PR #198 → `develop`, auto-merge armed.
+4. Closed 8 misdirected Copilot PRs (#186–#193, wrong base `main`).
+5. Set live `allow_merge_commit=false` via targeted `gh api PATCH` (declined full `--apply` as scope-escalation; classifier also blocked it).
+6. Stored resolved CI root-cause to ICM (`errors-resolved`).
+
+### Reservations / risks
+- No PR self-approved or admin-merged; both await a separate principal (App via envctl, or owner).
+- `GitHub policy drift (dry-run)` stays red on the intentional `copilot` env — advisory only, NOT a required check on `develop`.
+- #194 CI can't fully pass until #198 lands on `develop` (its merge-base still carries the gitlinks); refresh its branch after #198 merges.
+- No force-push; no submodule URLs fabricated (they were unrecoverable); the `copilot` env was NOT deleted; full policy reconcile NOT applied.
+
+### User-action gates (if any)
+- `UA-2026-06-21-001 — Approve + merge PR #198 then #194 into develop` (blocks both auto-merges; #198 first to unblock develop CI).
+
+### What's next
+Separate principal approves #198 → it auto-merges → refresh/auto-merge #194. Then optional follow-up: allowlist the `copilot` env in policy so the advisory drift check is truthful.
+
+### Files created/modified this session
+
+| Path | What |
+|---|---|
+| `AGENTS.md`, `CLAUDE.md`, `.github/AGENTS.md`, `.claude/AGENTS.md`, `.codex/AGENTS.md` | Always-on rules block (PR #194) |
+| `data/brain-data/{DeepTutor,deepwiki-rs,obsidian-mind,my-wiki-knowledge/.claude/obsidian-second-brain,.../obsidian-skills}` | Orphaned gitlinks removed (PR #198) |
+| `TODO.md`, `USER.TODO.md`, `CHANGELOG.md`, `SESSIONS.md` | This wrap-up |
+| `~/.claude/projects/-home-drdave-Desktop-meta--github-org/memory/{finish-stale-orphaned-work,flexnetos-kb-agent-discipline,MEMORY}.md` | Rule memories |
+
+---
+
 ## SESSION-2026-06-17-010 — Merge PR #135 and continue control-plane follow-ups
 
 - **ID:** `SESSION-2026-06-17-010`
