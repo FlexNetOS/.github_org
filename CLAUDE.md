@@ -141,3 +141,14 @@ here, overriding their built-in defaults:
 ## Toolchain note
 
 Scripts call `python3` (system 3.14 — do not `pip install` against it; scripts are stdlib-only or use repo-local tools). Node scripts run under the mise-managed node. The repo is intentionally hermetic where possible — `make verify.hermetic` reports drift.
+
+## Harness: Org Implementation Loop
+
+**Goal:** autonomously implement a durable backlog of `.github` changes (harness-upgrade targets / config cleanups / CI / docs / skills) one-branch-one-PR-into-`develop`, gating every change on `make verify` + the repo doctors, with a per-cycle evolution retrospective.
+
+**Trigger:** for any "run the loop / work through the backlog (HUTs) / auto-implement the targets / keep building / resume the loop" request, use the `org-implementation-loop` skill. It drives the `org-change-architect` → `org-change-implementer` → `org-change-guardian` crew (all `model: opus`), reuses `harness:evolution-steward` (retrospective) + `harness:continuity-steward` (resume checkpoint), and reads its queue from `.claude/skills/org-implementation-loop/backlog.md`. Single ad-hoc edits: just do them. Host/secret/owner-gated work: surface it, don't loop on it. The `.github`-native sibling of `harness:forge-loop` (which targets Rust/cargo; this targets `make verify`).
+
+**Change history:**
+| Date | Change | Target | Reason |
+|------|--------|--------|--------|
+| 2026-06-21 | Initial build | `org-change-architect`/`-implementer`/`-guardian` agents, `org-implementation-loop` skill + backlog, this pointer | Owner: build an agentic implementation loop to auto-deliver the HUT harness-upgrade targets; leverage harness-evolution for continuous learning |
