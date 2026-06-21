@@ -168,12 +168,15 @@ jobs:
     name: Hermetic dependency / clone audit
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    continue-on-error: true   # Advisory until the repo is clean of pre-existing findings (job-level, matching the other advisory jobs)
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           persist-credentials: false
           submodules: false
       - name: Check for non-hermetic patterns
+        # STEP-level continue-on-error (NOT job-level): the audit reports pre-existing
+        # non-hermetic findings advisory-only. Step-level renders the check GREEN while
+        # still logging findings; job-level would render it RED (non-blocking but noisy).
+        continue-on-error: true
         run: python3 scripts/hermetic-audit.py --fail .
 
