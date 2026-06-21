@@ -20,6 +20,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added (2026-06-21, org-implementation-loop harness)
+- **`org-implementation-loop` harness** (`/harness:harness` build) — a `.github`-native agentic
+  implementation loop that drives a durable backlog (`.claude/skills/org-implementation-loop/backlog.md`,
+  seeded with HUT-2…HUT-7) one-branch-one-PR-into-`develop`, gating each change on `make verify` + the
+  repo doctors. New agents `org-change-architect` (read-only planner), `org-change-implementer`
+  (mutating builder), `org-change-guardian` (general-purpose verifier, runs `make verify`); reuses
+  `harness:evolution-steward` (per-cycle retrospective) + `harness:continuity-steward` (resume
+  checkpoint). Sibling of `harness:forge-loop` (which targets Rust/cargo; this targets `make verify`).
+  CLAUDE.md harness pointer + change-history table added. (research: harness-upgrade-and-claude-cleanup-targets; HUT loop)
+
 ### Added (SESSION-2026-06-21-002)
 - `scripts/rotate-policy-drift-token.sh` — mints a scoped `administration:write,metadata:read` GitHub App installation token via the envctl relay (`secretctl mint-github`, App key sealed in the vault) and injects it as the `POLICY_DRIFT_TOKEN` repo secret. Fail-open (vault locked / mint fail → exit 0) with an **expiry pre-check** that drops a stale token to the `GITHUB_TOKEN` fallback rather than presenting an expired token. (PR #206, #207 → `develop`)
 - `scripts/install-policy-drift-rotation.sh` — installs a systemd `--user` timer (`OnBootSec=2min` + `OnUnitActiveSec=45min`, Persistent) that runs the rotation on the vault host; units are generated with the absolute path resolved at install time (no host path committed). (PR #206, #207)
