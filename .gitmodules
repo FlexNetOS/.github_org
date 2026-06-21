@@ -1,0 +1,19 @@
+[submodule "data/brain-data/DeepTutor"]
+	path = data/brain-data/DeepTutor
+	url = https://github.com/HKUDS/DeepTutor
+
+[submodule "data/brain-data/deepwiki-rs"]
+	path = data/brain-data/deepwiki-rs
+	url = https://github.com/sopaco/deepwiki-rs
+
+[submodule "data/brain-data/my-wiki-knowledge/.claude/obsidian-second-brain"]
+	path = data/brain-data/my-wiki-knowledge/.claude/obsidian-second-brain
+	url = https://github.com/eugeniughelbur/obsidian-second-brain
+
+[submodule "data/brain-data/my-wiki-knowledge/.claude/obsidian-skills"]
+	path = data/brain-data/my-wiki-knowledge/.claude/obsidian-skills
+	url = https://github.com/kepano/obsidian-skills
+
+[submodule "data/brain-data/obsidian-mind"]
+	path = data/brain-data/obsidian-mind
+	url = https://github.com/FlexNetOS/obsidian-mind
