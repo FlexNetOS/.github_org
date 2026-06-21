@@ -134,17 +134,20 @@ jobs:
     # cannot READ with the active token is classified UNVERIFIED and does NOT fail
     # the check — only genuine, verified drift fails.
     #   FULL verification: POLICY_DRIFT_TOKEN is a flexnetos-github-app installation
-    #   token minted + injected on a 24h rotation by the envctl relay
-    #   (scripts/rotate-policy-drift-token.sh, run by a systemd --user timer on the
-    #   vault host — see scripts/install-policy-drift-rotation.sh). It carries
+    #   token minted + injected by the envctl relay (scripts/rotate-policy-drift-token.sh,
+    #   run by a systemd --user timer on the vault host — see
+    #   scripts/install-policy-drift-rotation.sh). GitHub caps the installation token at
+    #   ~60 min, so the timer re-mints every ~45 min to keep a VALID token present
+    #   continuously (the relay's "24h" is the credential-rotation policy). It carries
     #   `administration: write` (the level GitHub requires for an App token to READ
     #   ruleset bypass_actors + repo admin merge-flags — `administration: read`
-    #   redacts them), so this job verifies the full admin surface. The 24h rotation
-    #   bounds the token's blast radius (virtual-credit-card model).
-    #   FALLBACK: if the rotation has not run (vault locked / host offline) the secret
-    #   is absent and the job uses the default GITHUB_TOKEN — those admin reads come
-    #   back UNVERIFIED (green), never a false failure. Advisory (not in the
-    #   required-checks ruleset); a real, verified drift surfaces as a visible red.
+    #   redacts them), so this job verifies the full admin surface; the short token life
+    #   bounds its blast radius (virtual-credit-card model).
+    #   FALLBACK: if the rotation has not run (vault locked / host offline) the script's
+    #   expiry pre-check drops a stale token so the secret is absent and the job uses the
+    #   default GITHUB_TOKEN — those admin reads come back UNVERIFIED (green), never a
+    #   false failure. Advisory (not in the required-checks ruleset); a real, verified
+    #   drift surfaces as a visible red.
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
