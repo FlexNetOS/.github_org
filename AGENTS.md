@@ -102,7 +102,7 @@ here, overriding their built-in defaults:
 ```bash
 make verify              # Run ALL local verification (gate before any PR)
 make verify.manifest     # Validate repos/MANIFEST.yaml (now an offload stub)
-make submodules.status   # data/brain-data submodule status (repo/tool submodules retired — ADR-0002)
+make submodules.status   # no-op (orphaned data/brain-data/* gitlinks removed — ADR-0002)
 make research.pack URL=<owner/repo>   # Clone + repomix-pack upstream for research
 make claude.doctor       # Audit .claude/settings.json for bad paths
 ```

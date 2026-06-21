@@ -41,11 +41,12 @@ make github.doctor       # Read-only audit of runner/workflows/app/submodules/se
 make open-questions.lint # Validate .omc/plans/open-questions.md schema
 make check.user-todo-5   # List MANIFEST entries tagged/untagged for USER.TODO#5
 
-# Submodules: WOUND DOWN (ADR-0002). repos/ + tools/ no longer mount submodules — only
-# data/brain-data/* (the wiki/brain layer) remains. The make submodules.* verbs +
-# scripts/submodule-*.sh are retained for data/brain-data + historical reference.
+# Submodules: WOUND DOWN (ADR-0002). repos/ + tools/ no longer mount submodules.
+# The orphaned data/brain-data/* gitlinks were also removed (no .gitmodules entries
+# existed; SHAs preserved in architecture/plan/2026-06-13-github-org-strip-and-relocate-plan.md).
+# scripts/submodule-*.sh are retained for historical reference.
 # Do NOT re-add repo/tool submodules here — repos go to a hub (or ~/Desktop/pending_relocate).
-make submodules.status               # Report dirty/ahead/detached submodules (data/brain-data)
+make submodules.status               # no-op (no gitlinks remain)
 ```
 
 There is no test runner — `make verify` is the equivalent. CI mirrors these (`ci.yml`, `manifest-drift.yml`).
@@ -88,7 +89,7 @@ The proven `develop` fork is registered in its typed hub (`<hub>/repos/` staging
 Every session, every clone, every setup goes onto a new feature branch cut **off `develop`** (`git switch -c <type>/<short-slug> origin/develop`) — never directly on `main`/`develop`. **Open PRs with base `develop`, not `main`** (`gh pr create --base develop`). This applies even to docs-only additive changes: the branch-guard hook exempts some doc/agent-config paths from source-file blocking, but it does **not** override the branch-target policy. **Both `develop` and `main` are protected with 1 required approval** (+ 6 required checks: lint, actionlint, markdownlint, manifests, hermetic, gitleaks — `Trivy`/settings-doctor/Claude-review are advisory). An agent **never approves or admin-merges its own PR** on either branch: a *separate* principal supplies the approval (`PROMOTE_TOKEN` for `develop→main`; the GitHub App via envctl, or the owner, for `feature→develop`; `RELEASE_TOKEN` for release-please); you may *arm* auto-merge. The `branch-guard.sh` hook enforces no-edit-on-protected for file edits. For new clones of upstream repos: `git checkout -b feat/<short-slug>` before any work. **One task : one branch : one worktree : one PR** (no mega-PRs).
 
 ### Manifest ↔ .gitmodules consistency
-`repos/MANIFEST.yaml` is now an **offload stub** (ADR-0002) — the repo entries moved to `~/Desktop/pending_relocate` + the typed hubs, and `.github_org` has **no `.gitmodules`** (only `data/brain-data/*` gitlinks remain, and they carry no `.gitmodules` URLs). Don't re-add repo/tool submodule entries here. `scripts/submodule-*.sh` + the `manifest-drift.yml` job are retained for the `data/brain-data` layer and historical reference.
+`repos/MANIFEST.yaml` is now an **offload stub** (ADR-0002) — the repo entries moved to `~/Desktop/pending_relocate` + the typed hubs, and `.github_org` has **no `.gitmodules`** and **no gitlinks** (the orphaned `data/brain-data/*` gitlinks were removed; their pinned SHAs are preserved in `architecture/plan/2026-06-13-github-org-strip-and-relocate-plan.md`). Don't re-add repo/tool submodule entries here. `scripts/submodule-*.sh` + the `manifest-drift.yml` job are retained for historical reference.
 
 ### Session tracking (run via `/wrap-up`)
 This repo tracks work in four root files — keep them current:

@@ -64,8 +64,9 @@ verify.github-policies: ## Validate .github/policies/ JSON and live drift check 
 	@bash scripts/tests/test-github-policies.sh
 
 # ---------- Submodules (data/brain-data only) ----------
-# ADR-0002 retired repo/tool submodules in .github_org. The only remaining
-# gitlinks are the data/brain-data wiki/brain submodules.
+# ADR-0002 retired repo/tool submodules in .github_org. Orphaned data/brain-data
+# gitlinks were removed (no .gitmodules entries existed; SHAs preserved in
+# architecture/plan/2026-06-13-github-org-strip-and-relocate-plan.md).
 
 .PHONY: submodules.init
 submodules.init: ## Initialize and update data/brain-data submodules (full clone)
