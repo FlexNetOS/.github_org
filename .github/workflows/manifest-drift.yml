@@ -130,11 +130,14 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
-    # NOTE: REPORT_ONLY mode until a PAT with repo/administration scope can be
-    # sourced from meta/envctl and injected as POLICY_DRIFT_TOKEN. The default
-    # GITHUB_TOKEN lacks permission to read branch protection, rulesets, and
-    # repo settings, so this job reports drift without blocking merges.
-    continue-on-error: true
+    # The drift check is scope-aware (scripts/apply-github-policies.py): state it
+    # cannot READ with the active token is classified UNVERIFIED and does NOT fail
+    # the check — only genuine, verified drift fails. The default GITHUB_TOKEN
+    # lacks administration:read, so branch protection / ruleset bypass_actors /
+    # repo-admin merge flags come back UNVERIFIED (green) until a PAT with
+    # administration:read is sourced from meta/envctl as POLICY_DRIFT_TOKEN, which
+    # upgrades this job to full verification with no code change. Advisory (not in
+    # the required-checks ruleset); a real drift surfaces as a visible red here.
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:

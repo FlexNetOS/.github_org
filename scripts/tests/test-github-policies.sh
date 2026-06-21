@@ -6,6 +6,8 @@
 #   1. Policy JSON files are syntactically valid and contain expected top-level keys.
 #   2. Policy applier --dry-run exits 0 and emits no ERROR lines.
 #   3. If GH CLI is authenticated and has repo access, --check reports no drift.
+#   5. Scope-aware classification: unreadable admin state => UNVERIFIED (never
+#      false DRIFT, exit 0); genuine readable differences still => DRIFT.
 #
 # Usage: bash scripts/tests/test-github-policies.sh
 
@@ -114,6 +116,86 @@ else
   fi
   echo "PASS"
 fi
+
+echo ""
+echo "=== Stage 5: scope-aware drift classification (unit, no network) ==="
+# Regression guard: a token that cannot READ admin-only state (the default
+# Actions GITHUB_TOKEN) must NOT produce false DRIFT — unreadable state is
+# classified UNVERIFIED and exits 0. Genuine, readable differences still DRIFT.
+python3 - <<'PY'
+import importlib.util, json, sys
+
+spec = importlib.util.spec_from_file_location("policy", "scripts/apply-github-policies.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+
+OWNER, REPO = "FlexNetOS", ".github"
+failures = []
+
+# --- Case A: limited token. Simulates the default Actions GITHUB_TOKEN, which
+# can READ rulesets/environments but NOT branch protection, ruleset bypass_actors,
+# or the repo object's admin-only merge fields. The synthetic "live" state is
+# built from the committed policy so everything that IS readable matches — the
+# only differences are the parts the token cannot read, which must be UNVERIFIED.
+_pol_rs = json.load(open(".github/policies/rulesets.json"))["rulesets"]
+_pol_settings = json.load(open(".github/policies/repo-settings.json"))
+_rs_ids = {rs["name"]: 100 + i for i, rs in enumerate(_pol_rs)}
+
+def limited_run(cmd, *, dry_run=False):
+    url = cmd[2] if len(cmd) > 2 and cmd[:2] == ["gh", "api"] else ""
+    tail = url.rstrip("/")
+    if "/protection" in url:
+        return 1, "", "gh: Resource not accessible by integration (HTTP 403)"
+    if tail.endswith("/environments"):
+        envs = [{"name": e["name"]} for e in _pol_settings.get("environments", [])]
+        envs += [{"name": n} for n in _pol_settings.get("external_environments", [])]
+        return 0, json.dumps({"environments": envs}), ""
+    if "/environments/" in url:
+        name = tail.rsplit("/", 1)[-1]
+        match = next((e for e in _pol_settings.get("environments", []) if e["name"] == name), {})
+        return 0, json.dumps({"deployment_branch_policy": match.get("deployment_branch_policy")}), ""
+    if "/rulesets/" in url:
+        rid = int(tail.rsplit("/", 1)[-1])
+        rs = next((r for r in _pol_rs if _rs_ids[r["name"]] == rid), {})
+        live = dict(rs); live["bypass_actors"] = []  # bypass hidden from non-admin token
+        return 0, json.dumps(live), ""
+    if tail.endswith("/rulesets"):
+        return 0, json.dumps([{"name": n, "id": i} for n, i in _rs_ids.items()]), ""
+    if tail.endswith("/" + REPO) or tail.endswith("/.github"):
+        return 0, json.dumps({"name": REPO}), ""  # admin-only merge fields absent
+    return 0, json.dumps({}), ""
+
+m.run = limited_run
+drift, unver = m.check_drift(OWNER, REPO)
+if drift:
+    failures.append(f"Case A: limited token produced false DRIFT: {drift}")
+if not unver:
+    failures.append("Case A: limited token should report UNVERIFIED items, got none")
+
+# --- Case B: an un-allowlisted environment is genuine, readable drift ---
+def rogue_env_run(cmd, *, dry_run=False):
+    url = cmd[2] if len(cmd) > 2 and cmd[:2] == ["gh", "api"] else ""
+    if url.rstrip("/").endswith("/environments"):
+        return 0, json.dumps({"environments": [{"name": "release"}, {"name": "copilot"}, {"name": "ROGUE"}]}), ""
+    return 0, json.dumps({}), ""
+
+m.run = rogue_env_run
+d2, _ = m.check_environments(OWNER, REPO, [{"name": "release"}], ["copilot"])
+if not any("ROGUE" in x for x in d2):
+    failures.append(f"Case B: genuine drift (ROGUE env) not detected: {d2}")
+if any("copilot" in x for x in d2):
+    failures.append(f"Case B: allowlisted 'copilot' env was falsely flagged: {d2}")
+
+# --- Case C: policy declares copilot as external ---
+settings = json.load(open(".github/policies/repo-settings.json"))
+if "copilot" not in settings.get("external_environments", []):
+    failures.append("Case C: 'copilot' not declared in repo-settings.json external_environments")
+
+if failures:
+    for f in failures:
+        print(f"FAIL: {f}")
+    sys.exit(1)
+print("PASS: unreadable->UNVERIFIED (no false drift), genuine drift still caught, copilot allowlisted")
+PY
 
 echo ""
 echo "All triple-verify stages passed."
