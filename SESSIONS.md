@@ -8,6 +8,67 @@
 
 ---
 
+## SESSION-2026-06-21-002 — PR-stack merges → clean develop; envctl enrollment fix; POLICY_DRIFT_TOKEN relay rotation
+
+- **ID:** `SESSION-2026-06-21-002`
+- **Date:** 2026-06-21
+- **Branch:** `chore/wrap-up-2026-06-21-002`
+- **HEAD at end:** `831d3cd` (develop tip before this wrap-up commit)
+- **Mode:** `/goal` (autonomous, owner-authorized admin-merge) + manual + `/verify` + `/wrap-up`
+- **Outcome:** 6 stacked PRs admin-merged → clean green `develop` (0 orphaned gitlinks); envctl App-enrollment bug fixed (`set-app-id`, PR #129); `POLICY_DRIFT_TOKEN` auto-rotating (~45-min relay, expiry pre-check) → full policy-drift verification. No open threads.
+- **User-action gates surfaced:** `none` — UA-2026-06-21-002 + UA-2026-06-21-003 both marked **done** this session.
+
+### What the user asked
+> "all PRs are green on all actions and auto-merges them in the proper order | deliver a clean base to resume future work" (`/goal`)
+
+Scope expanded across follow-on asks: drive the merges (owner waived review — "ensure they all merge properly all green. You do not need my approval or review"); "Apply committed → live, then merge #128 and #129"; "grant the app administration:read, then wire the 24h rotation"; "verify the rotation survives a vault lock/unlock cycle"; "add the expiry pre-check to the rotation script".
+
+### What the answer is
+- 6 PRs merged into a clean green `develop@831d3cd`: **#203** (scope-aware policy-drift + orphaned-gitlink fix, the base) → **#194** (always-on rules) → **#176** (ADR-0004) → **#180** (`.claude` purge) → **#199** (SESSION-001 wrap-up) → **#185** (research/ICM, fixed in place via upgrade-only merge); **#198 closed** as superseded.
+- envctl **#128** (TTL doc) + **#129** (`secretctl github-app set-app-id` — heals the key-sealed-but-id-missing enrollment that blocked minting).
+- `POLICY_DRIFT_TOKEN` now auto-rotates ~every 45 min via the envctl relay (systemd `--user` timer) with `administration: write` → full admin-surface verification; fail-open + expiry pre-check (**#206**, **#207**).
+- `bypass_actors` drift reconciled (committed → live). Policy check: **`No drift detected`, exit 0**.
+
+### What was actually done this session
+1. Diagnosed prior-PR redness (orphaned gitlinks broke `actions/checkout` on every job) + the policy-drift false positive; restructured into a clean stack on #203.
+2. Rebased #194/#176/#180/#199 onto #203 (dropping redundant gitlink commits); fixed #185 **in place** (merged the upgraded base, upgrade-only conflict resolution, preserved every unique ICM/research artifact).
+3. Owner waived review → **admin-merged** all 6 in order; closed #198.
+4. Unlocked the COGNITUM USB vault; fixed a duplicate-`secretd` split-brain (rogue ghostty-launched daemon vs `env-ctl.service`).
+5. Root-caused the mint failure (App id sealed as a *secret*, but `mint_github_token` reads it from a *meta* key) → added `secretctl github-app set-app-id` (envctl #129); minting then worked.
+6. Applied committed `bypass_actors` → live; verified `No drift detected`.
+7. Found GitHub redacts admin fields from App tokens below `administration: write` (the App already holds write); wired the ~45-min `POLICY_DRIFT_TOKEN` rotation (script + systemd timer, #206) and added the expiry pre-check + cadence fix (#207).
+8. Verified live: vault lock/unlock cycle (fail-open + recovery) and the full expiry-pre-check matrix (valid→leave, expired→delete+clear, recover→re-inject).
+
+### Reservations / risks
+- The systemd timer, the unlocked vault, and the injected secret are **host state on the vault box** — NOT reproduced by cloning the repo. A fresh host must run `scripts/install-policy-drift-rotation.sh --apply` with the COGNITUM USB present for full verification; otherwise CI uses the `GITHUB_TOKEN` partial fallback (correct, exit 0, not full-surface).
+- `POLICY_DRIFT_TOKEN` is a real GitHub Actions secret on `FlexNetOS/.github` (an `administration: write` App token, ~60-min life, auto-rotated). Not in git.
+- `github-policy-drift` is **advisory** (not a required check). The pre-existing broken CHANGELOG cross-ref (`SESSION-2026-06-17-001`) was left untouched (carry-over in `TODO.md`).
+- No `main` writes; every PR based on `develop`; no force-push to protected branches. envctl changes were committed from clean worktrees off envctl `develop` (the `master` working tree there has unrelated pre-existing dirty files, untouched).
+
+### User-action gates (if any)
+- none new. `UA-2026-06-21-002` (POLICY_DRIFT_TOKEN provisioning) and `UA-2026-06-21-003` (approve + merge the stack) both → **done (SESSION-2026-06-21-002)**.
+
+### What's next
+Pause — no open threads. `develop` is a clean, green, no-drift base. Optional carry-overs in `TODO.md`: the pre-existing `SESSION-2026-06-17-001` CHANGELOG cross-ref; gating the advisory policy-drift check if it is ever promoted to required.
+
+### Files created/modified this session
+
+| Path | What |
+|---|---|
+| 6-PR stack (#203/#194/#176/#180/#199/#185) | merged → clean green `develop` (0 orphaned gitlinks) |
+| `scripts/rotate-policy-drift-token.sh` | NEW — relay mint + inject `POLICY_DRIFT_TOKEN`; fail-open + expiry pre-check |
+| `scripts/install-policy-drift-rotation.sh` | NEW — systemd `--user` timer installer (~45-min cadence) |
+| `.github/workflows/manifest-drift.yml` | `github-policy-drift` note → full-verification + rotation/fallback model |
+| `.github/policies/repo-settings.json` | `copilot` declared `external_environment` (via #203) |
+| `scripts/apply-github-policies.py` | scope-aware drift check (via #203) |
+| `USER.TODO.md` | UA-2026-06-21-002 + -003 → `done` |
+| `TODO.md` / `CHANGELOG.md` / `SESSIONS.md` | this wrap-up |
+| envctl `crates/secretctl/{cli,main}.rs` | NEW `github-app set-app-id` verb + tests (envctl #129) |
+| envctl `crates/secrets-engine/mint_github.rs`, `secretctl/cli.rs` | TTL/relay-rotation doc fix (envctl #128) |
+| Live GitHub: `protect-main`/`protect-develop` rulesets | `bypass_actors` applied committed → live |
+
+---
+
 ## SESSION-2026-06-21-001 — Always-on agent rules across all surfaces + orphaned-gitlink CI fix
 
 - **ID:** `SESSION-2026-06-21-001`
