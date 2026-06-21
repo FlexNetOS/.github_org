@@ -1,0 +1,57 @@
+name: Reusable Hermetic Audit
+
+# Runs scripts/hermetic-audit.py against the caller repo.
+# Default mode is advisory; pass fail: true to block on findings.
+#
+# Example caller:
+#   jobs:
+#     hermetic:
+#       uses: FlexNetOS/.github/.github/workflows/reusable-hermetic-audit.yml@main
+#       with:
+#         fail: false
+
+on:
+  workflow_call:
+    inputs:
+      fail:
+        description: 'Exit non-zero when hermeticity findings exist'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  hermetic-audit:
+    name: Hermetic audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out caller repo
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Check out shared scripts
+        if: (github.repository != 'FlexNetOS/.github' && github.repository != 'FlexNetOS/.github_org')
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+          # Umbrella repo; name-agnostic. Set org var UMBRELLA_REPO at the future restore to '.github'. Interim fallback = current name.
+          repository: ${{ vars.UMBRELLA_REPO || 'FlexNetOS/.github_org' }}
+          ref: main
+          path: .github-org-actions
+
+      - name: Run hermetic audit (local)
+        if: (github.repository == 'FlexNetOS/.github' || github.repository == 'FlexNetOS/.github_org')
+        env:
+          FAIL_FLAG: ${{ inputs.fail && '--fail' || '' }}
+        run: python3 scripts/hermetic-audit.py . "$FAIL_FLAG"
+
+      - name: Run hermetic audit (shared)
+        if: (github.repository != 'FlexNetOS/.github' && github.repository != 'FlexNetOS/.github_org')
+        env:
+          FAIL_FLAG: ${{ inputs.fail && '--fail' || '' }}
+        run: python3 .github-org-actions/scripts/hermetic-audit.py . "$FAIL_FLAG"

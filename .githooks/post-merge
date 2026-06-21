@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Post-merge hook: run a quick verification after merges from upstream branches.
+# Non-fatal if the local verification targets are unavailable.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+# Only trigger when merging from origin/main or origin/develop.
+upstream=$(git rev-parse --abbrev-ref --symbolic-full-name MERGE_HEAD 2>/dev/null || true)
+if [[ "$upstream" != origin/main && "$upstream" != origin/develop ]]; then
+  exit 0
+fi
+
+echo "[post-merge] Merge from $upstream detected; running fast verification..."
+if [ -f "Makefile" ]; then
+  make verify.fast 2>/dev/null || make verify 2>/dev/null || {
+    echo "[post-merge] Verification failed. Review the output above before pushing." >&2
+    # Non-blocking by design; the CI gate is authoritative.
+    exit 0
+  }
+fi

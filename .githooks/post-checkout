@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Post-checkout hook: warn when landing on a protected branch.
+set -euo pipefail
+
+PREV_HEAD="$1"
+NEW_HEAD="$2"
+CHECKOUT_TYPE="$3"  # 0 = file, 1 = branch, 3 = file+branch
+
+if [ "$CHECKOUT_TYPE" != "0" ]; then
+  BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || true)
+  case "$BRANCH" in
+    main|master|trunk|develop)
+      if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+        echo "[post-checkout] WARNING: you have uncommitted changes on protected branch '$BRANCH'." >&2
+        echo "[post-checkout] Stash or commit them before switching away, and never push directly to '$BRANCH'." >&2
+      else
+        echo "[post-checkout] NOTICE: you are now on protected branch '$BRANCH'. Do not commit directly here."
+      fi
+      ;;
+  esac
+fi

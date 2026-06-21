@@ -1,0 +1,130 @@
+name: Reusable Rust Release
+
+# Builds Rust release binaries for one or more targets and uploads them to an
+# existing GitHub Release. Intended to run after a release-please / semantic-release
+# reusable workflow has created the release tag.
+#
+# Example caller:
+#   jobs:
+#     release-binaries:
+#       needs: release
+#       if: needs.release.outputs.release-created == 'true'
+#       uses: FlexNetOS/.github/.github/workflows/reusable-rust-release.yml@main
+#       with:
+#         tag: ${{ needs.release.outputs.tag-name }}
+#         binary-name: 'meta_cli'
+#         targets: '["x86_64-unknown-linux-gnu", "x86_64-unknown-linux-musl"]'
+#         workspace-path: '.'
+#       secrets:
+#         token: ${{ secrets.RELEASE_TOKEN }}
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Existing GitHub release tag to upload binaries to'
+        required: true
+        type: string
+      binary-name:
+        description: 'Name of the compiled binary artifact'
+        required: true
+        type: string
+      targets:
+        description: 'JSON array of Rust target triples'
+        required: false
+        type: string
+        default: '["x86_64-unknown-linux-gnu"]'
+      workspace-path:
+        description: 'Directory containing Cargo.toml (relative to repo root)'
+        required: false
+        type: string
+        default: '.'
+    secrets:
+      token:
+        description: 'Token with contents:write for uploading release assets'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(inputs.targets) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build release binary
+        working-directory: ${{ inputs.workspace-path }}
+        env:
+          TARGET: ${{ matrix.target }}
+        run: cargo build --release --target "$TARGET"
+
+      - name: Package binary
+        working-directory: ${{ inputs.workspace-path }}
+        env:
+          BINARY: ${{ inputs.binary-name }}
+          TARGET: ${{ matrix.target }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp "target/${TARGET}/release/${BINARY}" "dist/${BINARY}-${TARGET}"
+          cd dist
+          tar -czf "${BINARY}-${TAG}-${TARGET}.tar.gz" "${BINARY}-${TARGET}"
+          sha256sum "${BINARY}-${TAG}-${TARGET}.tar.gz" > "${BINARY}-${TAG}-${TARGET}.tar.gz.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: rust-release-${{ matrix.target }}
+          path: ${{ inputs.workspace-path }}/dist/*
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    name: Upload release assets
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # contents: write — upload release assets (inherited intent, declared explicitly)
+    # id-token: write + attestations: write — sign build-provenance attestations
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422d0ef3 # v4
+        with:
+          path: dist
+          pattern: rust-release-*
+          merge-multiple: true
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
+        with:
+          subject-path: 'dist/*.tar.gz'
+
+      - name: Upload to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.token || github.token }}
+          TAG: ${{ inputs.tag }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh release upload "$TAG" dist/* --clobber --repo "$REPO"

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Desired branch protection settings for FlexNetOS/.github. Applied via scripts/apply-github-policies.py.",
+  "branches": {
+    "main": {
+      "enforce_admins": false,
+      "restrictions": null,
+      "allow_force_pushes": false,
+      "allow_deletions": false,
+      "required_signatures": false,
+      "block_creations": false,
+      "allow_fork_syncing": false,
+      "lock_branch": false
+    },
+    "develop": {
+      "enforce_admins": false,
+      "restrictions": null,
+      "allow_force_pushes": false,
+      "allow_deletions": false,
+      "required_signatures": false,
+      "block_creations": false,
+      "allow_fork_syncing": false,
+      "lock_branch": false
+    }
+  }
+}

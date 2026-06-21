@@ -47,8 +47,15 @@ jobs:
       run:
         working-directory: ${{ inputs.working-directory }}
     steps:
+      - name: Harden the runner (audit egress)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
       - name: Set up Bun
         if: inputs.language == 'bun' || inputs.language == 'mixed'
@@ -109,8 +116,10 @@ jobs:
       - name: Build (rust)
         if: (inputs.language == 'rust' || inputs.language == 'mixed') && hashFiles(format('{0}/Cargo.toml', inputs.working-directory)) != ''
         shell: bash
+        env:
+          PROFILE: ${{ inputs.profile }}
         run: |
-          if [[ "${{ inputs.profile }}" == "debug" ]]; then
+          if [[ "$PROFILE" == "debug" ]]; then
             cargo build --all-features
           else
             cargo build --release --all-features

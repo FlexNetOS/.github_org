@@ -61,7 +61,22 @@ LOG_FILE="$LOG_DIR/install-$(date +%Y%m%d-%H%M%S).log"
 
 log()  { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*" | tee -a "$LOG_FILE" >&2; }
 die()  { log "FAIL: $*"; exit 1; }
+
+# Run a command from a real argv array — NO eval, so secrets passed as args
+# (e.g. $VPROXY_PASS) can never break out of quoting or be re-evaluated.
+# Prefer this for every call site that does not genuinely need shell syntax.
 do_or_dry() {
+  if [[ $DRY_RUN -eq 1 ]]; then
+    printf 'DRY:'; printf ' %q' "$@"; printf '\n'
+  else
+    "$@"
+  fi
+}
+
+# Run a command string through the shell, for call sites that genuinely need
+# shell features (cd && …, pipes, ||, command substitution). NEVER interpolate
+# a secret into a string passed here — secrets must go through do_or_dry's argv.
+do_or_dry_sh() {
   if [[ $DRY_RUN -eq 1 ]]; then
     echo "DRY: $*"
   else
@@ -97,14 +112,14 @@ log "prereqs OK"
 if should_run_phase 1; then
   log "=== Phase 1: install packages (serialized, ~15-30 min) ==="
 
-  do_or_dry "sudo apt-get update"
-  do_or_dry "sudo apt-get install -y firefox-esr dnscrypt-proxy dnsutils jq gnupg ca-certificates lsb-release openssl"
+  do_or_dry sudo apt-get update
+  do_or_dry sudo apt-get install -y firefox-esr dnscrypt-proxy dnsutils jq gnupg ca-certificates lsb-release openssl
 
   if ! command -v docker >/dev/null; then
     log "installing docker.io"
-    do_or_dry "sudo apt-get install -y docker.io docker-compose-plugin"
-    do_or_dry "sudo systemctl enable --now docker"
-    do_or_dry "sudo usermod -aG docker $USER"
+    do_or_dry sudo apt-get install -y docker.io docker-compose-plugin
+    do_or_dry sudo systemctl enable --now docker
+    do_or_dry sudo usermod -aG docker "$USER"
     log "NOTE: log out and back in for docker group, or run: newgrp docker"
   else
     log "docker already installed: $(docker --version)"
@@ -112,31 +127,31 @@ if should_run_phase 1; then
 
   if ! command -v vproxy >/dev/null; then
     log "installing vproxy via cargo"
-    do_or_dry "cargo install vproxy"
+    do_or_dry cargo install vproxy
   fi
 
   if ! command -v trip >/dev/null; then
     log "installing trippy via cargo (binary: trip)"
-    do_or_dry "cargo install trippy"
-    do_or_dry "sudo setcap cap_net_raw+ep $(command -v trip || echo /no-trip-yet)"
+    do_or_dry cargo install trippy
+    do_or_dry_sh "sudo setcap cap_net_raw+ep $(command -v trip || echo /no-trip-yet)"
   fi
 
   if ! command -v slim >/dev/null; then
     log "installing Slim"
-    do_or_dry "curl -sL https://slim.sh/install.sh | sh"
+    do_or_dry_sh "curl -sL https://slim.sh/install.sh | sh"
   fi
 
   if ! command -v obscura >/dev/null; then
     log "installing obscura"
-    do_or_dry "cd /tmp && curl -fLo obscura.tgz https://github.com/h4ckf0r0day/obscura/releases/latest/download/obscura-x86_64-linux.tar.gz"
-    do_or_dry "cd /tmp && tar xzf obscura.tgz"
-    do_or_dry "sudo mv /tmp/obscura /usr/local/bin/obscura"
-    do_or_dry "rm -f /tmp/obscura.tgz"
+    do_or_dry_sh "cd /tmp && curl -fLo obscura.tgz https://github.com/h4ckf0r0day/obscura/releases/latest/download/obscura-x86_64-linux.tar.gz"
+    do_or_dry_sh "cd /tmp && tar xzf obscura.tgz"
+    do_or_dry sudo mv /tmp/obscura /usr/local/bin/obscura
+    do_or_dry rm -f /tmp/obscura.tgz
   fi
 
   log "pulling docker images (Pi-hole, Bifrost)"
-  do_or_dry "docker pull pihole/pihole:latest"
-  do_or_dry "docker pull maximhq/bifrost:latest"
+  do_or_dry docker pull pihole/pihole:latest
+  do_or_dry docker pull maximhq/bifrost:latest
 
   log "Phase 1 complete"
 fi
@@ -147,7 +162,7 @@ if should_run_phase 2; then
   log "=== Phase 2: DNS layer (dnscrypt-proxy -> Cloudflare/Quad9; Pi-hole on :53) ==="
 
   if [[ -f /etc/dnscrypt-proxy/dnscrypt-proxy.toml && ! -f /etc/dnscrypt-proxy/dnscrypt-proxy.toml.preinstall ]]; then
-    do_or_dry "sudo cp /etc/dnscrypt-proxy/dnscrypt-proxy.toml /etc/dnscrypt-proxy/dnscrypt-proxy.toml.preinstall"
+    do_or_dry sudo cp /etc/dnscrypt-proxy/dnscrypt-proxy.toml /etc/dnscrypt-proxy/dnscrypt-proxy.toml.preinstall
   fi
 
   if [[ $DRY_RUN -eq 0 ]]; then
@@ -172,7 +187,7 @@ prefix = ''
 DNSEOF
   fi
 
-  do_or_dry "sudo systemctl enable --now dnscrypt-proxy"
+  do_or_dry sudo systemctl enable --now dnscrypt-proxy
   sleep 3
 
   if [[ $DRY_RUN -eq 0 ]]; then
@@ -184,14 +199,14 @@ DNSEOF
 
   if ss -tlnp 2>/dev/null | awk '{print $4}' | grep -E '(^|:)53$' >/dev/null; then
     log "freeing port 53 from systemd-resolved stub listener"
-    do_or_dry "sudo mkdir -p /etc/systemd/resolved.conf.d"
+    do_or_dry sudo mkdir -p /etc/systemd/resolved.conf.d
     if [[ $DRY_RUN -eq 0 ]]; then
       sudo tee /etc/systemd/resolved.conf.d/disable-stub.conf >/dev/null <<'SDEOF'
 [Resolve]
 DNSStubListener=no
 SDEOF
     fi
-    do_or_dry "sudo systemctl restart systemd-resolved"
+    do_or_dry sudo systemctl restart systemd-resolved
     sleep 2
   fi
 
@@ -220,7 +235,7 @@ services:
 DCEOF
   fi
 
-  do_or_dry "cd $HOME/pihole && docker compose up -d"
+  do_or_dry_sh "cd $HOME/pihole && docker compose up -d"
   sleep 8
 
   if [[ $DRY_RUN -eq 0 ]]; then
@@ -231,13 +246,32 @@ DCEOF
   log "Pi-hole responding on 127.0.0.1:53"
 
   if [[ $DRY_RUN -eq 0 ]]; then
+    # 1) Write AND verify the fallback BEFORE touching the live resolv.conf, so a
+    #    crash mid-swap always has a known-good resolver to roll back to.
     echo 'nameserver 1.1.1.1' | sudo tee /etc/resolv.conf.fallback >/dev/null
-  fi
+    if ! grep -q '^nameserver 1\.1\.1\.1$' /etc/resolv.conf.fallback; then
+      die "failed to write /etc/resolv.conf.fallback — refusing to touch /etc/resolv.conf"
+    fi
 
-  if [[ $DRY_RUN -eq 0 ]]; then
-    sudo rm -f /etc/resolv.conf
-    echo 'nameserver 127.0.0.1' | sudo tee /etc/resolv.conf >/dev/null
+    # 2) Restore-on-failure: if anything below aborts (set -e ERR) the DNS swap
+    #    is half-applied. Clear the immutable bit and put back the fallback so the
+    #    workstation is never left without a working resolver.
+    restore_resolv() {
+      log "ERROR during DNS swap — restoring /etc/resolv.conf from fallback"
+      sudo chattr -i /etc/resolv.conf 2>/dev/null || true
+      sudo cp -f /etc/resolv.conf.fallback /etc/resolv.conf 2>/dev/null || true
+    }
+    trap restore_resolv ERR
+
+    # 3) Atomic swap: build the new file in a temp and `mv` it into place, rather
+    #    than rm + recreate (which leaves a window with no /etc/resolv.conf).
+    tmp_resolv=$(sudo mktemp /etc/resolv.conf.new.XXXXXX)
+    echo 'nameserver 127.0.0.1' | sudo tee "$tmp_resolv" >/dev/null
+    sudo chattr -i /etc/resolv.conf 2>/dev/null || true   # in case a prior run set it
+    sudo mv -f "$tmp_resolv" /etc/resolv.conf
     sudo chattr +i /etc/resolv.conf 2>/dev/null || true
+
+    trap - ERR
   fi
   log "DNS swap complete: workstation -> Pi-hole -> dnscrypt-proxy -> Cloudflare/Quad9"
   log "RECOVERY: 'sudo chattr -i /etc/resolv.conf && sudo cp /etc/resolv.conf.fallback /etc/resolv.conf'"
@@ -254,7 +288,9 @@ if should_run_phase 3; then
   if vproxy ps 2>/dev/null | grep -q running; then
     log "vproxy already running"
   else
-    do_or_dry "vproxy start --bind '$VPROXY_BIND' --auth '$VPROXY_USER:$VPROXY_PASS' --type http"
+    # Argv form (no eval): $VPROXY_PASS may contain quotes / $() / backticks and
+    # must never be interpolated into a shell-evaluated string.
+    do_or_dry vproxy start --bind "$VPROXY_BIND" --auth "$VPROXY_USER:$VPROXY_PASS" --type http
     sleep 2
   fi
   log "vproxy listening on $VPROXY_BIND"
@@ -264,8 +300,8 @@ fi
 
 if should_run_phase 4; then
   log "=== Phase 4: Slim hostnames ==="
-  do_or_dry "slim start pihole  --port 8053 || true"
-  do_or_dry "slim start vproxy  --port 9999 || true"
+  do_or_dry_sh "slim start pihole  --port 8053 || true"
+  do_or_dry_sh "slim start vproxy  --port 9999 || true"
 fi
 
 # --------------------------- phase 5: bifrost ---------------------------
@@ -289,9 +325,9 @@ services:
 BFEOF
   fi
 
-  do_or_dry "cd $HOME/bifrost && docker compose up -d"
+  do_or_dry_sh "cd $HOME/bifrost && docker compose up -d"
   sleep 10
-  do_or_dry "slim start bifrost --port 8080 || true"
+  do_or_dry_sh "slim start bifrost --port 8080 || true"
 
   log "bifrost up at https://bifrost.test ; configure providers via Web UI if not auto-detected"
 
@@ -316,13 +352,13 @@ if should_run_phase 6; then
   if pgrep -fa "obscura serve" >/dev/null; then
     log "obscura serve already running"
   else
-    do_or_dry "nohup obscura serve --port 9222 > $HOME/.cache/obscura/serve.log 2>&1 &"
+    do_or_dry_sh "nohup obscura serve --port 9222 > $HOME/.cache/obscura/serve.log 2>&1 &"
     sleep 3
   fi
   if [[ $DRY_RUN -eq 0 ]]; then
     curl -sS --max-time 5 http://localhost:9222/json/version >/dev/null || die "obscura CDP not responding on :9222 — check $HOME/.cache/obscura/serve.log"
   fi
-  do_or_dry "slim start obscura --port 9222 || true"
+  do_or_dry_sh "slim start obscura --port 9222 || true"
   log "obscura CDP responding; reachable at https://obscura.test"
 fi
 

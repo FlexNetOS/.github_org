@@ -4,11 +4,75 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-05-29 (SESSION-2026-05-29-015 — PR pipeline driven to finish line: develop CI repaired, network scaffolding salvaged, #66/#51 closed as superseded, develop→main promoted)
-**Branch:** `develop` (all PRs target develop)
-**Status:** All open PRs resolved; `main`↔`develop` content-in-sync; remote pruned to `main`+`develop`; `ci-failure-tracker` live on `main`. Adoption/forks still gated pending `gh auth login` (UA-005).
+**Last updated:** 2026-06-17 (SESSION-2026-06-17-007 — control-plane upgrades continuation on `feat/control-plane-upgrades-continuation`)
+**Branch:** `feat/control-plane-upgrades-continuation`
+**PR target:** `feat/control-plane-upgrade` → `develop`
+**Status:** Implementing follow-up phases from `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`. Duplicative fleet-policy applier removed; canonical `scripts/apply-github-policies.py` retained.
 
 ---
+
+## Meta control-plane gap closure (Phases 1–9)
+
+Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"meta-gap-closure".
+
+- [x] **Phase 1** — Reusable meta Rust CI, callable semantic PR title, full-clone guard.
+- [x] **Phase 2** — Cross-repo dispatch templates (`reusable-notify-parent.yml`, `reusable-notify-downstream.yml`, `reusable-child-update-sync.yml`).
+- [x] **Phase 3** — Policy-as-code for this repo (`scripts/apply-github-policies.py`, `.github/policies/*.json`) + labels-as-code (`.github/labels.yml`, `sync-labels.yml`).
+- [x] **Phase 4** — Repo onboarding template pack (`docs/templates/repo-onboarding/`) + reusable auto-format.
+- [x] **Phase 5** — Security/hermeticity/MCP governance (`mcp-doctor.py`, reusable audit workflows, pinned MCP image).
+- [x] **Phase 6** — Handoff/P7 conformance (packet, session log, TODO/CHANGELOG sync).
+- [x] **Phase 7** — Secret/Renovate governance.
+- [x] **Phase 8** — Rust binary release reusable workflow.
+- [x] **Phase 9** — Bookkeeping + stacked PR merge coordination.
+- [x] **Phase 10** — Research meta/envctl secret/token wiring (dossier + token-name fixes).
+
+---
+
+## Control-plane upgrade follow-up phases
+
+Companion plan: `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`.
+
+- [x] **Phase 1** — Workflow hardening and consistency (dependency-review pin, branch-target guard tracking, wiki-lint PR trigger).
+- [ ] **Phase 1.3** — Add `timeout-minutes` to reusable-workflow caller jobs in `ci.yml`. **Blocked by GitHub Actions syntax:** `timeout-minutes` is not permitted on jobs that use `uses:` to call reusable workflows; timeouts live inside the reusable workflows.
+- [x] **Phase 2** — Git hooks upgrades (pre-commit JSON check, pre-push protected-ref block, branch-name style, prepare-commit-msg, post-merge, post-checkout warning).
+- [x] **Phase 3** — Rules/policies upgrades (squash-merge message controls, commit-message pattern ruleset, CODEOWNERS team, signed tags, retire redundant legacy branch protection — applied live).
+- [ ] **Phase 3.4** — Add ruleset `bypass_actors` for the release bot/app (deferred until actor ID/slug is known).
+- [x] **Phase 4** — Applier/doctor/test upgrades (schema validation, full ruleset/branch-protection `--check`, `--json` output for all modes, Makefile targets, release-env/CODEOWNERS checks).
+- [x] **Phase 5** — Operational/security upgrades (pin remaining actions, CI badges, label pre-creation, runner-availability check in `secrets-rotate.yml`).
+- [ ] **Phase 5.5** — Provision `RELEASE_TOKEN`/`PROMOTE_TOKEN` from `meta/envctl` (blocked: vault locked).
+- [x] **Phase 6** — Bookkeeping + PR #135 (merged via admin override after resolving develop conflicts).
+
+### Post-merge corrections
+- [x] **github-policy-drift strict promotion reverted to REPORT_ONLY** — the default `GITHUB_TOKEN` cannot read branch protection, rulesets, or repo settings. Re-promote after provisioning `POLICY_DRIFT_TOKEN` from `meta/envctl` and confirming one green strict run.
+
+### Deep-review upgrade follow-ups (`architecture/plan/2026-06-17-deep-review-upgrade-plan.md`)
+- [x] **2.1** — Make `apply-github-policies.py` `_rule_params_match` symmetric so surplus/removed live rule parameters are detected. Also added the API-injected defaults (`required_reviewers`, `required_review_thread_resolution`, `do_not_enforce_on_create`) to `rulesets.json` and applied live so `--check` is green.
+- [x] **2.3** — Reconcile fleet policy templates: verified only the 4 canonical files remain (`rust-canon/{branch-protection,repo-settings,rulesets}.json` + `branch-target-develop/rulesets.json`); `rust-canon/rulesets.json` is the canonical fleet ruleset source, no loose duplicates.
+- [x] **2.4** — Deduplicate `apply-fleet-policies.py`/`apply-github-policies.py` — satisfied by the thin fleet wrapper (#162) importing the core applier functions from the canonical `apply-github-policies.py`.
+- [x] **4.5** — Defend reusable workflows against script injection: move interpolated `inputs.*` / `github.*` values into `env:` and quote `"$VAR"` in `run:` shells (PR #155).
+- [x] **4.8** — Tighten `mcp-doctor.py` `SECRET_RE` to catch AWS access-key IDs (`AKIA…`/`ASIA…`) in addition to GitHub/GitLab/OpenAI tokens; 40-hex SHA false positives remain excluded.
+- [ ] **4.9** — Paginate GitHub reads in `apply-*-policies.py` (`list_rulesets`, `check_environments`). **Deferred to token provisioning** — live verification needs `POLICY_DRIFT_TOKEN` (default `GITHUB_TOKEN` cannot read rulesets/environments). See `architecture/plan/2026-06-17-pre-rename-finish-plan.md` Phase 2.
+
+---
+
+## Meta-foundation confirmation (P1–P7)
+
+Companion plan: `data/brain-data/research/my-github-reconciliation.md` §"Phased reconciliation".
+
+- [x] **P1** — Remove retired submodule ghost references from `CONTRIBUTING.md`, `Makefile`, and `manifest-drift.yml`.
+- [x] **P2** — Add semantic PR title gate (`.github/workflows/semantic-pr-title.yml`) + local `commit-msg` hook.
+- [x] **P3** — Replace Dependabot with Renovate (`renovate.json5`, remove `.github/dependabot.yml`).
+- [x] **P4** — Correct docs that falsely describe reusable workflows as "scaffolds" (`README.md`, `RELEASING.md`) and document the release-token operational gate.
+- [x] **P5** — Document dual use of `PROMOTE_TOKEN`/`RELEASE_TOKEN` and add `delete-merged-branch.yml` bot.
+- [x] **P6** — Refresh `docs/github-automation-roadmap.md` targets to match current state.
+- [x] **P7** — Write `.handoff` capsule summarizing confirmed vs deferred foundation work.
+- [x] **Policy infrastructure** — Docs-only additive changes still route through `develop`; branch-guard exemptions do not override branch-target policy. Documented in `AGENTS.md`, `CLAUDE.md`, `WORKFLOW.md`, and `architecture/adr/ADR-0003-dev-git-workflow-policy.md`.
+
+---
+
+## GitHub doctor hygiene (TDD loop — closed 2026-06-16)
+
+- [x] **Dependabot → Renovate check in `scripts/github-doctor.py`.** Replaced the stale `Dependabot config` check with a `Renovate config` check that accepts `renovate.json`/`renovate.json5` at repo root or under `.github/`. Added a triple-verify test at `scripts/tests/test-github-doctor.sh` (contract output, no Dependabot residue, offline `make github.doctor`) and a CI job in `manifest-drift.yml` to keep it green.
 
 ## CI-failure autofix (follow-on to `ci-failure-tracker.yml`)
 

@@ -20,6 +20,21 @@ on:
         required: false
         type: string
         default: '.'
+      sibling-repos:
+        description: 'JSON array of sibling FlexNetOS repos for meta Rust workspace mode'
+        required: false
+        type: string
+        default: '[]'
+      workspace-path:
+        description: 'Path for the current repo inside the generated meta Rust workspace'
+        required: false
+        type: string
+        default: ${{ github.event.repository.name }}
+      token:
+        description: 'GitHub token for cloning private sibling repos (pass a PAT for private repos)'
+        required: false
+        type: string
+        default: ${{ github.token }}
       coverage:
         description: 'Collect coverage and upload as an artifact'
         required: false
@@ -48,8 +63,15 @@ jobs:
       run:
         working-directory: ${{ inputs.working-directory }}
     steps:
+      - name: Harden the runner (audit egress)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
       - name: Set up Bun
         if: inputs.language == 'bun' || inputs.language == 'mixed'
@@ -82,45 +104,87 @@ jobs:
       - name: Test (bun)
         if: (inputs.language == 'bun' || inputs.language == 'mixed') && (hashFiles(format('{0}/bun.lock', inputs.working-directory)) != '' || hashFiles(format('{0}/bun.lockb', inputs.working-directory)) != '')
         shell: bash
+        env:
+          EXTRA_ARGS: ${{ inputs.extra-args }}
+          COVERAGE: ${{ inputs.coverage }}
         run: |
           bun install --frozen-lockfile
-          if [[ "${{ inputs.coverage }}" == "true" ]]; then
-            bun test --coverage ${{ inputs.extra-args }}
+          if [[ "$COVERAGE" == "true" ]]; then
+            # shellcheck disable=SC2086
+            bun test --coverage $EXTRA_ARGS
           else
-            bun test ${{ inputs.extra-args }}
+            # shellcheck disable=SC2086
+            bun test $EXTRA_ARGS
           fi
 
       - name: Test (node)
         if: (inputs.language == 'node' || inputs.language == 'mixed') && hashFiles(format('{0}/package-lock.json', inputs.working-directory)) != ''
         shell: bash
+        env:
+          EXTRA_ARGS: ${{ inputs.extra-args }}
         run: |
           npm ci
-          npm test -- ${{ inputs.extra-args }}
+          # shellcheck disable=SC2086
+          npm test -- $EXTRA_ARGS
 
       - name: Test (python)
         if: (inputs.language == 'python' || inputs.language == 'mixed') && (hashFiles(format('{0}/pyproject.toml', inputs.working-directory)) != '' || hashFiles(format('{0}/setup.py', inputs.working-directory)) != '' || hashFiles(format('{0}/requirements.txt', inputs.working-directory)) != '')
         shell: bash
+        env:
+          EXTRA_ARGS: ${{ inputs.extra-args }}
+          COVERAGE: ${{ inputs.coverage }}
+          COVERAGE_THRESHOLD: ${{ inputs.coverage-threshold }}
         run: |
+          # shellcheck disable=SC2086
           if [[ -f pyproject.toml ]]; then
             uv sync --all-extras --dev || uv sync || true
           fi
-          if [[ "${{ inputs.coverage }}" == "true" ]]; then
+          if [[ "$COVERAGE" == "true" ]]; then
             uv tool install coverage
-            uv run -- coverage run -m pytest ${{ inputs.extra-args }}
+            # shellcheck disable=SC2086
+            uv run -- coverage run -m pytest $EXTRA_ARGS
             uv run -- coverage xml -o coverage.xml
-            uv run -- coverage report --fail-under=${{ inputs.coverage-threshold }}
+            uv run -- coverage report --fail-under="$COVERAGE_THRESHOLD"
           else
-            uv run -- pytest ${{ inputs.extra-args }}
+            # shellcheck disable=SC2086
+            uv run -- pytest $EXTRA_ARGS
+          fi
+
+      - name: Set up meta Rust workspace
+        if: (inputs.language == 'rust' || inputs.language == 'mixed') && inputs.sibling-repos != '' && inputs.sibling-repos != '[]'
+        uses: ./.github/actions/meta-rust-workspace
+        id: meta-ws
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ inputs.token }}
+
+      - name: Resolve workspace directory
+        id: final-ws
+        shell: bash
+        env:
+          WORKSPACE_DIR: ${{ steps.meta-ws.outputs.workspace-dir }}
+          WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        run: |
+          if [[ -n "$WORKSPACE_DIR" ]]; then
+            echo "dir=$WORKSPACE_DIR" >> "$GITHUB_OUTPUT"
+          else
+            echo "dir=$WORKING_DIRECTORY" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Test (rust)
         if: (inputs.language == 'rust' || inputs.language == 'mixed') && hashFiles(format('{0}/Cargo.toml', inputs.working-directory)) != ''
+        working-directory: ${{ steps.final-ws.outputs.dir }}
         shell: bash
+        env:
+          EXTRA_ARGS: ${{ inputs.extra-args }}
         run: |
           if cargo --list 2>/dev/null | grep -q nextest; then
-            cargo nextest run --all-features ${{ inputs.extra-args }}
+            # shellcheck disable=SC2086
+            cargo nextest run --all-features $EXTRA_ARGS
           else
-            cargo test --all-features ${{ inputs.extra-args }}
+            # shellcheck disable=SC2086
+            cargo test --all-features $EXTRA_ARGS
           fi
 
       # --- coverage artifact (best-effort, only if a coverage file shows up) ---

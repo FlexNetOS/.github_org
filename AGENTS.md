@@ -37,8 +37,11 @@ git checkout -b feat/<short-descriptive-name>
 The `branch-guard.sh` hook blocks `Edit`/`Write` on protected branches for
 source files. It cannot be worked around — fix the branch, then edit.
 
-Exempt from this rule: `.claude/**`, `.omc/**`, `.github/**`, `CLAUDE.md`,
-`AGENTS.md`, `README.md`, `docs/**/*.md`.
+Exempt from the hook's source-file block: `.claude/**`, `.omc/**`, `.github/**`,
+`CLAUDE.md`, `AGENTS.md`, `README.md`, `docs/**/*.md`. This exemption lets the
+hook avoid false positives on doc/agent-config files; it does **not** override
+the branch-target policy. All work, including docs-only additive changes, still
+routes through a feature branch targeting `develop`.
 
 ### 2. External-repo sequence — never skip, never reverse
 

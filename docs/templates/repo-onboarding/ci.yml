@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: ['**']
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: CI
+    uses: FlexNetOS/.github/.github/workflows/reusable-meta-rust-ci.yml@main
+    with:
+      workspace-path: 'REPO_NAME_HERE'
+      # sibling-repos: '["meta_core","meta_plugin_protocol"]'
+    secrets:
+      token: ${{ secrets.PARENT_REPO_PAT }}

@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# prepare-commit-msg hook: prepend Conventional Commit prefix from branch name
+# when the message is empty or still the default template.
+# This is a defense-in-depth helper; the commit-msg hook still validates.
+
+set -euo pipefail
+
+msg_file="$1"
+source="${2:-}"
+
+# Only act when there is no explicit message source (e.g. not -m/-F).
+case "$source" in
+  message|template|merge|squash|commit) exit 0 ;;
+esac
+
+# Read existing content; skip if the user already wrote something.
+original=$(cat "$msg_file" 2>/dev/null || true)
+# Strip comment lines and blank lines to decide if the message is effectively empty.
+body=$(printf '%s\n' "$original" | sed -e '/^#/d' -e '/^[[:space:]]*$/d')
+[ -z "$body" ] || exit 0
+
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || true)
+[ -n "$branch" ] || exit 0
+
+prefix=""
+case "$branch" in
+  feat/*)   prefix="feat(${branch#feat/}): " ;;
+  fix/*)    prefix="fix(${branch#fix/}): " ;;
+  docs/*)   prefix="docs(${branch#docs/}): " ;;
+  style/*)  prefix="style(${branch#style/}): " ;;
+  refactor/*) prefix="refactor(${branch#refactor/}): " ;;
+  perf/*)   prefix="perf(${branch#perf/}): " ;;
+  test/*)   prefix="test(${branch#test/}): " ;;
+  build/*)  prefix="build(${branch#build/}): " ;;
+  ci/*)     prefix="ci(${branch#ci/}): " ;;
+  chore/*)  prefix="chore(${branch#chore/}): " ;;
+  revert/*) prefix="revert(${branch#revert/}): " ;;
+  deps/*)   prefix="chore(deps): " ;;
+esac
+
+if [ -n "$prefix" ]; then
+  printf '%s' "$prefix" > "$msg_file"
+  # Preserve any original comment/template lines after the prefix.
+  printf '%s\n' "$original" >> "$msg_file"
+fi

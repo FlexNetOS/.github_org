@@ -1,0 +1,284 @@
+name: Reusable Rust Quality
+
+# Rust correctness / safety gates for the FlexNetOS fleet (Wave 3).
+#
+# Adds the depth gates a meta-style Rust org should have but Waves 1-2 did not
+# cover (those shipped cargo-deny/audit, provenance, scorecard, zizmor, and the
+# harden-runner / persist-credentials hardening sweep). This workflow is purely
+# ADDITIVE and NO-DOWNGRADE: each gate is opt-in via a boolean input (default
+# true) so a calling repo can disable any single gate without forking.
+#
+# Gates:
+#   * cargo-semver-checks -> fail PRs that break the crate's public API
+#   * typos               -> source-tree spell-check (crate-ci/typos)
+#   * cargo-nextest       -> faster / clearer test runner
+#   * MSRV                -> `cargo check` on the EXACT toolchain pinned by the
+#                            crate's Cargo.toml `rust-version` (single source of
+#                            truth); no-ops gracefully if `rust-version` is absent
+#
+# Like reusable-meta-rust-ci.yml, every job builds a full-clone synthetic
+# workspace (the `meta-rust-workspace` composite action) so these gates work on
+# meta workspace members that have path-dependencies on sibling repos.
+#
+# Example caller (see docs/templates/repo-onboarding/rust-quality.yml):
+#   jobs:
+#     rust-quality:
+#       uses: FlexNetOS/.github/.github/workflows/reusable-rust-quality.yml@main
+#       with:
+#         workspace-path: 'meta_cli'
+#         sibling-repos: '["meta_core","meta_plugin_protocol","loop_lib"]'
+#         # nextest: false   # disable a single gate
+#       secrets:
+#         token: ${{ secrets.PARENT_REPO_PAT }}
+
+on:
+  workflow_call:
+    inputs:
+      semver-checks:
+        description: 'Run cargo-semver-checks (public-API breakage gate)'
+        required: false
+        type: boolean
+        default: true
+      typos:
+        description: 'Run crate-ci/typos spell-check'
+        required: false
+        type: boolean
+        default: true
+      nextest:
+        description: 'Run the test suite via cargo nextest'
+        required: false
+        type: boolean
+        default: true
+      msrv:
+        description: 'Run cargo check on the Cargo.toml rust-version (MSRV) toolchain'
+        required: false
+        type: boolean
+        default: true
+      working-directory:
+        description: 'Directory (relative to workspace-path inside the synthetic workspace) containing the crate Cargo.toml'
+        required: false
+        type: string
+        default: '.'
+      sibling-repos:
+        description: 'JSON array of sibling repo names under FlexNetOS/ that are path dependencies'
+        required: false
+        type: string
+        default: '[]'
+      workspace-path:
+        description: 'Path for the current repo inside the generated synthetic workspace'
+        required: false
+        type: string
+        default: ${{ github.event.repository.name }}
+      token:
+        description: 'GitHub token for cloning private sibling repos (pass a PAT for private repos)'
+        required: false
+        type: string
+        default: ${{ github.token }}
+    secrets:
+      token:
+        description: 'GitHub token for cloning private sibling repos (alternative to the token input)'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  cargo-semver-checks:
+    name: cargo-semver-checks
+    if: ${{ inputs.semver-checks }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Harden the runner (audit egress)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Check out shared actions
+        if: (github.repository != 'FlexNetOS/.github' && github.repository != 'FlexNetOS/.github_org')
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+          # Umbrella repo; name-agnostic. Set org var UMBRELLA_REPO at the future restore to '.github'. Interim fallback = current name.
+          repository: ${{ vars.UMBRELLA_REPO || 'FlexNetOS/.github_org' }}
+          ref: main
+          path: .github-org-actions
+          token: ${{ secrets.token || inputs.token }}
+
+      - name: Set up meta Rust workspace (local)
+        if: (github.repository == 'FlexNetOS/.github' || github.repository == 'FlexNetOS/.github_org')
+        uses: ./.github/actions/meta-rust-workspace
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ secrets.token || inputs.token }}
+
+      - name: Set up meta Rust workspace (shared)
+        if: (github.repository != 'FlexNetOS/.github' && github.repository != 'FlexNetOS/.github_org')
+        uses: ./.github-org-actions/.github/actions/meta-rust-workspace
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ secrets.token || inputs.token }}
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      # cargo-semver-checks: compares the crate's current public API against its
+      # published baseline (last release on crates.io / git tag). First run with
+      # no baseline: the action emits a warning and passes (no breakage can be
+      # measured without a baseline), so it never false-fails a brand-new crate.
+      - name: cargo-semver-checks
+        uses: obi1kenobi/cargo-semver-checks-action@5b298c9520f7096a4683c0bd981a7ac5a7e249ae # v2.8
+        with:
+          manifest-path: meta-rust-workspace/${{ inputs.workspace-path }}/${{ inputs.working-directory }}/Cargo.toml
+
+  typos:
+    name: typos
+    if: ${{ inputs.typos }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Harden the runner (audit egress)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+
+      # crate-ci/typos: source-tree spell-check. Scoped to the crate directory so
+      # it does not flag unrelated siblings. A repo-root `_typos.toml` (optional)
+      # tunes the dictionary / excludes.
+      - name: typos
+        uses: crate-ci/typos@37bb98842b0d8c4ffebdb75301a13db0267cef89 # v1.47.2
+        with:
+          files: ${{ inputs.working-directory }}
+
+  cargo-nextest:
+    name: cargo-nextest
+    if: ${{ inputs.nextest }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Harden the runner (audit egress)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Check out shared actions
+        if: (github.repository != 'FlexNetOS/.github' && github.repository != 'FlexNetOS/.github_org')
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+          # Umbrella repo; name-agnostic. Set org var UMBRELLA_REPO at the future restore to '.github'. Interim fallback = current name.
+          repository: ${{ vars.UMBRELLA_REPO || 'FlexNetOS/.github_org' }}
+          ref: main
+          path: .github-org-actions
+          token: ${{ secrets.token || inputs.token }}
+
+      - name: Set up meta Rust workspace (local)
+        if: (github.repository == 'FlexNetOS/.github' || github.repository == 'FlexNetOS/.github_org')
+        uses: ./.github/actions/meta-rust-workspace
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ secrets.token || inputs.token }}
+
+      - name: Set up meta Rust workspace (shared)
+        if: (github.repository != 'FlexNetOS/.github' && github.repository != 'FlexNetOS/.github_org')
+        uses: ./.github-org-actions/.github/actions/meta-rust-workspace
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ secrets.token || inputs.token }}
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      - name: Install nextest
+        uses: taiki-e/install-action@b8cecb83565409bcc297b2df6e77f030b2a468d5 # v2.82.0
+        with:
+          tool: nextest
+
+      - name: cargo nextest run
+        working-directory: meta-rust-workspace
+        run: cargo nextest run --all-features
+
+  msrv:
+    name: MSRV
+    if: ${{ inputs.msrv }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Harden the runner (audit egress)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Check out shared actions
+        if: (github.repository != 'FlexNetOS/.github' && github.repository != 'FlexNetOS/.github_org')
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+          # Umbrella repo; name-agnostic. Set org var UMBRELLA_REPO at the future restore to '.github'. Interim fallback = current name.
+          repository: ${{ vars.UMBRELLA_REPO || 'FlexNetOS/.github_org' }}
+          ref: main
+          path: .github-org-actions
+          token: ${{ secrets.token || inputs.token }}
+
+      - name: Set up meta Rust workspace (local)
+        if: (github.repository == 'FlexNetOS/.github' || github.repository == 'FlexNetOS/.github_org')
+        uses: ./.github/actions/meta-rust-workspace
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ secrets.token || inputs.token }}
+
+      - name: Set up meta Rust workspace (shared)
+        if: (github.repository != 'FlexNetOS/.github' && github.repository != 'FlexNetOS/.github_org')
+        uses: ./.github-org-actions/.github/actions/meta-rust-workspace
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ secrets.token || inputs.token }}
+
+      # Read rust-version from the crate's Cargo.toml — the single source of
+      # truth for MSRV. If absent, no-op gracefully (notice + exit 0) so this
+      # gate never fails a crate that has not declared an MSRV.
+      - name: Resolve MSRV from Cargo.toml
+        id: msrv
+        working-directory: meta-rust-workspace/${{ inputs.workspace-path }}/${{ inputs.working-directory }}
+        run: |
+          set -euo pipefail
+          # rust-version may live in [package] or be inherited from [workspace.package].
+          # Match the first `rust-version = "X.Y[.Z]"` line in either table.
+          version="$(grep -E '^[[:space:]]*rust-version[[:space:]]*=' Cargo.toml \
+            | head -n1 \
+            | sed -E 's/.*=[[:space:]]*"?([0-9]+(\.[0-9]+){1,2})"?.*/\1/' || true)"
+          if [[ -z "$version" ]]; then
+            echo "::notice title=MSRV::No 'rust-version' in Cargo.toml; skipping MSRV check."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Resolved MSRV: $version"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install MSRV toolchain
+        if: steps.msrv.outputs.found == 'true'
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: ${{ steps.msrv.outputs.version }}
+
+      - name: cargo check (MSRV)
+        if: steps.msrv.outputs.found == 'true'
+        working-directory: meta-rust-workspace
+        env:
+          MSRV: ${{ steps.msrv.outputs.version }}
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2086
+          cargo +"$MSRV" check --all-features

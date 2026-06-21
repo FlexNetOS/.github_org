@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Desired repository rulesets for FlexNetOS/.github_org. Applied via scripts/apply-github-policies.py.",
+  "rulesets": [
+    {
+      "name": "protect-main",
+      "target": "branch",
+      "enforcement": "active",
+      "bypass_actors": [
+        { "actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always" }
+      ],
+      "conditions": {
+        "ref_name": {
+          "include": ["~DEFAULT_BRANCH"],
+          "exclude": []
+        }
+      },
+      "rules": [
+        { "type": "deletion" },
+        { "type": "non_fast_forward" },
+        { "type": "required_linear_history" },
+        {
+          "type": "commit_message_pattern",
+          "parameters": {
+            "name": "Conventional Commits",
+            "negate": false,
+            "operator": "regex",
+            "pattern": "^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\\([a-z0-9-]+\\))?!?: .+$"
+          }
+        },
+        {
+          "type": "pull_request",
+          "parameters": {
+            "required_approving_review_count": 1,
+            "dismiss_stale_reviews_on_push": true,
+            "required_reviewers": [],
+            "require_code_owner_review": true,
+            "require_last_push_approval": false,
+            "required_review_thread_resolution": false,
+            "allowed_merge_methods": ["squash", "rebase"]
+          }
+        },
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
+            "required_status_checks": [
+              { "context": "lint / Lint (mixed)", "integration_id": 15368 },
+              { "context": "actionlint .github/workflows", "integration_id": 15368 },
+              { "context": "markdownlint", "integration_id": 15368 },
+              { "context": "Validate manifests", "integration_id": 15368 },
+              { "context": "Hermetic dependency audit", "integration_id": 15368 },
+              { "context": "security / Gitleaks secret scan", "integration_id": 15368 },
+              { "context": "security / Trivy filesystem + IaC", "integration_id": 15368 },
+              { "context": "security / CodeQL SAST (actions)", "integration_id": 15368 },
+              { "context": ".claude/settings.json hygiene", "integration_id": 15368 },
+              { "context": "GitHub doctor — Renovate/Dependabot check", "integration_id": 15368 },
+              { "context": "open-questions.md schema", "integration_id": 15368 },
+              { "context": "No PascalCase Claude/ directories", "integration_id": 15368 },
+              { "context": "Guard main branch target", "integration_id": 15368 }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "protect-develop",
+      "target": "branch",
+      "enforcement": "active",
+      "bypass_actors": [
+        { "actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always" }
+      ],
+      "conditions": {
+        "ref_name": {
+          "include": ["refs/heads/develop"],
+          "exclude": []
+        }
+      },
+      "rules": [
+        { "type": "deletion" },
+        { "type": "non_fast_forward" },
+        {
+          "type": "commit_message_pattern",
+          "parameters": {
+            "name": "Conventional Commits",
+            "negate": false,
+            "operator": "regex",
+            "pattern": "^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\\([a-z0-9-]+\\))?!?: .+$"
+          }
+        },
+        {
+          "type": "pull_request",
+          "parameters": {
+            "required_approving_review_count": 1,
+            "dismiss_stale_reviews_on_push": true,
+            "required_reviewers": [],
+            "require_code_owner_review": true,
+            "require_last_push_approval": false,
+            "required_review_thread_resolution": false,
+            "allowed_merge_methods": ["squash", "rebase"]
+          }
+        },
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
+            "required_status_checks": [
+              { "context": "lint / Lint (mixed)", "integration_id": 15368 },
+              { "context": "actionlint .github/workflows", "integration_id": 15368 },
+              { "context": "markdownlint", "integration_id": 15368 },
+              { "context": "Validate manifests", "integration_id": 15368 },
+              { "context": "Hermetic dependency audit", "integration_id": 15368 },
+              { "context": "security / Gitleaks secret scan", "integration_id": 15368 },
+              { "context": "security / Trivy filesystem + IaC", "integration_id": 15368 },
+              { "context": "security / CodeQL SAST (actions)", "integration_id": 15368 },
+              { "context": ".claude/settings.json hygiene", "integration_id": 15368 },
+              { "context": "GitHub doctor — Renovate/Dependabot check", "integration_id": 15368 },
+              { "context": "open-questions.md schema", "integration_id": 15368 },
+              { "context": "No PascalCase Claude/ directories", "integration_id": 15368 }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "protect-release-tags",
+      "target": "tag",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "include": ["refs/tags/v*"],
+          "exclude": []
+        }
+      },
+      "rules": [
+        { "type": "deletion" },
+        { "type": "non_fast_forward" },
+        { "type": "required_signatures" }
+      ]
+    }
+  ]
+}

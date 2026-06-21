@@ -1,0 +1,78 @@
+name: Set up meta Rust workspace
+description: |
+  Build a full-clone synthetic Rust workspace for a FlexNetOS meta crate and its
+  sibling path-dependencies. The current repo is checked out into the workspace
+  alongside its siblings, and a root Cargo.toml is generated so cargo can resolve
+  the path dependencies without shallow clones.
+
+inputs:
+  sibling-repos:
+    description: |
+      JSON array of sibling repo names under FlexNetOS/ that are path
+      dependencies of the current crate (e.g. ["meta_core","meta_plugin_protocol"]).
+    required: false
+    default: '[]'
+  workspace-path:
+    description: Path for the current repo inside the generated workspace.
+    required: false
+    default: ${{ github.event.repository.name }}
+  token:
+    description: GitHub token used to clone private sibling repos.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  workspace-dir:
+    description: Absolute path to the generated workspace directory.
+    value: ${{ github.workspace }}/meta-rust-workspace
+
+runs:
+  using: composite
+  steps:
+    - name: Create workspace directory
+      shell: bash
+      run: mkdir -p "${{ github.workspace }}/meta-rust-workspace"
+
+    - name: Checkout current repo into workspace
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      with:
+        path: meta-rust-workspace/${{ inputs.workspace-path }}
+        fetch-depth: 0
+        token: ${{ inputs.token }}
+
+    - name: Checkout sibling repos (full clone)
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        set -euo pipefail
+        ws="${{ github.workspace }}/meta-rust-workspace"
+        repos='${{ inputs.sibling-repos }}'
+        if [[ "$repos" == "[]" || -z "$repos" ]]; then
+          echo "No sibling repos requested."
+          exit 0
+        fi
+        for repo in $(printf '%s' "$repos" | jq -r '.[]'); do
+          echo "Cloning FlexNetOS/$repo ..."
+          gh repo clone "FlexNetOS/$repo" "$ws/$repo" -- --quiet
+        done
+
+    - name: Generate workspace Cargo.toml
+      shell: bash
+      run: |
+        set -euo pipefail
+        ws="${{ github.workspace }}/meta-rust-workspace"
+        path='${{ inputs.workspace-path }}'
+        repos='${{ inputs.sibling-repos }}'
+        members="\"$path\""
+        if [[ "$repos" != "[]" && -n "$repos" ]]; then
+          while IFS= read -r repo; do
+            members="$members, \"$repo\""
+          done < <(printf '%s' "$repos" | jq -r '.[]')
+        fi
+        cat > "$ws/Cargo.toml" <<EOF
+        [workspace]
+        members = [$members]
+        resolver = "2"
+        EOF
+        echo "Generated workspace at $ws with members: $members"

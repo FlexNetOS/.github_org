@@ -4,7 +4,11 @@
 
 set -euo pipefail
 
-STORE="${PASSWORD_STORE_DIR:-./secrets/store}"
+# Resolve the default store relative to the repo root, not the CWD — otherwise
+# running this from anywhere but the repo root points at a non-existent store
+# and falsely reports "0 stale". An explicit PASSWORD_STORE_DIR still wins.
+_repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+STORE="${PASSWORD_STORE_DIR:-${_repo_root:-.}/secrets/store}"
 ROTATE_DAYS="${ROTATE_DAYS:-90}"
 
 [[ -d "$STORE" ]] || { echo "ERROR: pass store not found at $STORE" >&2; exit 1; }

@@ -5,8 +5,12 @@ name: promote-develop-to-main
 # Security model:
 # - Only triggers on CI success on develop — never on failed CI.
 # - PR creation uses GITHUB_TOKEN (github-actions[bot]).
-# - Auto-approval uses PROMOTE_TOKEN (an admin PAT with repo scope) — a
-#   different actor from the PR creator, so GitHub allows the approval.
+# - Auto-approval uses PROMOTE_TOKEN (an admin PAT or App token with repo
+#   scope) — a different actor from the PR creator, so GitHub allows the
+#   approval. PROMOTE_TOKEN and RELEASE_TOKEN are sourced from `meta/envctl`
+#   and injected as repository/org secrets. They may point to the same credential,
+#   but they are distinct roles: PROMOTE_TOKEN approves develop→main promotion,
+#   RELEASE_TOKEN is used by release.yml to cut releases.
 # - Without PROMOTE_TOKEN the PR is created but waits for a human reviewer.
 # - Rebase merge preserves individual conventional commits so release-please
 #   can compute the correct version bump from the full commit history.
@@ -30,6 +34,7 @@ jobs:
   promote:
     name: Promote develop → main
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: "github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'"
     steps:
       - name: Find or create promote PR
@@ -86,8 +91,8 @@ jobs:
           if [ -z "$GH_TOKEN" ]; then
             echo "::notice title=Manual approval required::PROMOTE_TOKEN secret is not set." \
               "PR #${PR_NUMBER} needs a human approval before it can auto-merge." \
-              "Add a PROMOTE_TOKEN secret (admin PAT with repo scope) to enable" \
-              "fully automated promotion. PR: ${PR_URL}"
+              "Add a PROMOTE_TOKEN repository/org secret (admin PAT or App token with repo scope)" \
+              "to enable fully automated promotion. PR: ${PR_URL}"
             exit 0
           fi
           gh pr review "$PR_NUMBER" \

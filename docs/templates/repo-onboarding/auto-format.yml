@@ -1,0 +1,19 @@
+name: Auto Format
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: ['**']
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: Auto Format
+    uses: FlexNetOS/.github/.github/workflows/reusable-auto-format.yml@main
+    with:
+      workspace-path: 'REPO_NAME_HERE'
+    secrets:
+      token: ${{ secrets.PARENT_REPO_PAT }}

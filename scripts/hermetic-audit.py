@@ -20,6 +20,7 @@ PATTERNS: tuple[tuple[str, str, re.Pattern[str]], ...] = (
     ("latest-pin", "uses moving latest/lts pin", re.compile(r"\b(latest|lts/\*)\b")),
     ("global-tool-check", "checks host PATH instead of repo-local tool first", re.compile(r"command -v\s+")),
     ("python-network", "Python code opens network URLs", re.compile(r"urllib\.request\.urlopen|requests\.get")),
+    ("shallow-clone", "uses shallow or partial git clone", re.compile(r"\b(git\s+(clone|submodule|fetch)\b.*(?:--depth|--filter)|fetch-depth:\s*1)\b")),
 )
 
 SCAN_GLOBS = (
@@ -41,11 +42,22 @@ ALLOWLIST = {
     ("scripts/hermetic-audit.py", "latest-pin"),
     ("scripts/hermetic-audit.py", "global-tool-check"),
     ("scripts/hermetic-audit.py", "python-network"),
+    ("scripts/hermetic-audit.py", "shallow-clone"),
     # The pinned tool materializer performs checksum-verified downloads when
     # tools/.cache is missing; this is tracked debt in docs/hermetic-toolchain.md.
     ("scripts/toolchain.py", "python-network"),
     # The Markdown verifier documents the package-manager tools it replaces.
     ("scripts/verify-markdown.py", "package-manager"),
+    # Grandfathered shallow-clone usage. ADR-0002 retired most submodules; the
+    # remaining scripts are legacy tooling and should be moved to full clones
+    # or removed in a follow-up pass.
+    (".github/workflows/claude-code-review.yml", "shallow-clone"),
+    (".github/workflows/claude.yml", "shallow-clone"),
+    (".github/workflows/reusable-security.yml", "shallow-clone"),
+    ("scripts/bootstrap.sh", "shallow-clone"),
+    ("scripts/clone-and-pack.sh", "shallow-clone"),
+    ("scripts/submodule-add-all.sh", "shallow-clone"),
+    ("scripts/submodule-bump.sh", "shallow-clone"),
 }
 
 

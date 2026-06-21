@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Branch protection template for a main-default Rust canon repo in the FlexNetOS/meta fleet.",
+  "branches": {
+    "main": {
+      "required_status_checks": {
+        "strict": true,
+        "contexts": [
+          "Meta Rust CI",
+          "Semantic PR Title",
+          "dependency-review"
+        ]
+      },
+      "enforce_admins": false,
+      "required_pull_request_reviews": {
+        "required_approving_review_count": 1,
+        "dismiss_stale_reviews": true,
+        "require_code_owner_reviews": true
+      },
+      "restrictions": null,
+      "required_linear_history": true,
+      "allow_force_pushes": false,
+      "allow_deletions": false,
+      "required_conversation_resolution": true,
+      "required_signatures": false,
+      "block_creations": false,
+      "allow_fork_syncing": false,
+      "lock_branch": false
+    }
+  }
+}

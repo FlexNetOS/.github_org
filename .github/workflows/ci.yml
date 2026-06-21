@@ -14,6 +14,10 @@ on:
     branches: ['**']
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 # Block default permissions; callers re-grant minimally.
 permissions:
   contents: read
@@ -23,13 +27,15 @@ jobs:
     uses: ./.github/workflows/reusable-lint.yml
     with:
       language: mixed
-    secrets: inherit
 
   manifest-validate:
     name: Validate manifests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
       - name: Validate repo manifest
         run: python3 scripts/verify-manifest.py repos/MANIFEST.yaml
       - name: Validate tool manifest
@@ -38,24 +44,43 @@ jobs:
   actionlint:
     name: actionlint .github/workflows
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
       - name: Run repo-local actionlint wrapper
         run: tools/bin/actionlint .github/workflows/*.yml
 
   markdownlint:
     name: markdownlint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
       - run: python3 scripts/verify-markdown.py .
 
   hermetic-audit:
     name: Hermetic dependency audit
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
       - run: python3 scripts/hermetic-audit.py .
+
+  mcp-audit:
+    name: MCP configuration audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - run: python3 scripts/mcp-doctor.py
 
   security:
     needs: lint
@@ -63,7 +88,6 @@ jobs:
     with:
       languages: 'actions'
       fail-on-severity: high
-    secrets: inherit
     permissions:
       actions: read
       contents: read

@@ -10,17 +10,23 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
-  pull-requests: write
+  pull-requests: read
 
 jobs:
   claude-dir-check:
     name: No PascalCase Claude/ directories
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           submodules: false
       - name: Assert only lowercase .claude/ exists
         run: |
@@ -37,11 +43,13 @@ jobs:
   claude-settings-doctor:
     name: .claude/settings.json hygiene
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           submodules: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
       - name: Scan for hardcoded user-home paths / aspirational keys
@@ -55,10 +63,12 @@ jobs:
   check-user-todo-step5:
     name: USER.TODO#5 fork-dependency tags (informational)
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     continue-on-error: true   # REPORT_ONLY / informational
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           submodules: false
       - name: List untagged FlexNetOS-fork MANIFEST entries
         run: |
@@ -71,12 +81,14 @@ jobs:
   open-questions-lint:
     name: open-questions.md schema
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     # STRICT: promoted 2026-05-28 after one green cycle on feat/reconciliation-slice-tooling (run 26598828751)
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           submodules: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
       - name: Validate open-questions schema
@@ -87,13 +99,66 @@ jobs:
             echo "open-questions linter or log not present yet — skipping"
           fi
 
-  submodules-materialize-noop:
-    name: MANIFEST/.gitmodules lockfile (deferred)
+  github-doctor-renovate:
+    name: GitHub doctor — Renovate/Dependabot check
     runs-on: ubuntu-latest
-    continue-on-error: true   # REPORT_ONLY placeholder
+    timeout-minutes: 5
     steps:
-      - name: Note deferred lockfile pattern
-        run: |
-          echo "deferred: the MANIFEST->.gitmodules lockfile (materialize) pattern is not yet adopted."
-          echo "It refactors the working submodules.add machinery and is tracked in"
-          echo ".omc/plans/open-questions.md (G4/G5)."
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+          submodules: false
+      - name: Triple-verify Renovate config and no Dependabot residue
+        run: bash scripts/tests/test-github-doctor.sh
+
+  trivy-secret-suppressions:
+    name: Trivy secret suppressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true   # REPORT_ONLY for first green cycle; promote after CI validates
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+          submodules: false
+      - name: Triple-verify research repomix archives do not fail Trivy
+        run: bash scripts/tests/test-trivy-secret-suppressions.sh
+
+  github-policy-drift:
+    name: GitHub policy drift (dry-run)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    # The drift check is scope-aware (scripts/apply-github-policies.py): state it
+    # cannot READ with the active token is classified UNVERIFIED and does NOT fail
+    # the check — only genuine, verified drift fails. The default GITHUB_TOKEN
+    # lacks administration:read, so branch protection / ruleset bypass_actors /
+    # repo-admin merge flags come back UNVERIFIED (green) until a PAT with
+    # administration:read is sourced from meta/envctl as POLICY_DRIFT_TOKEN, which
+    # upgrades this job to full verification with no code change. Advisory (not in
+    # the required-checks ruleset); a real drift surfaces as a visible red here.
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+          submodules: false
+      - name: Check committed policy matches live GitHub state
+        env:
+          GH_TOKEN: ${{ secrets.POLICY_DRIFT_TOKEN || secrets.GITHUB_TOKEN }}
+        run: python3 scripts/apply-github-policies.py --check
+
+  hermetic-audit:
+    name: Hermetic dependency / clone audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+          submodules: false
+      - name: Check for non-hermetic patterns
+        # Advisory enforcement until the repo is clean of pre-existing findings.
+        continue-on-error: true
+        run: python3 scripts/hermetic-audit.py --fail .
+

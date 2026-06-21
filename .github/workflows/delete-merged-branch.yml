@@ -1,0 +1,62 @@
+name: delete-merged-branch
+
+# Deletes the head branch of a merged pull request, mirroring the repository
+# "delete branch on merge" setting but with guardrails:
+#
+# - Never delete protected/default branches (main, develop, master, trunk).
+# - Never delete automated upgrade branches (dependabot, renovate, upgrade-*).
+# - Never delete the perpetual develop→main promotion PR's head branch.
+#
+# This keeps the branch list tidy while preserving upgrade branches that
+# `auto-review-merge.yml` intentionally leaves intact for audit purposes.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  delete:
+    name: Delete merged feature branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: "github.event.pull_request.merged == true"
+    steps:
+      - name: Delete head branch if safe
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          protected_heads='^(main|develop|master|trunk)$'
+          protected_bases='^(main|master|trunk)$'
+          upgrade_prefixes='^(dependabot/|renovate/|upgrade/|deps/)'
+
+          if [[ "$HEAD_REF" =~ $protected_heads ]]; then
+            echo "Skipping deletion: head ref '$HEAD_REF' is a protected default branch."
+            exit 0
+          fi
+
+          if [[ "$BASE_REF" =~ $protected_bases && "$HEAD_REF" == "develop" ]]; then
+            echo "Skipping deletion: this is the perpetual develop→main promotion PR."
+            exit 0
+          fi
+
+          if [[ "$HEAD_REF" =~ $upgrade_prefixes ]]; then
+            echo "Skipping deletion: head ref '$HEAD_REF' looks like an automated upgrade branch."
+            exit 0
+          fi
+
+          echo "Deleting merged branch '$HEAD_REF'..."
+          gh api "repos/$REPO/git/refs/heads/$HEAD_REF" --method DELETE \
+            || echo "Branch may already be deleted; continuing."

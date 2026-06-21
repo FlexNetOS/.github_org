@@ -1,0 +1,55 @@
+name: Semantic PR Title
+
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+  workflow_call:
+    inputs:
+      types:
+        description: 'Multiline list of allowed Conventional Commit types'
+        required: false
+        type: string
+        default: |
+          build
+          chore
+          ci
+          deps
+          docs
+          feat
+          fix
+          perf
+          refactor
+          revert
+          style
+          test
+
+permissions:
+  pull-requests: read
+
+concurrency:
+  group: semantic-pr-title-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Semantic PR Title
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            build
+            chore
+            ci
+            deps
+            docs
+            feat
+            fix
+            perf
+            refactor
+            revert
+            style
+            test

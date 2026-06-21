@@ -1,7 +1,4 @@
 {
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
   "permissions": {
     "allow": [
       "mcp__open-pencil",
@@ -335,32 +332,32 @@
     "claude-stack-local": {
       "source": {
         "source": "directory",
-        "path": "/home/drdave/_work/claude-stack/plugins"
+        "path": "${META_ROOT}/_work/claude-stack/plugins"
       }
     },
     "ecc": {
       "source": {
         "source": "file",
-        "path": "/home/drdave/_work/repos/everything-claude-code/.claude-plugin/marketplace.json"
+        "path": "${META_ROOT}/_work/repos/everything-claude-code/.claude-plugin/marketplace.json"
       }
     },
     "karpathy-skills": {
       "source": {
         "source": "file",
-        "path": "/home/drdave/_work/repos/andrej-karpathy-skills/.claude-plugin/marketplace.json"
+        "path": "${META_ROOT}/_work/repos/andrej-karpathy-skills/.claude-plugin/marketplace.json"
       }
     },
     "omc": {
       "source": {
         "source": "git",
         "url": "https://github.com/Yeachan-Heo/oh-my-claudecode.git",
-        "path": "/home/drdave/repos/oh-my-claudecode/.claude-plugin/marketplace.json"
+        "path": "${META_ROOT}/repos/oh-my-claudecode/.claude-plugin/marketplace.json"
       }
     },
     "understand-anything": {
       "source": {
         "source": "file",
-        "path": "/home/drdave/_work/repos/Understand-Anything/.claude-plugin/marketplace.json"
+        "path": "${META_ROOT}/_work/repos/Understand-Anything/.claude-plugin/marketplace.json"
       }
     }
   }

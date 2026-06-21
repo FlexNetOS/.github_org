@@ -43,6 +43,7 @@ jobs:
   matrix-prep:
     name: Expand language matrix
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       languages: ${{ steps.set.outputs.languages }}
     steps:
@@ -66,8 +67,15 @@ jobs:
       matrix:
         language: ${{ fromJSON(needs.matrix-prep.outputs.languages) }}
     steps:
+      - name: Harden the runner (audit egress)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@dd903d2e4f5405488e5ef1422510ee31c8b32357 # v3
@@ -88,34 +96,50 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - name: Harden the runner (audit egress)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
       - name: Run Trivy filesystem scan
         shell: bash
+        env:
+          FAIL_ON_SEVERITY: ${{ inputs.fail-on-severity }}
+          TARGET: ${{ inputs.working-directory }}
         run: |
           set -euo pipefail
-          severity="$(printf '%s' "${{ inputs.fail-on-severity }}" | tr '[:lower:]' '[:upper:]')"
+          severity="$(printf '%s' "$FAIL_ON_SEVERITY" | tr '[:lower:]' '[:upper:]')"
           tools/bin/trivy fs \
             --format sarif \
             --output trivy-fs.sarif \
             --severity "$severity,CRITICAL" \
+            --secret-config trivy-secret.yaml \
             --ignore-unfixed \
             --exit-code 1 \
-            "${{ inputs.working-directory }}"
+            --skip-files "data/brain-data/research/**/repomix-pack*.xml" \
+            --skip-files ".claude/plugins/cache/**" \
+            "$TARGET"
 
       - name: Run Trivy IaC scan
         if: always()
         shell: bash
+        env:
+          FAIL_ON_SEVERITY: ${{ inputs.fail-on-severity }}
+          TARGET: ${{ inputs.working-directory }}
         run: |
           set -euo pipefail
-          severity="$(printf '%s' "${{ inputs.fail-on-severity }}" | tr '[:lower:]' '[:upper:]')"
+          severity="$(printf '%s' "$FAIL_ON_SEVERITY" | tr '[:lower:]' '[:upper:]')"
           tools/bin/trivy config \
             --format sarif \
             --output trivy-config.sarif \
             --severity "$severity,CRITICAL" \
             --exit-code 0 \
-            "${{ inputs.working-directory }}"
+            "$TARGET"
 
       - name: Upload Trivy filesystem SARIF
         if: always() && hashFiles('trivy-fs.sarif') != ''
@@ -136,9 +160,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Harden the runner (audit egress)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          persist-credentials: false
           fetch-depth: 1   # tree scan only; no paid Gitleaks action/license required
 
       - name: Run Gitleaks

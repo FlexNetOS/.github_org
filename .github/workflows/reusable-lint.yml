@@ -27,6 +27,21 @@ on:
         required: false
         type: string
         default: '.'
+      sibling-repos:
+        description: 'JSON array of sibling FlexNetOS repos for meta Rust workspace mode'
+        required: false
+        type: string
+        default: '[]'
+      workspace-path:
+        description: 'Path for the current repo inside the generated meta Rust workspace'
+        required: false
+        type: string
+        default: ${{ github.event.repository.name }}
+      token:
+        description: 'GitHub token for cloning private sibling repos (pass a PAT for private repos)'
+        required: false
+        type: string
+        default: ${{ github.token }}
       fail-on-warning:
         description: 'Fail the job if the linter emits warnings (Rust: enables `-D warnings`)'
         required: false
@@ -45,8 +60,15 @@ jobs:
       run:
         working-directory: ${{ inputs.working-directory }}
     steps:
+      - name: Harden the runner (audit egress)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
       # --- toolchain setup, conditional per language ---
       - name: Set up Bun
@@ -156,18 +178,47 @@ jobs:
       - name: Lint (python)
         if: (inputs.language == 'python' || inputs.language == 'mixed') && (hashFiles(format('{0}/pyproject.toml', inputs.working-directory)) != '' || hashFiles(format('{0}/setup.py', inputs.working-directory)) != '' || hashFiles(format('{0}/requirements.txt', inputs.working-directory)) != '')
         shell: bash
+        env:
+          PATHS: ${{ inputs.paths }}
         run: |
           uv tool install ruff
           uv tool install black
-          ruff check ${{ inputs.paths }}
-          black --check ${{ inputs.paths }}
+          # shellcheck disable=SC2086
+          ruff check $PATHS
+          # shellcheck disable=SC2086
+          black --check $PATHS
+
+      - name: Set up meta Rust workspace
+        if: (inputs.language == 'rust' || inputs.language == 'mixed') && inputs.sibling-repos != '' && inputs.sibling-repos != '[]'
+        uses: ./.github/actions/meta-rust-workspace
+        id: meta-ws
+        with:
+          sibling-repos: ${{ inputs.sibling-repos }}
+          workspace-path: ${{ inputs.workspace-path }}
+          token: ${{ inputs.token }}
+
+      - name: Resolve workspace directory
+        id: final-ws
+        shell: bash
+        env:
+          WORKSPACE_DIR: ${{ steps.meta-ws.outputs.workspace-dir }}
+          WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        run: |
+          if [[ -n "$WORKSPACE_DIR" ]]; then
+            echo "dir=$WORKSPACE_DIR" >> "$GITHUB_OUTPUT"
+          else
+            echo "dir=$WORKING_DIRECTORY" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Lint (rust)
         if: (inputs.language == 'rust' || inputs.language == 'mixed') && hashFiles(format('{0}/Cargo.toml', inputs.working-directory)) != ''
+        working-directory: ${{ steps.final-ws.outputs.dir }}
         shell: bash
+        env:
+          FAIL_ON_WARNING: ${{ inputs.fail-on-warning }}
         run: |
           cargo fmt --all --check
-          if [[ "${{ inputs.fail-on-warning }}" == "true" ]]; then
+          if [[ "$FAIL_ON_WARNING" == "true" ]]; then
             cargo clippy --all-targets --all-features -- -D warnings
           else
             cargo clippy --all-targets --all-features

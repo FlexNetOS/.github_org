@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Fleet registry of FlexNetOS/meta canon repos and the policy templates they should use. Consumed by scripts/apply-fleet-policies.py, which reuses the core applier functions from scripts/apply-github-policies.py.",
+  "template_dirs": {
+    "rust-canon": ".github/policies/templates/rust-canon",
+    "branch-target": ".github/policies/templates/branch-target-develop"
+  },
+  "repos": [
+    { "owner": "FlexNetOS", "repo": "meta_core", "default_branch": "main", "templates": ["rust-canon"] },
+    { "owner": "FlexNetOS", "repo": "meta_cli", "default_branch": "main", "templates": ["rust-canon"] },
+    { "owner": "FlexNetOS", "repo": "meta_rust_cli", "default_branch": "main", "templates": ["rust-canon"] },
+    { "owner": "FlexNetOS", "repo": "meta_git_cli", "default_branch": "main", "templates": ["rust-canon"] },
+    { "owner": "FlexNetOS", "repo": "meta_git_lib", "default_branch": "main", "templates": ["rust-canon"] },
+    { "owner": "FlexNetOS", "repo": "meta_plugin_api", "default_branch": "main", "templates": ["rust-canon"] },
+    { "owner": "FlexNetOS", "repo": "meta_plugin_protocol", "default_branch": "main", "templates": ["rust-canon"] },
+    { "owner": "FlexNetOS", "repo": "meta_project_cli", "default_branch": "main", "templates": ["rust-canon"] },
+    { "owner": "FlexNetOS", "repo": "meta_mcp", "default_branch": "main", "templates": ["rust-canon"] },
+    { "owner": "FlexNetOS", "repo": "meta_dashboard_cli", "default_branch": "main", "templates": ["rust-canon"] }
+  ]
+}

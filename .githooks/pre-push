@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Pre-push hook: guard direct pushes to protected branches and run fast checks.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+REMOTE="$1"
+URL="$2"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main|refs/heads/master|refs/heads/trunk|refs/heads/develop)
+      echo "[pre-push] BLOCKED: direct push to $remote_ref is not allowed. Open a PR via a feature branch." >&2
+      exit 1
+      ;;
+  esac
+
+  # Branch naming convention: type/short-slug (e.g. feat/foo-bar)
+  branch=${remote_ref#refs/heads/}
+  if [[ "$branch" != refs/tags/* ]] && ! [[ "$branch" =~ ^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|deps)/[a-z0-9-]+$ ]]; then
+    echo "[pre-push] WARN: branch name '$branch' does not match the preferred 'type/short-slug' convention." >&2
+    echo "[pre-push] Allowed types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert, deps" >&2
+  fi
+done
+
+if [ -f "Makefile" ]; then
+  echo "[pre-push] Running fast verification (actionlint + markdown + manifests)..."
+  make verify.actionlint verify.markdown verify.manifest verify.tools || {
+    echo "[pre-push] Fast verification failed. Fix before pushing." >&2
+    exit 1
+  }
+fi
+
+exit 0

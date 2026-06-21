@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+#
+# commit-msg hook — validates Conventional Commits locally.
+#
+# Activated by `git config core.hooksPath .githooks`.
+# Tries commitlint first; falls back to a regex check when commitlint is
+# unavailable or unconfigured (offline, no config, etc.). Never blocks a commit
+# because tooling is missing.
+
+set -euo pipefail
+
+msg_file="$1"
+msg=$(head -n1 "$msg_file")
+
+# Conventional Commit types used across FlexNetOS
+types='build|chore|ci|deps|docs|feat|fix|perf|refactor|revert|style|test'
+
+# Try commitlint if a config exists and npx is available.
+if command -v npx >/dev/null 2>&1 && { [ -f "$(git rev-parse --show-toplevel)/commitlint.config.cjs" ] || [ -f "$(git rev-parse --show-toplevel)/commitlint.config.js" ]; }; then
+    if npx --yes @commitlint/cli --edit "$msg_file" 2>/dev/null; then
+        exit 0
+    fi
+    echo "commit-msg: commitlint failed or ran offline — falling back to regex check." >&2
+fi
+
+# Fallback regex: type[(scope)][!]: description
+if [[ "$msg" =~ ^($types)(\([a-zA-Z0-9_-]+\))?!?:[[:space:]]+[^[:space:]].+$ ]]; then
+    exit 0
+fi
+
+echo "commit-msg: '$msg'" >&2
+echo "commit-msg: does not match Conventional Commits. Expected format:" >&2
+echo "  type[(scope)][!]: description" >&2
+echo "  types: $types" >&2
+echo "commit-msg: commit anyway with --no-verify if this is intentional." >&2
+exit 1
