@@ -20,6 +20,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added (2026-06-21, org-implementation-loop harness)
+- **`org-implementation-loop` harness** (`/harness:harness` build) — a `.github`-native agentic
+  implementation loop that drives a durable backlog (`.claude/skills/org-implementation-loop/backlog.md`,
+  seeded with HUT-2…HUT-7) one-branch-one-PR-into-`develop`, gating each change on `make verify` + the
+  repo doctors. New agents `org-change-architect` (read-only planner), `org-change-implementer`
+  (mutating builder), `org-change-guardian` (general-purpose verifier, runs `make verify`); reuses
+  `harness:evolution-steward` (per-cycle retrospective) + `harness:continuity-steward` (resume
+  checkpoint). Sibling of `harness:forge-loop` (which targets Rust/cargo; this targets `make verify`).
+  CLAUDE.md harness pointer + change-history table added. (research: harness-upgrade-and-claude-cleanup-targets; HUT loop)
 ### Removed (2026-06-21, .claude config de-pollution)
 - `.claude/settings.json` — removed the **dead user-global hook stack** that had leaked into the tracked repo file: all `ruvector` hooks (~13 invocations across Notification/PostToolUse/PreCompact/PreToolUse/SessionStart/Stop/UserPromptSubmit; `ruvector` not on PATH), the `gitnexus` hooks (incl. the `node "~/…"` quoted-tilde non-expansion bug), the `ccg` hooks, the `global/*` hooks, and the `omc-hud` `statusLine` — all referencing `~/.claude/hooks/*` paths **missing on the host**. Verified safe: these were **absent** from the user-global `~/.claude/settings.json` *and* the envctl home template, i.e. repo-only leakage, dead on this host — removal loses nothing declared elsewhere (upgrade/dedupe, not a downgrade). Retained: the repo's own `scripts/hooks/*` (actionlint, protect-secrets-store, gitmodules-drift-guard, icm-architecture-inject ×2) and the installed `rtk` compactor. (owner decision 2026-06-21 §6.1 "remove"; research: harness-upgrade-and-claude-cleanup-targets; HUT-1 / C1–C5)
 - `.claude/.doctor-allowlist` — dropped the now-orphaned `${CLAUDE_CONFIG_DIR:-$HOME/.claude}` entry (existed only for the removed `statusLine`).
