@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed (2026-06-21, track .claude dotfiles)
+- `.gitignore` — **start tracking the `.claude` dotfiles** (owner decision 2026-06-21, "all minus `.omc`"): removed the `.claude/plugins/{cache,marketplaces,data}/` exclusions so the plugin cache is vendored for exact-version pinning rather than relying on `omc install` regeneration (reverses the prior "regenerable, never commit" stance). `.claude/.omc/` stays ignored (deprecated). Added a `!.claude/settings.local.json` negation so the repo tracks it despite the user-global `core.excludesFile` ignore.
+- `.claude/settings.local.json` — now tracked (`enabledMcpjsonServers: github, n8n-mcp`; portable, no secrets). Scope note: this covers the `.claude` dotfiles only; the `.handoff` P7 ledger DBs and `architecture/.claude/` scratch were intentionally **left ignored** (separate subsystems with documented local-by-design rationale) pending an explicit owner decision. (research: harness-upgrade-and-claude-cleanup-targets; C9)
+
 ### Added (SESSION-2026-06-21-002)
 - `scripts/rotate-policy-drift-token.sh` — mints a scoped `administration:write,metadata:read` GitHub App installation token via the envctl relay (`secretctl mint-github`, App key sealed in the vault) and injects it as the `POLICY_DRIFT_TOKEN` repo secret. Fail-open (vault locked / mint fail → exit 0) with an **expiry pre-check** that drops a stale token to the `GITHUB_TOKEN` fallback rather than presenting an expired token. (PR #206, #207 → `develop`)
 - `scripts/install-policy-drift-rotation.sh` — installs a systemd `--user` timer (`OnBootSec=2min` + `OnUnitActiveSec=45min`, Persistent) that runs the rotation on the vault host; units are generated with the absolute path resolved at install time (no host path committed). (PR #206, #207)
