@@ -38,7 +38,7 @@ jobs:
               echo "Head ref was: '$HEAD_REF'" >&2
               echo "" >&2
               echo "Fix: retarget this PR to 'develop' via:" >&2
-              echo "  gh pr edit \$PR_NUMBER --base develop" >&2
+              echo "  gh pr edit $PR_NUMBER --base develop" >&2
               exit 1
               ;;
           esac
