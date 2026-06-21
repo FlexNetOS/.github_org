@@ -4,10 +4,18 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-06-17 (SESSION-2026-06-17-007 — control-plane upgrades continuation on `feat/control-plane-upgrades-continuation`)
+**Last updated:** 2026-06-21 (SESSION-2026-06-21-001 — always-on agent rules + orphaned-gitlink CI fix)
 **Branch:** `feat/control-plane-upgrades-continuation`
 **PR target:** `feat/control-plane-upgrade` → `develop`
 **Status:** Implementing follow-up phases from `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`. Duplicative fleet-policy applier removed; canonical `scripts/apply-github-policies.py` retained.
+
+---
+
+## Always-on agent rules + CI unblock (SESSION-2026-06-21-001)
+
+- [ ] After PR #198 merges to `develop`, refresh PR #194 (`gh pr update-branch 194`) if its CI doesn't auto-rerun, so the always-on-rules change goes green and auto-merges. — blocked by: UA-2026-06-21-001 (approvals)
+- [ ] (follow-up, low priority) `GitHub policy drift (dry-run)` will keep flagging the intentional `copilot` environment. If desired, allowlist `copilot` in the policy's expected environments so the advisory check is truthful/green. Owner declined deletion (env is intentional).
+- [ ] (doc-integrity, pre-existing) `CHANGELOG.md` lines ~108/111 tag `(SESSION-2026-06-17-001)`, but no `## SESSION-2026-06-17-001` heading exists in `SESSIONS.md` (broken cross-ref, predates SESSION-2026-06-21-001; flagged by wrap-up-verifier). Determine the intended session ID and correct the tag (don't guess-edit).
 
 ---
 

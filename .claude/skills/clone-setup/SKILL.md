@@ -46,7 +46,7 @@ Examples:
 At the start of every invocation, determine `<name>` from the input (lowercased repo slug, e.g. `repomix` for `yamadashy/repomix`), then check existing state:
 
 ```bash
-cd /home/drdave/workspace/my-github
+cd "$(git rev-parse --show-toplevel)"
 
 # Check work dir
 ls -la ".attic/research-work/<name>/.git" 2>/dev/null && echo "WORK_DIR_EXISTS" || echo "WORK_DIR_MISSING"
@@ -131,7 +131,7 @@ If a feature cannot be enabled without a paid credential and there is no local s
 Run from the umbrella root:
 
 ```bash
-cd /home/drdave/workspace/my-github
+cd "$(git rev-parse --show-toplevel)"
 make research.pack URL=<input>
 ```
 
