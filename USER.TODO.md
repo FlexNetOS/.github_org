@@ -865,4 +865,4 @@ feature branch but should not be merged to `main` without picking one of the abo
 
   Auto-merge (squash) is armed on all five, so each merges the moment its approval lands and checks are green — no manual `gh pr merge` needed. #198 is already closed.
 - **How to verify done:** `gh pr view 203 --json state` → `MERGED`, likewise #194/#199/#176/#180/#185; #198 `CLOSED`; `git ls-tree -r origin/develop | awk '$2=="160000"'` shows no `data/brain-data` gitlinks; `develop` CI green; `python3 scripts/apply-github-policies.py --check` on `develop` exits 0.
-- **Status:** `open`
+- **Status:** `done (SESSION-2026-06-21-002)` — the owner authorized merge without review (`you do not need my approval or review`); all six PRs admin-merged in order (#203 base → #194 → #176 → #180 → #199 → #185), #198 closed as superseded. `develop` is clean (0 orphaned gitlinks), `ci`+`zizmor` green, `apply-github-policies.py --check` exit 0 (full verification). Plus envctl #128/#129 merged (TTL doc + `set-app-id` enrollment-heal verb) and `.github` #206/#207 (POLICY_DRIFT_TOKEN 45-min relay rotation + expiry pre-check).

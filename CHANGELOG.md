@@ -20,6 +20,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added (SESSION-2026-06-21-002)
+- `scripts/rotate-policy-drift-token.sh` — mints a scoped `administration:write,metadata:read` GitHub App installation token via the envctl relay (`secretctl mint-github`, App key sealed in the vault) and injects it as the `POLICY_DRIFT_TOKEN` repo secret. Fail-open (vault locked / mint fail → exit 0) with an **expiry pre-check** that drops a stale token to the `GITHUB_TOKEN` fallback rather than presenting an expired token. (PR #206, #207 → `develop`)
+- `scripts/install-policy-drift-rotation.sh` — installs a systemd `--user` timer (`OnBootSec=2min` + `OnUnitActiveSec=45min`, Persistent) that runs the rotation on the vault host; units are generated with the absolute path resolved at install time (no host path committed). (PR #206, #207)
+- **envctl** `secretctl github-app set-app-id --app-id <id>` — exposes the existing `SetGithubAppId` RPC / `put_github_app_id` engine method as a standalone CLI verb, setting the non-secret `github-app-id` meta from the already-sealed App key (no PEM), healing a key-sealed-but-id-missing enrollment. +2 parse tests. (envctl PR #129)
+
+### Changed (SESSION-2026-06-21-002)
+- `scripts/apply-github-policies.py` — scope-aware drift check: state the active token cannot read → UNVERIFIED (never fails, exit 0); only genuine *readable* drift → exit 1. Upgrades to full verification automatically with an admin-scoped token. (PR #203)
+- `.github/policies/repo-settings.json` — declared `copilot` as an `external_environment` so the drift check treats it as expected (not unexpected drift). (PR #203)
+- `.github/workflows/manifest-drift.yml` — `github-policy-drift` job documented for full-verification via the rotated `POLICY_DRIFT_TOKEN` (`administration: write`) + fail-open/expiry fallback. (PR #206, #207)
+- **Live GitHub** — applied committed `bypass_actors` (admin `RepositoryRole 5`, `bypass_mode=always`) to the `protect-main` + `protect-develop` rulesets via `gh api PUT`, reconciling the only real drift (owner-authorized "apply committed → live"; verified `No drift detected`, exit 0).
+- **envctl** docs (`mint_github.rs`, `secretctl --ttl-secs` help) — distinguish GitHub's raw ~1h installation-token TTL from the relay's ≤24h rotation policy (virtual-credit-card model). (envctl PR #128)
+
+### Fixed (SESSION-2026-06-21-002)
+- **envctl secretd duplicate-daemon split-brain** — a hand-launched `secretd` (ghostty transient scope, PID 4105338) coexisting with `env-ctl.service` (PID 16781) on the same socket caused `mint-github` to reach an empty broker session ("App id not enrolled"). Killed the rogue, restarted `env-ctl.service` clean. (host op)
+- **Rotation cadence** — GitHub caps the App installation token at ~60 min (requested `ttl-secs` is advisory), so the timer re-mints every ~45 min; was daily, which left the secret holding an *expired* token ~23h/day that the workflow's presence-only `POLICY_DRIFT_TOKEN || GITHUB_TOKEN` selector would still pick. (PR #207)
+
+### Decisions recorded (2026-06-21, SESSION-2026-06-21-002)
+- The 6 stacked PRs were **admin-merged in order** after the owner waived review ("you do not need my approval or review"): #203 base → #194 → #176 → #180 → #199 → #185; **#198 closed** as superseded by #203 (identical gitlink fix). `develop` left clean (0 orphaned gitlinks), `ci`+`zizmor` green. (unblocks: UA-2026-06-21-003)
+- GitHub redacts ruleset `bypass_actors` + repo admin merge-flags from a GitHub **App** token unless it carries `administration: write` — `administration: read` returns those fields absent (empirically verified by minting both and diffing). The `flexnetos-github-app` installation already holds `administration: write`; the short-lived rotated token bounds the blast radius. (unblocks: UA-2026-06-21-002)
+- envctl App enrollment stores the App id as a **meta** key (`GITHUB_APP_ID_META`), which `mint_github_token` reads; an App sealed via an older path had the id as a *secret* but no meta, so mint failed despite the sealed PEM. Fixed by the new `set-app-id` verb (preserve + upgrade — no PEM re-supply, no App re-creation).
+
 ### Added (SESSION-2026-06-21-001)
 - Always-on rules block embedded into all five agent-instruction surfaces (`AGENTS.md`, `CLAUDE.md`, `.github/AGENTS.md`, `.claude/AGENTS.md`, `.codex/AGENTS.md`) — one identical block with a sync marker, sourced from `meta/.kb/AGENTS.md` (FlexNetOS Agent Guide) + owner rule 2026-06-21. Rules: finish surfaced/stale/orphaned work + never-downgrade, document-before-implement, verify-before-done, trace-to-a-human. (PR #194 → `develop`, auto-merge armed)
 

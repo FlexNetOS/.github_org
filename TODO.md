@@ -4,18 +4,17 @@
 > Applied changes move to `CHANGELOG.md`. Per-session logs land in `SESSIONS.md`.
 > The full deep-research plan that produced this list lives at `data/brain-data/research/my-github-reconciliation.md`.
 
-**Last updated:** 2026-06-21 (SESSION-2026-06-21-001 — always-on agent rules + orphaned-gitlink CI fix)
-**Branch:** `feat/control-plane-upgrades-continuation`
-**PR target:** `feat/control-plane-upgrade` → `develop`
-**Status:** Implementing follow-up phases from `architecture/plan/2026-06-17-github-control-plane-upgrades-plan.md`. Duplicative fleet-policy applier removed; canonical `scripts/apply-github-policies.py` retained.
+**Last updated:** 2026-06-21 (SESSION-2026-06-21-002 — PR-stack merges, envctl enrollment fix, POLICY_DRIFT_TOKEN relay rotation)
+**Branch:** `chore/wrap-up-2026-06-21-002`
+**PR target:** → `develop`
+**Status:** Control-plane phases 1–9 landed. SESSION-002 drove 6 stacked PRs to a clean green `develop`, fixed the envctl App-enrollment bug (`secretctl github-app set-app-id`), and wired the auto-rotating `POLICY_DRIFT_TOKEN` so the policy-drift check does full admin-surface verification. No open agent TODOs except the pre-existing doc-integrity cross-ref below.
 
 ---
 
-## Always-on agent rules + CI unblock (SESSION-2026-06-21-001)
+## Carry-over / housekeeping
 
-- [ ] After PR #198 merges to `develop`, refresh PR #194 (`gh pr update-branch 194`) if its CI doesn't auto-rerun, so the always-on-rules change goes green and auto-merges. — blocked by: UA-2026-06-21-001 (approvals)
-- [ ] (follow-up, low priority) `GitHub policy drift (dry-run)` will keep flagging the intentional `copilot` environment. If desired, allowlist `copilot` in the policy's expected environments so the advisory check is truthful/green. Owner declined deletion (env is intentional).
 - [ ] (doc-integrity, pre-existing) `CHANGELOG.md` lines ~108/111 tag `(SESSION-2026-06-17-001)`, but no `## SESSION-2026-06-17-001` heading exists in `SESSIONS.md` (broken cross-ref, predates SESSION-2026-06-21-001; flagged by wrap-up-verifier). Determine the intended session ID and correct the tag (don't guess-edit).
+- [ ] (optional hardening) If `github-policy-drift` is ever promoted to a **required** check, gate it on the rotation being healthy (or keep it advisory) — a long box-offline window drops `POLICY_DRIFT_TOKEN` to the `GITHUB_TOKEN` partial-verification fallback (correct, exit 0, but not full-surface).
 
 ---
 
