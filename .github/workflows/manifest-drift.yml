@@ -172,3 +172,30 @@ jobs:
         continue-on-error: true
         run: python3 scripts/hermetic-audit.py --fail .
 
+  config-health-doctor:
+    name: Runtime config-health (hooks/binaries)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # REPORT_ONLY first green cycle; promote to STRICT (and wire into `make verify`)
+    # per the CI-invariant-promotion pattern. Gated on HUT-1 (#210): develop's
+    # settings.json still carries the quoted-tilde ERROR until that merges, so this
+    # would fail today — it annotates without blocking until then.
+    continue-on-error: true
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+          submodules: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+      - name: Scan settings.json hook wiring for dead refs / quoted-tilde bugs
+        run: |
+          if [ -f scripts/config-health-doctor.js ]; then
+            node scripts/config-health-doctor.js --config .claude/settings.json
+          else
+            echo "scripts/config-health-doctor.js not present yet — skipping"
+          fi
+
