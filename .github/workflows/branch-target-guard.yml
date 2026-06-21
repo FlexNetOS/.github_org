@@ -26,6 +26,7 @@ jobs:
       - name: Verify PR to main originates from develop or release/*
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
           case "$HEAD_REF" in
@@ -35,6 +36,9 @@ jobs:
             *)
               echo "ERROR: Pull requests to main must originate from 'develop' or a 'release/*' branch." >&2
               echo "Head ref was: '$HEAD_REF'" >&2
+              echo "" >&2
+              echo "Fix: retarget this PR to 'develop' via:" >&2
+              echo "  gh pr edit \$PR_NUMBER --base develop" >&2
               exit 1
               ;;
           esac
