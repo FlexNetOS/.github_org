@@ -178,9 +178,12 @@ jobs:
     timeout-minutes: 5
     # REPORT_ONLY first green cycle; promote to STRICT (and wire into `make verify`)
     # per the CI-invariant-promotion pattern. Gated on HUT-1 (#210): develop's
-    # settings.json still carries the quoted-tilde ERROR until that merges, so this
-    # would fail today — it annotates without blocking until then.
-    continue-on-error: true
+    # settings.json still carries the quoted-tilde ERROR until that merges, so the
+    # doctor exits non-zero today. continue-on-error is at STEP level (NOT job level)
+    # so the advisory check renders GREEN while still printing findings to the log —
+    # job-level continue-on-error would render the check RED (non-blocking but noisy).
+    # This matches the established report-only idiom used by hermetic-audit. Promote
+    # by removing the step-level continue-on-error once #210 lands the quoted-tilde fix.
     permissions:
       contents: read
     steps:
@@ -192,6 +195,8 @@ jobs:
         with:
           node-version: '20'
       - name: Scan settings.json hook wiring for dead refs / quoted-tilde bugs
+        # STEP-level continue-on-error → advisory GREEN during report-only (see job comment).
+        continue-on-error: true
         run: |
           if [ -f scripts/config-health-doctor.js ]; then
             node scripts/config-health-doctor.js --config .claude/settings.json
