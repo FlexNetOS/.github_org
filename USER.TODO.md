@@ -811,7 +811,7 @@ feature branch but should not be merged to `main` without picking one of the abo
 
   The workflow already prefers `secrets.POLICY_DRIFT_TOKEN || secrets.GITHUB_TOKEN` — no workflow change needed; the check upgrades to full verification automatically.
 - **How to verify done:** re-run the `github-policy-drift` job; its log shows `No drift detected between committed policy and live GitHub state.` (the full-verification message) with **zero** `UNVERIFIED:` lines, instead of `No drift detected in verifiable state; N item(s) could not be verified`.
-- **Status:** `open`
+- **Status:** `done (SESSION-2026-06-21-002)` — **automated, no longer human-only.** The `flexnetos-github-app` installation already holds `administration: write` (the level GitHub requires for an App token to read ruleset `bypass_actors` + repo admin merge-flags — `administration: read` redacts them). `POLICY_DRIFT_TOKEN` is now minted + injected on a **24h rotation** by the envctl relay (`scripts/rotate-policy-drift-token.sh` via a systemd `--user` timer on the vault host; install with `scripts/install-policy-drift-rotation.sh --apply`). Verified live: `apply-github-policies.py --check` with the minted token → `No drift detected between committed policy and live GitHub state.` (exit 0, zero UNVERIFIED).
 
 ---
 
