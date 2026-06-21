@@ -115,7 +115,11 @@ jobs:
     name: Trivy secret suppressions
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    continue-on-error: true   # REPORT_ONLY for first green cycle; promote after CI validates
+    # STRICT: promoted 2026-06-21 after a green PR cycle (run 27905729236). The test is
+    # deterministic — secret-scanner only, SHA-pinned trivy v0.70.0, no vuln-DB download.
+    # (manifest-drift only runs on PR/dispatch, never on a main push — same green-cycle bar
+    # under which open-questions-lint was promoted. See CHANGELOG.) Not in the required-checks
+    # ruleset, so a failure is a visible red, not a merge block.
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -130,6 +134,8 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
+    # INTENTIONALLY fail-open advisory: no continue-on-error, and NOT in the required-checks
+    # ruleset. Do not "fix" by adding continue-on-error or promoting to required.
     # The drift check is scope-aware (scripts/apply-github-policies.py): state it
     # cannot READ with the active token is classified UNVERIFIED and does NOT fail
     # the check — only genuine, verified drift fails.
@@ -168,7 +174,9 @@ jobs:
           persist-credentials: false
           submodules: false
       - name: Check for non-hermetic patterns
-        # Advisory enforcement until the repo is clean of pre-existing findings.
+        # STEP-level continue-on-error (NOT job-level): the audit reports pre-existing
+        # non-hermetic findings advisory-only. Step-level renders the check GREEN while
+        # still logging findings; job-level would render it RED (non-blocking but noisy).
         continue-on-error: true
         run: python3 scripts/hermetic-audit.py --fail .
 

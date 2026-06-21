@@ -384,7 +384,7 @@ gh pr create \
 *Opened automatically by `/wrap-up`.*
 PRBODY
 )" \
-  --base main
+  --base develop
 ```
 
 - Fill in the `<!-- … -->` placeholders from the SESSIONS.md entry you just wrote.
@@ -434,7 +434,7 @@ You are done when **all** of these are true:
 5. The bookkeeping files are **committed to the current feature branch** (`git log -1 --stat` lists them) and `git status --short` is clean of the wrap-up output. HEAD is a feature branch, never `main` / `master` / `trunk`.
 6. **Committed, not pushed** — wrap-up commits its bookkeeping to the session's feature branch so a routine `git reset` / cherry-pick can't wipe it; pushing to origin stays a human decision (surface it as a `UA-` item if the branch should go up).
 5. All session work and bookkeeping files are **committed to the current feature branch** (`git log -1 --stat` lists them) and `git status --short` is clean of the wrap-up output. HEAD is a feature branch, never `main` / `master` / `trunk`.
-6. **Committed, pushed, and PR open** — the feature branch has been pushed to origin and a pull request targeting `main` has been created (or a comment added if the PR already existed). The PR URL has been reported to the user.
+6. **Committed, pushed, and PR open** — the feature branch has been pushed to origin and a pull request targeting `develop` has been created (or a comment added if the PR already existed). The PR URL has been reported to the user.
 7. **The `wrap-up-verifier` subagent returned `PASS` or `PASS WITH WARNINGS`** (not `FAIL`) for this session ID. Any FAIL outcome — even a single critical issue — means you are not done; fix and re-verify.
 
 ## Do-not list
