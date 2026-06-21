@@ -5,7 +5,7 @@ description: Wrap up the current working session in the FlexNetOS umbrella repo.
 
 # wrap-up
 
-End-of-session bookkeeping for `/home/drdave/workspace/my-github` (FlexNetOS/.github umbrella). Four repo-root files, one durable session record. Run on every meaningful work session so the next session (or the next operator) picks up cold without losing context.
+End-of-session bookkeeping for the umbrella repo root (FlexNetOS/.github umbrella; `git rev-parse --show-toplevel`). Four repo-root files, one durable session record. Run on every meaningful work session so the next session (or the next operator) picks up cold without losing context.
 
 > Convention source: `~/.claude/projects/-home-drdave-workspace-my-github/memory/feedback-research-location.md`. This skill is the executor for that convention — don't drift from it. The file the convention memory originally called `SESSION.md` has been renamed to `SESSIONS.md` on disk (plural). The on-disk filename wins.
 
@@ -144,7 +144,7 @@ Compute the session ID now (see the format section above) — you'll need it for
 
 ### 2. Update `TODO.md` (agent work only)
 
-Open `/home/drdave/workspace/my-github/TODO.md` and edit in place. The file is grouped by topic with `- [ ]` checkboxes — preserve that shape.
+Open `TODO.md` at the repo root and edit in place. The file is grouped by topic with `- [ ]` checkboxes — preserve that shape.
 
 - **Mark completed items** by deleting them. Do not leave checked `- [x]` lines; closed items belong in `CHANGELOG.md`.
 - **Add new items** discovered this session under the right topical heading. Create a new heading if none fits.
@@ -190,7 +190,7 @@ Rules:
 
 ### 4. Append to `CHANGELOG.md`
 
-Open `/home/drdave/workspace/my-github/CHANGELOG.md`. Entries land under `[Unreleased]` (pre-`v1.0.0` convention).
+Open `CHANGELOG.md` at the repo root. Entries land under `[Unreleased]` (pre-`v1.0.0` convention).
 
 Add concise entries under the appropriate subsection:
 
@@ -213,7 +213,7 @@ If nothing was *applied* (plan still `pending approval`, no code changed, no dec
 
 ### 5. Write the session entry to `SESSIONS.md`
 
-Open `/home/drdave/workspace/my-github/SESSIONS.md`. The file is **most-recent-first** — the new entry goes directly under the header intro, above all older entries.
+Open `SESSIONS.md` at the repo root. The file is **most-recent-first** — the new entry goes directly under the header intro, above all older entries.
 
 Use the SESSIONS.md entry format defined above. Required up-front, before you start typing:
 
@@ -238,8 +238,8 @@ Agent(
   description: "Verify wrap-up SESSION-<id>",
   subagent_type: "wrap-up-verifier",
   prompt: "Verify the wrap-up just completed at session ID
-           SESSION-YYYY-MM-DD-NNN. Project root is
-           /home/drdave/workspace/my-github. Run the full S1–S14 +
+           SESSION-YYYY-MM-DD-NNN. Project root is the umbrella repo
+           root (git rev-parse --show-toplevel). Run the full S1–S14 +
            H1–H10 procedure defined in your agent prompt. Emit the
            verdict report exactly in the structure documented there."
 )
@@ -464,10 +464,10 @@ The frontmatter `description` already covers the auto-load triggers. For human r
 
 ## Related
 
-- `~/.claude/projects/-home-drdave-workspace-my-github/memory/feedback-research-location.md` — the convention this skill enforces.
-- `~/.claude/projects/-home-drdave-workspace-my-github/memory/feedback-always-commit.md` — why step 7 commits the bookkeeping instead of leaving it untracked.
-- `~/.claude/projects/-home-drdave-workspace-my-github/memory/feedback-new-branch-per-session.md` — why a feature branch always exists to commit onto at wrap-up time.
-- `~/.claude/projects/-home-drdave-workspace-my-github/memory/my-github-umbrella-model.md` — Model B umbrella structure context.
+- `~/.claude/projects/<this-project>/memory/feedback-research-location.md` — the convention this skill enforces.
+- `~/.claude/projects/<this-project>/memory/feedback-always-commit.md` — why step 7 commits the bookkeeping instead of leaving it untracked.
+- `~/.claude/projects/<this-project>/memory/feedback-new-branch-per-session.md` — why a feature branch always exists to commit onto at wrap-up time.
+- `~/.claude/projects/<this-project>/memory/my-github-umbrella-model.md` — Model B umbrella structure context.
 - `data/brain-data/research/` — where deep-research artifacts go (referenced from SESSIONS.md, not embedded).
 - `USER.TODO.md § Agent-flagged user actions` — the only place this skill writes inside that file.
 - `.claude/agents/wrap-up-verifier.md` — the read-only verifier subagent invoked in step 6.
