@@ -794,3 +794,21 @@ feature branch but should not be merged to `main` without picking one of the abo
 
 - **How to verify done:** on updated `develop`, `architecture/prd/PRD-0001-architecture-framework.md` links to `../openspec/changes/archive/2026-05-29-architecture-framework/proposal.md` (the `archive/` path), and a link-resolution scan of `architecture/**/*.md` reports 0 broken.
 - **Status:** `open`
+
+### UA-2026-06-21-002 — Provision `POLICY_DRIFT_TOKEN` (administration:read) so the policy-drift check verifies admin state
+
+- **Surfaced by:** `SESSION-2026-06-21-001` (PR #203, `fix/policy-drift-scope-aware`)
+- **Blocks:** *Full* verification by the **GitHub policy drift (dry-run)** check. After #203 the check is correct and **green** with the default token, but it can only verify state the default `GITHUB_TOKEN` can read. Branch protection, ruleset `bypass_actors`, and the repo's admin-only merge flags are reported `UNVERIFIED` until an admin-scoped token is provided — so a drift in *those* would not be caught yet.
+- **Why:** Reading branch protection / rulesets bypass / repo-admin settings requires a token with `administration:read`. The default Actions token does not have it; only a human can mint/store an admin-scoped PAT or GitHub-App token. This is the operational half of the #203 fix (the code half is done and merged-pending).
+- **What to do:**
+
+  1. From `meta/envctl`, source (or mint) a PAT / GitHub-App installation token with **`administration:read`** (repo administration) scope on `FlexNetOS/.github`.
+  2. Store it as the repo secret **`POLICY_DRIFT_TOKEN`**:
+
+     ```bash
+     gh secret set POLICY_DRIFT_TOKEN --repo FlexNetOS/.github --body "<token>"
+     ```
+
+  The workflow already prefers `secrets.POLICY_DRIFT_TOKEN || secrets.GITHUB_TOKEN` — no workflow change needed; the check upgrades to full verification automatically.
+- **How to verify done:** re-run the `github-policy-drift` job; its log shows `No drift detected between committed policy and live GitHub state.` (the full-verification message) with **zero** `UNVERIFIED:` lines, instead of `No drift detected in verifiable state; N item(s) could not be verified`.
+- **Status:** `open`
