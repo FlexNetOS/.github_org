@@ -161,8 +161,15 @@ jobs:
           submodules: false
       - name: Check committed policy matches live GitHub state
         env:
-          GH_TOKEN: ${{ secrets.POLICY_DRIFT_TOKEN || secrets.GITHUB_TOKEN }}
-        run: python3 scripts/apply-github-policies.py --check
+          POLICY_DRIFT_TOKEN: ${{ secrets.POLICY_DRIFT_TOKEN }}
+          GH_FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          if [ -n "${POLICY_DRIFT_TOKEN:-}" ] && GH_TOKEN="$POLICY_DRIFT_TOKEN" gh api rate_limit >/dev/null 2>&1; then
+            export GH_TOKEN="$POLICY_DRIFT_TOKEN"
+          else
+            export GH_TOKEN="$GH_FALLBACK_TOKEN"
+          fi
+          python3 scripts/apply-github-policies.py --check
 
   hermetic-audit:
     name: Hermetic dependency / clone audit
@@ -211,4 +218,3 @@ jobs:
           else
             echo "scripts/config-health-doctor.js not present yet — skipping"
           fi
-
