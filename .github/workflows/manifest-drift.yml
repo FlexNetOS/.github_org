@@ -161,7 +161,7 @@ jobs:
           submodules: false
       - name: Check committed policy matches live GitHub state
         env:
-          GH_TOKEN: ${{ secrets.POLICY_DRIFT_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.POLICY_DRIFT_TOKEN || github.token }}
         run: python3 scripts/apply-github-policies.py --check
 
   hermetic-audit:
@@ -211,4 +211,3 @@ jobs:
           else
             echo "scripts/config-health-doctor.js not present yet — skipping"
           fi
-
