@@ -188,6 +188,10 @@ config.doctor: ## claude.doctor plus a note on the .codex allowlist (read-only)
 	@node scripts/claude-settings-doctor.js --check --allowlist .claude/.doctor-allowlist; \
 	echo "config.doctor: .codex user-global references governed by .codex/.doctor-allowlist"
 
+.PHONY: verify.config-health
+verify.config-health: ## Runtime config-health: missing repo-relative hooks + quoted-tilde bugs = ERROR; absent user-global hooks/binaries = WARN (advisory). NOT in blocking `verify` yet (gated on HUT-1 #210; develop's settings.json still has the quoted-tilde ERROR until it merges).
+	node scripts/config-health-doctor.js --config .claude/settings.json
+
 .PHONY: check.user-todo-5
 check.user-todo-5: ## List MANIFEST entries tagged / untagged for USER.TODO#5 (read-only)
 	@bash scripts/check-user-todo-step5.sh --list-untagged
