@@ -1,65 +1,73 @@
 # Runner group policy
 
-> Applies once `FlexNetOS` is a GitHub Organization and the runner is
-> registered at the org scope (Path A in `runner/README.md`).
+> Applies to the FlexNetOS organization-level self-hosted runner. The runner is
+> org-scoped, not repo-scoped; repo access is controlled by the org runner group.
 
-## Group: `local`
+## Group: `Default`
 
-A single org-level runner group named `local` containing the
-self-hosted runner `local-gh-rnr-lnx`.
+GitHub's default organization runner group currently contains the local Linux runner:
 
-### Repo access
+- runner: `fxrun-drdave-TRX50-AI-TOP-org`
+- install path: `/home/drdave/_work/repos/actions-runner-org`
+- labels: `self-hosted`, `Linux`, `X64`, `local`, `flexnetos`
 
-**Restricted, allowlist.** Not `All repositories`.
+The group name is intentionally documented as the live GitHub name. Do not create a
+repo-scoped envctl runner to work around group policy; fix the org runner group instead.
 
-Default allowlist:
+## Repo access
 
-- `FlexNetOS/.github` — for testing reusable workflows
-- `FlexNetOS/weftos` — the historical user
-- `FlexNetOS/ruvector` — needs runtime for vector-DB benchmarks
-- `FlexNetOS/ruOS` — needs runtime for .deb builds
+**Restricted selected-repository access.** The group must not be open-ended for all public
+repositories. Public repository execution is allowed only because the selected-repository
+allowlist is explicit.
+
+Live policy:
+
+- `visibility=selected`
+- `allows_public_repositories=true`
+- `restricted_to_workflows=false`
+
+Selected repositories:
+
+- `FlexNetOS/.github` — reusable org workflows and secret bootstrap checks
+- `FlexNetOS/envctl` — envctl CI `test` context and trusted `sync-master`
+- `FlexNetOS/flexnetos_runner` — runner operations and maintenance
 
 Adding a repo to the allowlist requires:
 
 1. A PR against this file documenting the addition and the reason.
 2. Maintainer review.
-3. The Settings change in the GitHub UI.
+3. The Settings/API change in the GitHub org runner group.
 
-### Workflow access
+Do not solve queueing by widening this group to all public repositories. If a repository only
+needs generic build capacity, route it to GitHub-hosted runners.
 
-**Restricted, allowlist.** Public workflows from any repo (e.g.
-trusted reusable workflows from `actions/`) are NOT permitted to run
-on this group. Only workflows defined inside an allowlisted repo can
-schedule jobs here.
+## Workflow access
+
+Workflow access is not separately restricted (`restricted_to_workflows=false`) because the
+repository allowlist is the security boundary. Untrusted fork PRs in allowlisted public repos
+must still route to GitHub-hosted runners, not this local runner.
 
 ## Label discipline
 
-The runner advertises:
-
-```text
-self-hosted, linux, x64, local
-```
-
-Workflows that want this runner MUST request all four labels:
+Workflows that want this runner MUST request the full label set:
 
 ```yaml
 jobs:
   build:
-    runs-on: [self-hosted, linux, x64, local]
+    runs-on: [self-hosted, linux, x64, local, flexnetos]
 ```
 
-Specifying only `self-hosted` is rejected — be explicit. This protects
-against accidentally routing a job to the wrong runner once we have
-more than one.
+Specifying only `self-hosted` is rejected — be explicit. This protects against accidentally
+routing a job to the wrong runner once we have more than one.
 
-## Concurrency
+## Routing and concurrency
 
-The runner serves jobs **serially** (one at a time). For parallel
-workloads, prefer GitHub-hosted runners.
+The runner serves jobs **serially** (one at a time). For parallel workloads, prefer
+GitHub-hosted runners.
 
-If a workflow needs the self-hosted runner *and* matrix parallelism,
-split the matrix legs so only one leg runs here and the rest run on
-GitHub-hosted.
+Required branch-protection contexts should fan out on GitHub-hosted runners unless they truly
+need local host state. If a workflow needs the self-hosted runner and matrix parallelism, split
+the matrix legs so only one leg runs here and the rest run on GitHub-hosted.
 
 ## Audit
 
